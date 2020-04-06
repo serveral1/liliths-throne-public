@@ -148,12 +148,12 @@ public class OrificeAnus implements OrificeInterface {
 	
 	@Override
 	public int getMaximumPenetrationDepthComfortable(GameCharacter owner) {
-		return (int) (owner.getHeightValue() * 0.12f * this.getDepth(owner).getDepthPercentage());
+		return (int) (owner.getHeightValue() * 0.15f * this.getDepth(owner).getDepthPercentage());
 	}
 	
 	@Override
 	public int getMaximumPenetrationDepthUncomfortable(GameCharacter owner) {
-		return getMaximumPenetrationDepthComfortable(owner) * 2;
+		return getMaximumPenetrationDepthComfortable(owner) * 1.5f;
 	}
 	
 	@Override

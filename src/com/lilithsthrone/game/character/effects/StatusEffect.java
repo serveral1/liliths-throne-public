@@ -13141,7 +13141,7 @@ public enum StatusEffect {
 						arousal += 2.5f;
 						
 					} else {
-						arousal -= 10;
+						arousal -= 5;
 					}
 					
 				} else if(!Main.sex.getCharactersPenetratingFarTooShallow(target, (SexAreaOrifice)orifice).isEmpty()) {

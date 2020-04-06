@@ -363,7 +363,7 @@ public class RacialBody {
 			HornLength.ZERO_TINY, HornLength.ZERO_TINY, Util.newArrayListOfValues(HornType.NONE, HornType.HORSE_STRAIGHT),
 			PenisType.EQUINE, 30, PenetrationGirth.FOUR_FAT, TesticleSize.FOUR_HUGE, 2, CumProduction.FIVE_HUGE, Util.newArrayListOfValues(TailType.HORSE_MORPH),
 			TentacleType.NONE,
-			VaginaType.HORSE_MORPH, Wetness.THREE_WET, Capacity.THREE_SLIGHTLY_LOOSE, OrificeDepth.FIVE_VERY_DEEP, ClitorisSize.ONE_BIG, OrificeElasticity.FOUR_LIMBER, OrificePlasticity.THREE_RESILIENT,
+			VaginaType.HORSE_MORPH, Wetness.THREE_WET, Capacity.THREE_SLIGHTLY_LOOSE, OrificeDepth.FOUR_DEEP, ClitorisSize.ONE_BIG, OrificeElasticity.FOUR_LIMBER, OrificePlasticity.THREE_RESILIENT,
 			Util.newArrayListOfValues(WingType.NONE, WingType.PEGASUS), WingSize.ZERO_TINY, WingSize.ZERO_TINY,
 			GenitalArrangement.NORMAL) {
 	};
