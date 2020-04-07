@@ -47,7 +47,7 @@ public enum Occupation {
 
 	NPC_NIGHTCLUB_OWNER(Perk.JOB_NPC_NIGHTCLUB_OWNER, "nightclub owner", "[npc.Name] [npc.verb(own)] and [npc.verb(manage)] a popular nightclub.", OccupationTag.HAS_PREREQUISITES),
 	NPC_BAR_TENDER(Perk.JOB_NPC_BARMAID, "bartender", "[npc.Name] [npc.verb(work)] as a bartender.", OccupationTag.EVENING_SHIFT),
-	NPC_BOUNCER(Perk.JOB_NPC_BOUNCER, "bouncer", "[npc.NameIsFull] a bouncer, in charge of keeping the riff-raff out of nightclubs and bars."),
+	NPC_BOUNCER(Perk.JOB_NPC_BOUNCER, "bouncer", "[npc.NameIsFull] a bouncer, in charge of keeping the riff-raff out of nightclubs and bars."OccupationTag.EVENING_SHIFT),
 
 	NPC_BEAUTICIAN(Perk.JOB_NPC_BEAUTICIAN, "beautician", "[npc.Name] [npc.verb(work)] as a beautician."),
 	
