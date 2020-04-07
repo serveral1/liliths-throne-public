@@ -13,17 +13,17 @@ import com.lilithsthrone.utils.colours.PresetColour;
  */
 public enum Capacity {
 	
-	ZERO_IMPENETRABLE("extremely tight", 0f, 1f, PresetColour.GENERIC_SIZE_ONE),
+	ZERO_IMPENETRABLE("extremely tight", 0f, 2.5f, PresetColour.GENERIC_SIZE_ONE),
 	
-	ONE_EXTREMELY_TIGHT("tight", 1f, 2.5f, PresetColour.GENERIC_SIZE_TWO),
+	ONE_EXTREMELY_TIGHT("tight", 2.5f, 5f, PresetColour.GENERIC_SIZE_TWO),
 	
-	TWO_TIGHT("somewhat tight", 2.5f, 5f, PresetColour.GENERIC_SIZE_THREE),
+	TWO_TIGHT("somewhat tight", 5f, 7.5f, PresetColour.GENERIC_SIZE_THREE),
 	
-	THREE_SLIGHTLY_LOOSE("slightly loose", 5f, 7.5f, PresetColour.GENERIC_SIZE_FOUR),
+	THREE_SLIGHTLY_LOOSE("slightly loose", 7.5f, 10f, PresetColour.GENERIC_SIZE_FOUR),
 	
-	FOUR_LOOSE("loose", 7.5f, 10f, PresetColour.GENERIC_SIZE_FIVE),
+	FOUR_LOOSE("loose", 10f, 12.5f, PresetColour.GENERIC_SIZE_FIVE),
 	
-	FIVE_ROOMY("very loose", 10f, 12.5f, PresetColour.GENERIC_SIZE_SIX) {
+	FIVE_ROOMY("very loose", 12.5f, 15f, PresetColour.GENERIC_SIZE_SIX) {
 		@Override
 		public String getDescriptor() {
 			if(!Main.game.isGapeContentEnabled()) {
@@ -40,7 +40,7 @@ public enum Capacity {
 		}
 	},
 	
-	SIX_STRETCHED_OPEN("stretched open", 12.5f, 20f, PresetColour.GENERIC_SIZE_SEVEN) {
+	SIX_STRETCHED_OPEN("stretched open", 15f, 20f, PresetColour.GENERIC_SIZE_SEVEN) {
 		@Override
 		public String getDescriptor() {
 			if(!Main.game.isGapeContentEnabled()) {
