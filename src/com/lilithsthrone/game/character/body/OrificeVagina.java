@@ -160,12 +160,12 @@ public class OrificeVagina implements OrificeInterface {
 
 	@Override
 	public int getMaximumPenetrationDepthComfortable(GameCharacter owner) { // 0.08 might be a little more realistic, but give it a little extra so that it's not annoying for people with large cocks
-		return (int) (owner.getHeightValue() * 0.12f * this.getDepth(owner).getDepthPercentage());
+		return (int) (owner.getHeightValue() * 0.14f * this.getDepth(owner).getDepthPercentage());
 	}
 	
 	@Override
 	public int getMaximumPenetrationDepthUncomfortable(GameCharacter owner) {
-		return (int) (getMaximumPenetrationDepthComfortable(owner) * 1.35f);
+		return (int) (getMaximumPenetrationDepthComfortable(owner) * 1.2f);
 	}
 
 	@Override
