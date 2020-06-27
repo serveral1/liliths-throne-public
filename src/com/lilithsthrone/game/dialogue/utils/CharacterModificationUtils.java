@@ -273,6 +273,17 @@ public class CharacterModificationUtils {
 				}
 				
 			} else {
+				if(BodyChanging.getTarget().getFemininity()==Femininity.FEMININE) {
+					contentSB.append(
+							"<div class='cosmetics-button active'>"
+								+ "[style.colourFeminine(Feminine)]"
+							+ "</div>");
+				} else {
+					contentSB.append(
+							"<div id='CHOOSE_FEM_FEMININE' class='cosmetics-button'>"
+								+ "<span style='color:"+PresetColour.FEMININE.getShades()[0]+";'>Feminine</span>"
+							+ "</div>");
+				}
 				if(BodyChanging.getTarget().getFemininity()==Femininity.ANDROGYNOUS) {
 					contentSB.append(
 							"<div class='cosmetics-button active'>"
@@ -4228,9 +4239,9 @@ public class CharacterModificationUtils {
 	
 	public static CupSize[] getBreastSizesAvailable() {
 		if(BodyChanging.getTarget().hasPenis()) {
-			return new CupSize[] {CupSize.FLAT, CupSize.TRAINING_AAA, CupSize.TRAINING_AA, CupSize.TRAINING_A};
+			return new CupSize[] {CupSize.FLAT, CupSize.TRAINING_AAA, CupSize.TRAINING_AA, CupSize.TRAINING_A, CupSize.AA, CupSize.A, CupSize.B, CupSize.C};
 		} else {
-			return new CupSize[] {CupSize.AA, CupSize.A, CupSize.B, CupSize.C, CupSize.D, CupSize.DD, CupSize.E};
+			return new CupSize[] {CupSize.AA, CupSize.A, CupSize.B, CupSize.C, CupSize.D, CupSize.DD, CupSize.E, CupSize.F, CupSize.FF};
 		}
 	}
 	
