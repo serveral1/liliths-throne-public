@@ -160,7 +160,7 @@ public class RacialBody {
 			EarType.DEMON_COMMON,
 			EyeType.DEMON_COMMON,
 			FaceType.DEMON_COMMON, LipSize.ONE_AVERAGE, LipSize.TWO_FULL,
-			HairType.DEMON_COMMON, HairLength.TWO_SHORT, HairLength.FIVE_ABOVE_ASS,
+			HairType.DEMON, HairLength.TWO_SHORT, HairLength.FIVE_ABOVE_ASS,
 			LegType.DEMON_COMMON, LegConfiguration.BIPEDAL,
 			SkinType.DEMON_COMMON,
 			BodyMaterial.FLESH,
@@ -174,7 +174,9 @@ public class RacialBody {
 		@Override
 		public Map<PersonalityTrait, Float> getPersonalityTraitChances() {
 			Map<PersonalityTrait, Float> map = super.getPersonalityTraitChances();
-			map.put(PersonalityTrait.LEWD, 0.75f);// Demons are lewd
+			map.put(PersonalityTrait.LEWD, 0.8f);// Demons are lewd
+			map.put(PersonalityTrait.INNOCENT, 0.01f);// Demons are very rarely innocent
+			map.put(PersonalityTrait.PRUDE, 0.01f);// Demons are very rarely prudes
 			return map;
 		}
 		@Override
@@ -303,7 +305,7 @@ public class RacialBody {
 			EarType.WOLF_MORPH,
 			EyeType.WOLF_MORPH,
 			FaceType.WOLF_MORPH,
-			LipSize.ONE_AVERAGE, LipSize.TWO_FULL, HairType.LYCAN,
+			LipSize.ONE_AVERAGE, LipSize.TWO_FULL, HairType.WOLF_MORPH,
 			HairLength.TWO_SHORT, HairLength.THREE_SHOULDER_LENGTH, 
 			LegType.WOLF_MORPH, LegConfiguration.BIPEDAL,
 			SkinType.LYCAN,

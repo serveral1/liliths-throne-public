@@ -2445,7 +2445,9 @@ public class ScarlettsShop {
 									false,
 									getScarlettSleepoverSexManager(SexPosition.LYING_DOWN, SexSlotLyingDown.COWGIRL, SexSlotLyingDown.LYING_DOWN,
 											new SexType(SexParticipantType.NORMAL, SexAreaOrifice.VAGINA, SexAreaPenetration.PENIS),
-											Util.newHashMapOfValues(new Value<>(Main.game.getPlayer(), Util.newArrayListOfValues(CoverableArea.PENIS)))),
+											Util.newHashMapOfValues(
+													new Value<>(Main.game.getNpc(Scarlett.class), Util.newArrayListOfValues(CoverableArea.VAGINA)),
+													new Value<>(Main.game.getPlayer(), Util.newArrayListOfValues(CoverableArea.PENIS)))),
 									null,
 									null,
 									ROMANCE_7_AFTER_SEX,
@@ -2468,7 +2470,9 @@ public class ScarlettsShop {
 									false,
 									getScarlettSleepoverSexManager(SexPosition.LYING_DOWN, SexSlotLyingDown.FACE_SITTING, SexSlotLyingDown.LYING_DOWN,
 											new SexType(SexParticipantType.NORMAL, SexAreaOrifice.VAGINA, SexAreaPenetration.TONGUE),
-											Util.newHashMapOfValues(new Value<>(Main.game.getPlayer(), Util.newArrayListOfValues(CoverableArea.MOUTH)))),
+											Util.newHashMapOfValues(
+													new Value<>(Main.game.getNpc(Scarlett.class), Util.newArrayListOfValues(CoverableArea.VAGINA)),
+													new Value<>(Main.game.getPlayer(), Util.newArrayListOfValues(CoverableArea.MOUTH)))),
 									null,
 									null,
 									ROMANCE_7_AFTER_SEX,
@@ -2489,7 +2493,10 @@ public class ScarlettsShop {
 									"Do as Scarlett asks and finger her.",
 									true,
 									false,
-									getScarlettSleepoverSexManager(SexPosition.LYING_DOWN, SexSlotLyingDown.COWGIRL, SexSlotLyingDown.LYING_DOWN, new SexType(SexParticipantType.NORMAL, SexAreaOrifice.VAGINA, SexAreaPenetration.FINGER), new HashMap<>()),
+									getScarlettSleepoverSexManager(SexPosition.LYING_DOWN, SexSlotLyingDown.COWGIRL, SexSlotLyingDown.LYING_DOWN,
+											new SexType(SexParticipantType.NORMAL, SexAreaOrifice.VAGINA, SexAreaPenetration.FINGER),
+											Util.newHashMapOfValues(
+													new Value<>(Main.game.getNpc(Scarlett.class), Util.newArrayListOfValues(CoverableArea.VAGINA)))),
 									null,
 									null,
 									ROMANCE_7_AFTER_SEX,
@@ -2519,7 +2526,9 @@ public class ScarlettsShop {
 									false,
 									getScarlettSleepoverSexManager(SexPosition.ALL_FOURS, SexSlotAllFours.BEHIND, SexSlotAllFours.ALL_FOURS,
 											new SexType(SexParticipantType.NORMAL, SexAreaPenetration.PENIS, SexAreaOrifice.ANUS),
-											Util.newHashMapOfValues(new Value<>(Main.game.getPlayer(), Util.newArrayListOfValues(CoverableArea.ANUS, CoverableArea.PENIS, CoverableArea.VAGINA)))),
+											Util.newHashMapOfValues(
+													new Value<>(Main.game.getNpc(Scarlett.class), Util.newArrayListOfValues(CoverableArea.PENIS)),
+													new Value<>(Main.game.getPlayer(), Util.newArrayListOfValues(CoverableArea.ANUS, CoverableArea.PENIS, CoverableArea.VAGINA)))),
 									null,
 									null,
 									ROMANCE_7_AFTER_SEX,
@@ -2554,7 +2563,9 @@ public class ScarlettsShop {
 									false,
 									getScarlettSleepoverSexManager(SexPosition.ALL_FOURS, SexSlotAllFours.IN_FRONT, SexSlotAllFours.ALL_FOURS,
 											new SexType(SexParticipantType.NORMAL, SexAreaPenetration.PENIS, SexAreaOrifice.MOUTH),
-											Util.newHashMapOfValues(new Value<>(Main.game.getPlayer(), Util.newArrayListOfValues(CoverableArea.MOUTH)))),
+											Util.newHashMapOfValues(
+													new Value<>(Main.game.getNpc(Scarlett.class), Util.newArrayListOfValues(CoverableArea.PENIS)),
+													new Value<>(Main.game.getPlayer(), Util.newArrayListOfValues(CoverableArea.MOUTH)))),
 									null,
 									null,
 									ROMANCE_7_AFTER_SEX,
@@ -2575,7 +2586,10 @@ public class ScarlettsShop {
 									"Do as Scarlett asks and give her a handjob.",
 									true,
 									false,
-									getScarlettSleepoverSexManager(SexPosition.LYING_DOWN, SexSlotLyingDown.COWGIRL, SexSlotLyingDown.LYING_DOWN, new SexType(SexParticipantType.NORMAL, SexAreaPenetration.PENIS, SexAreaPenetration.FINGER), new HashMap<>()),
+									getScarlettSleepoverSexManager(SexPosition.LYING_DOWN, SexSlotLyingDown.COWGIRL, SexSlotLyingDown.LYING_DOWN,
+											new SexType(SexParticipantType.NORMAL, SexAreaPenetration.PENIS, SexAreaPenetration.FINGER),
+											Util.newHashMapOfValues(
+													new Value<>(Main.game.getNpc(Scarlett.class), Util.newArrayListOfValues(CoverableArea.PENIS)))),
 									null,
 									null,
 									ROMANCE_7_AFTER_SEX,
@@ -2667,7 +2681,9 @@ public class ScarlettsShop {
 								false,
 								getScarlettSleepoverSexManager(SexPosition.SITTING, SexSlotSitting.SITTING, SexSlotSitting.PERFORMING_ORAL,
 										new SexType(SexParticipantType.NORMAL, SexAreaOrifice.VAGINA, SexAreaPenetration.TONGUE),
-										Util.newHashMapOfValues(new Value<>(Main.game.getPlayer(), Util.newArrayListOfValues(CoverableArea.MOUTH)))),
+										Util.newHashMapOfValues(
+													new Value<>(Main.game.getNpc(Scarlett.class), Util.newArrayListOfValues(CoverableArea.VAGINA)),
+													new Value<>(Main.game.getPlayer(), Util.newArrayListOfValues(CoverableArea.MOUTH)))),
 								null,
 								null,
 								ROMANCE_7_MORNING_AFTER_SEX,
@@ -2690,7 +2706,9 @@ public class ScarlettsShop {
 								false,
 								getScarlettSleepoverSexManager(SexPosition.SITTING, SexSlotSitting.SITTING, SexSlotSitting.PERFORMING_ORAL,
 										new SexType(SexParticipantType.NORMAL, SexAreaPenetration.PENIS, SexAreaOrifice.MOUTH),
-										Util.newHashMapOfValues(new Value<>(Main.game.getPlayer(), Util.newArrayListOfValues(CoverableArea.MOUTH)))),
+										Util.newHashMapOfValues(
+												new Value<>(Main.game.getNpc(Scarlett.class), Util.newArrayListOfValues(CoverableArea.PENIS)),
+												new Value<>(Main.game.getPlayer(), Util.newArrayListOfValues(CoverableArea.MOUTH)))),
 								null,
 								null,
 								ROMANCE_7_MORNING_AFTER_SEX,
@@ -4663,6 +4681,11 @@ public class ScarlettsShop {
 							"You've already given Scarlett oral today...",
 							null);
 				}
+				if(!Main.game.getNpc(Scarlett.class).isAttractedTo(Main.game.getPlayer())) {
+					return new Response(Main.game.getNpc(Scarlett.class).hasPenis()?"Blowjob":"Cunnilingus",
+							"Scarlett isn't attracted to you, so she'd be unwilling to let you give her "+(Main.game.getNpc(Scarlett.class).hasPenis()?"a quick blowjob":"some quick cunnilingus")+".",
+							null);
+				}
 				return new Response(Main.game.getNpc(Scarlett.class).hasPenis()?"Blowjob":"Cunnilingus",
 						"Kneel down beneath the shop's counter and give Scarlett "+(Main.game.getNpc(Scarlett.class).hasPenis()?"a quick blowjob":"some quick cunnilingus")+".",
 						HELENAS_SHOP_SCARLETT_COUNTER_ORAL) {
@@ -4678,7 +4701,15 @@ public class ScarlettsShop {
 				};
 				
 			} else if(index==5) {
-				if(Main.game.getDialogueFlags().hasFlag(DialogueFlagValue.helenaShopScarlettCafe)) {
+				if(!Main.game.getNpc(Scarlett.class).isAttractedTo(Main.game.getPlayer())) {
+					return new Response(
+							Main.game.getDialogueFlags().hasFlag(DialogueFlagValue.helenaShopScarlettCafeRevealed)
+								?"Cafe"
+								:"Lunch break",
+							"Scarlett is only willing to spend her lunch break with people she's attracted to, and as you're not feminine enough for her liking, she's unwilling to spend it with you...",
+							null);
+					
+				} else if(Main.game.getDialogueFlags().hasFlag(DialogueFlagValue.helenaShopScarlettCafe)) {
 					return new Response("Cafe", "You've already been out to the cafe with Scarlett today...", null);
 					
 				} else if(Main.game.getHourOfDay()<11) {
@@ -4700,7 +4731,9 @@ public class ScarlettsShop {
 								?"Scarlett has already taken her lunch break, and so she can't go out to a cafe with you. Try again another day between [units.time(11)] and [units.time(15)]."
 								:"Scarlett has already taken her lunch break, and so can't spend it with you. Try again another day between [units.time(11)] and [units.time(15)].",
 							null);
+					
 				}
+				
 				return new Response(
 						Main.game.getDialogueFlags().hasFlag(DialogueFlagValue.helenaShopScarlettCafeRevealed)
 							?"Cafe"

@@ -546,7 +546,7 @@ public class PlayerCharacter extends GameCharacter implements XMLSaving {
 			}
 		}
 		
-		if(!Main.isVersionOlderThan(version, "0.3.7.7")) {
+		if(playerSpecificElement!=null && !Main.isVersionOlderThan(version, "0.3.7.7")) {
 			nodes = playerSpecificElement.getElementsByTagName("itemsDiscovered");
 			element = (Element) nodes.item(0);
 			nodes = element.getElementsByTagName("type");
@@ -671,9 +671,15 @@ public class PlayerCharacter extends GameCharacter implements XMLSaving {
 //			}
 //			character.removeItemByType(ItemType.NATALYA_BUSINESS_CARD);
 		}
-		if(character.isQuestProgressGreaterThan(QuestLine.ROMANCE_HELENA, Quest.ROMANCE_HELENA_3_B_EXTERIOR_DECORATOR)
-				&& !character.hasItemType(ItemType.NATALYA_BUSINESS_CARD)) {
-			character.addItem(AbstractItemType.generateItem(ItemType.NATALYA_BUSINESS_CARD), false);
+		if(Main.isVersionOlderThan(version, "0.3.8.1")) {
+			if(character.hasItemType(ItemType.NATALYA_BUSINESS_CARD_STAMPED)) {
+				character.removeItemByType(ItemType.NATALYA_BUSINESS_CARD);
+				
+			} else if(character.isQuestProgressGreaterThan(QuestLine.ROMANCE_HELENA, Quest.ROMANCE_HELENA_3_B_EXTERIOR_DECORATOR)
+					&& !character.hasItemType(ItemType.NATALYA_BUSINESS_CARD)
+					&& !character.hasItemType(ItemType.NATALYA_BUSINESS_CARD_STAMPED)) {
+				character.addItem(AbstractItemType.generateItem(ItemType.NATALYA_BUSINESS_CARD), false);
+			}
 		}
 		
 		if(Main.isVersionOlderThan(version, "0.3.8") && character.isHasSlaverLicense()) {
@@ -1394,8 +1400,7 @@ public class PlayerCharacter extends GameCharacter implements XMLSaving {
 				}
 				@Override
 				public boolean isEndsSex() {
-					return Main.game.getNpc(Lilaya.class).hasStatusEffect(StatusEffect.CREAMPIE_VAGINA)
-							&& !Main.game.getNpc(Lilaya.class).isVisiblyPregnant()
+					return Main.game.getNpc(Lilaya.class).hasStatusEffect(StatusEffect.PREGNANT_0)
 							&& Main.game.getNpc(Lilaya.class).getFetishDesire(Fetish.FETISH_PREGNANCY).isNegative();
 				}
 			};
