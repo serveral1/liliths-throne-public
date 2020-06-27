@@ -525,7 +525,7 @@ public abstract class AbstractStatusEffect {
 						arousal += 2.5f;
 						
 					} else {
-						arousal -= 10;
+						arousal -= 5;
 					}
 					
 				} else if(!Main.sex.getCharactersPenetratingFarTooShallow(target, (SexAreaOrifice)orifice).isEmpty()) {
@@ -598,7 +598,7 @@ public abstract class AbstractStatusEffect {
 						modifiersList.add("+2.5 (<b style='color:"+target.getFemininity().getColour().toWebHexString()+";'>"+targetName+"</b> - [style.boldSex(Too deep)])");
 						
 					} else {
-						modifiersList.add("-10 (<b style='color:"+target.getFemininity().getColour().toWebHexString()+";'>"+targetName+"</b> - [style.boldBad(Too deep)])");
+						modifiersList.add("-5 (<b style='color:"+target.getFemininity().getColour().toWebHexString()+";'>"+targetName+"</b> - [style.boldBad(Too deep)])");
 						
 					}
 					
