@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import com.lilithsthrone.game.Game;
+import com.lilithsthrone.game.PropertyValue;
 import com.lilithsthrone.game.character.GameCharacter;
 import com.lilithsthrone.game.character.attributes.Attribute;
 import com.lilithsthrone.game.character.fetishes.Fetish;
@@ -50,7 +51,9 @@ public class OccupantDialogue {
 		if(Main.game.getCurrentDialogueNode().getDialogueNodeType()==DialogueNodeType.NORMAL) {
 			Main.game.saveDialogueNode();
 		}
-		CompanionManagement.initManagement(OCCUPANT_START, 2, targetedOccupant);
+		if(!isApartment || targetedOccupant.isAtHome()) {
+			CompanionManagement.initManagement(OCCUPANT_START, 2, targetedOccupant);
+		}
 		occupant = targetedOccupant;
 		characterForSex = targetedOccupant;
 
@@ -71,6 +74,11 @@ public class OccupantDialogue {
 		confirmKickOut = false;
 		
 		OccupantDialogue.initFromCharactersPresent = initFromCharactersPresent;
+	}
+	
+	
+	private static void exitDialogue() {
+		Main.game.getDialogueFlags().setManagementCompanion(null);
 	}
 	
 	private static DialogueNode getAfterSexDialogue() {
@@ -259,7 +267,7 @@ public class OccupantDialogue {
 						return new Response("Slaves", UtilText.parse(occupant(), "You've already talked with [npc.name] about [npc.her] interactions with your slaves today."), null);
 					}
 					
-				} else if (index == 5) {
+				} else if (index == 5 && Main.getProperties().hasValue(PropertyValue.companionContent)) {
 					if(!Main.game.getPlayer().hasCompanion(occupant())) {
 						if(!occupant().isCompanionAvailable(Main.game.getPlayer())) {
 							return new Response("Add to party",
@@ -1155,12 +1163,10 @@ public class OccupantDialogue {
 	};
 	
 	public static final DialogueNode OCCUPANT_KICK_OUT = new DialogueNode("Kicking out", "", false) {
-		
 		@Override
 		public String getContent() {
 			return "";
 		}
-
 		@Override
 		public Response getResponse(int responseTab, int index) {
 			return Main.game.getDefaultDialogue(false).getResponse(responseTab, index);
@@ -1260,12 +1266,10 @@ public class OccupantDialogue {
 	private static int sleepTimeInMinutes = 240;
 	
 	public static final DialogueNode OCCUPANT_APARTMENT = new DialogueNode("Moving out", "", true) {
-
 		@Override
 		public String getLabel() {
 			return UtilText.parse(occupant(), "[npc.NamePos] Apartment");
 		}
-		
 		@Override
 		public String getContent() {
 			UtilText.nodeContentSB.setLength(0);
@@ -1305,12 +1309,14 @@ public class OccupantDialogue {
 
 		@Override
 		public String getResponseTabTitle(int index) {
-			if(index == 0) {
-				return "Talk";
-			} else if(index == 1) {
-				return UtilText.parse("[style.colourSex(Sex)]");
-			} else if(index == 2) {
-				return UtilText.parse("[style.colourCompanion(Manage)]");
+			if(occupant().isAtHome()) {
+				if(index == 0) {
+					return "Talk";
+				} else if(index == 1) {
+					return UtilText.parse("[style.colourSex(Sex)]");
+				} else if(index == 2) {
+					return UtilText.parse("[style.colourCompanion(Manage)]");
+				}
 			}
 			
 			return null;
@@ -1319,12 +1325,12 @@ public class OccupantDialogue {
 		@Override
 		public Response getResponse(int responseTab, int index) {
 			if(!occupant().isAtHome()) {
-				if (index == 1) {
-					return new Response("Leave", "As [npc.name] is not at home right now, there's nothing left to do but head back out into Dominion.", Main.game.getDefaultDialogue(false));
-					
-				} else {
-					return null;
+				if(index==1) {
+					return new Response("Leave",
+							UtilText.parse(occupant(), "As [npc.name] is not at home right now, there's nothing left to do but head back out into Dominion."),
+							Main.game.getDefaultDialogue(false));
 				}
+				return null;
 			}
 			
 			if(responseTab == 0) {
@@ -1380,17 +1386,19 @@ public class OccupantDialogue {
 					};
 
 				} else if (index == 4) {
-					int timeUntilChange = Main.game.getMinutesUntilNextMorningOrEvening();
+					int timeUntilChange = Main.game.getMinutesUntilNextMorningOrEvening() + 5; // Add 5 minutes so that if the days are drawing in, you don't get stuck in a loop of always sleeping to sunset/sunrise
 					LocalDateTime[] sunriseSunset = DateAndTime.getTimeOfSolarElevationChange(Main.game.getDateNow(), SolarElevationAngle.SUN_ALTITUDE_SUNRISE_SUNSET, Game.DOMINION_LATITUDE, Game.DOMINION_LONGITUDE);
 					return new Response("Rest until " + (Main.game.isDayTime() ? "Sunset" : "Sunrise"),
 							"Ask [npc.name] if you can crash on [npc.her] sofa for " + (timeUntilChange >= 60 ?timeUntilChange / 60 + " hours " : " ")
 								+ (timeUntilChange % 60 != 0 ? timeUntilChange % 60 + " minutes" : "")
-								+ " until " + (Main.game.isDayTime() ? "evening ("+Units.time(sunriseSunset[1])+")." : "morning ("+Units.time(sunriseSunset[0])+").")
+								+ (Main.game.isDayTime()
+										? " until five minutes past sunset ("+Units.time(sunriseSunset[1].plusMinutes(5))+")."
+										: " until five minutes past sunrise ("+Units.time(sunriseSunset[0].plusMinutes(5))+").")
 								+ " As well as replenishing your "+Attribute.HEALTH_MAXIMUM.getName()+" and "+Attribute.MANA_MAXIMUM.getName()+", you will also get the 'Well Rested' status effect.",
 								OCCUPANT_APARTMENT_SLEEP_OVER){
 						@Override
 						public void effects() {
-							sleepTimeInMinutes = Main.game.getMinutesUntilNextMorningOrEvening();
+							sleepTimeInMinutes = timeUntilChange;
 							
 							Main.game.getPlayer().setHealth(Main.game.getPlayer().getAttributeValue(Attribute.HEALTH_MAXIMUM));
 							Main.game.getPlayer().setMana(Main.game.getPlayer().getAttributeValue(Attribute.MANA_MAXIMUM));
@@ -1400,7 +1408,7 @@ public class OccupantDialogue {
 						}
 					};
 
-				} else if (index == 5) {
+				} else if (index == 5 && Main.getProperties().hasValue(PropertyValue.companionContent)) {
 					if(!Main.game.getPlayer().hasCompanion(occupant())) {
 						
 						if(!occupant().isCompanionAvailable(Main.game.getPlayer())) {
@@ -1487,6 +1495,7 @@ public class OccupantDialogue {
 						@Override
 						public void effects() {
 							applyReactionReset();
+							exitDialogue();
 						}
 					};
 					
@@ -1501,6 +1510,7 @@ public class OccupantDialogue {
 						public void effects() {
 							Main.game.getTextStartStringBuilder().append(UtilText.parseFromXMLFile(getTextFilePath(), "APARTMENT_LEAVING", occupant()));
 							applyReactionReset();
+							exitDialogue();
 						}
 					};
 					
@@ -1587,10 +1597,10 @@ public class OccupantDialogue {
 	
 	public static final DialogueNode OCCUPANT_APARTMENT_SLEEP_OVER = new DialogueNode("", "", true) {
 
-		@Override
-		public int getSecondsPassed() {
-			return sleepTimeInMinutes*60;
-		}
+//		@Override
+//		public int getSecondsPassed() {
+//			return sleepTimeInMinutes*60;
+//		}
 		
 		@Override
 		public String getLabel(){
@@ -1651,11 +1661,14 @@ public class OccupantDialogue {
 		public Response getResponse(int responseTab, int index) {
 			if(!occupant().isAtHome()) {
 				if (index == 1) {
-					return new Response("Outside", "You find yourself back outside in the streets of Dominion.", Main.game.getDefaultDialogue(false));
-					
-				} else {
-					return null;
+					return new Response("Outside", "You find yourself back outside in the streets of Dominion.", Main.game.getDefaultDialogue(false)) {
+						@Override
+						public void effects() {
+							exitDialogue();
+						}
+					};
 				}
+				return null;
 			}
 			
 			return OCCUPANT_APARTMENT.getResponse(responseTab, index);
@@ -1663,12 +1676,14 @@ public class OccupantDialogue {
 	};
 	
 	public static final DialogueNode OCCUPANT_APARTMENT_REMOVE = new DialogueNode("", "", false) {
-		
+		@Override
+		public void applyPreParsingEffects() {
+			exitDialogue();
+		}
 		@Override
 		public String getContent() {
 			return "";
 		}
-		
 		@Override
 		public Response getResponse(int responseTab, int index) {
 			return Main.game.getDefaultDialogue(false).getResponse(responseTab, index);
@@ -1702,6 +1717,7 @@ public class OccupantDialogue {
 					@Override
 					public void effects() {
 						Main.game.getTextStartStringBuilder().append(UtilText.parseFromXMLFile(getTextFilePath(), "APARTMENT_LEAVE_AFTER_SEX", occupant()));
+						exitDialogue();
 					}
 				};
 				

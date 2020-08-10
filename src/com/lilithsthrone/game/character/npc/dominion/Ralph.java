@@ -61,10 +61,12 @@ import com.lilithsthrone.world.places.PlaceType;
 
 /**
  * @since 0.1.0
- * @version 0.3.1
+ * @version 0.3.9
  * @author Innoxia
  */
 public class Ralph extends NPC {
+	
+	public static final String RALPH_DISCOUNT_TIMER_ID = "ralph_discount_timer";
 	
 	public Ralph() {
 		this(false);
@@ -97,6 +99,9 @@ public class Ralph extends NPC {
 		}
 		if(Main.isVersionOlderThan(Game.loadingVersion, "0.3.7.5")) {
 			this.setPenisSize(30);
+		}
+		if(Main.isVersionOlderThan(Game.loadingVersion, "0.3.9.1")) {
+			this.setPenisCumStorage(250);
 		}
 	}
 
@@ -190,7 +195,7 @@ public class Ralph extends NPC {
 		this.setPenisGirth(PenetrationGirth.FIVE_FAT);
 		this.setPenisSize(30);
 		this.setTesticleSize(TesticleSize.FOUR_HUGE);
-		this.setPenisCumStorage(65);
+		this.setPenisCumStorage(250);
 		this.fillCumToMaxStorage();
 		// Leave cum as normal value
 		
@@ -205,10 +210,10 @@ public class Ralph extends NPC {
 	public void equipClothing(List<EquipClothingSetting> settings) {
 		this.unequipAllClothingIntoVoid(true, true);
 
-		this.equipClothingFromNowhere(AbstractClothingType.generateClothing(ClothingType.GROIN_BOXERS, PresetColour.CLOTHING_BLACK, false), true, this);
-		this.equipClothingFromNowhere(AbstractClothingType.generateClothing("innoxia_leg_jeans", PresetColour.CLOTHING_BLACK, false), true, this);
-		this.equipClothingFromNowhere(AbstractClothingType.generateClothing(ClothingType.TORSO_SHORT_SLEEVE_SHIRT, PresetColour.CLOTHING_PINK_LIGHT, false), true, this);
-		this.equipClothingFromNowhere(AbstractClothingType.generateClothing(ClothingType.WRIST_MENS_WATCH, PresetColour.CLOTHING_GOLD, false), true, this);
+		this.equipClothingFromNowhere(Main.game.getItemGen().generateClothing(ClothingType.GROIN_BOXERS, PresetColour.CLOTHING_BLACK, false), true, this);
+		this.equipClothingFromNowhere(Main.game.getItemGen().generateClothing("innoxia_leg_jeans", PresetColour.CLOTHING_BLACK, false), true, this);
+		this.equipClothingFromNowhere(Main.game.getItemGen().generateClothing(ClothingType.TORSO_SHORT_SLEEVE_SHIRT, PresetColour.CLOTHING_PINK_LIGHT, false), true, this);
+		this.equipClothingFromNowhere(Main.game.getItemGen().generateClothing(ClothingType.WRIST_MENS_WATCH, PresetColour.CLOTHING_GOLD, false), true, this);
 
 	}
 
@@ -221,10 +226,10 @@ public class Ralph extends NPC {
 	 * Discount is active for three days after earning it.
 	 */
 	public boolean isDiscountActive(){
-		if(Main.game.getDialogueFlags().ralphDiscountStartTime == -1 || Main.game.getDialogueFlags().ralphDiscount <= 0) {
+		if(Main.game.getDialogueFlags().getSavedLong(RALPH_DISCOUNT_TIMER_ID) == -1 || Main.game.getDialogueFlags().ralphDiscount <= 0) {
 			return false;
 		} else {
-			return (Main.game.getMinutesPassed()-Main.game.getDialogueFlags().ralphDiscountStartTime) < (60*24*3);
+			return (Main.game.getMinutesPassed()-Main.game.getDialogueFlags().getSavedLong(RALPH_DISCOUNT_TIMER_ID)) < (60*24*3);
 		}
 	}
 
@@ -232,17 +237,19 @@ public class Ralph extends NPC {
 	public void dailyUpdate() {
 		clearNonEquippedInventory(false);
 		
-		this.addItem(AbstractItemType.generateItem(ItemType.DYE_BRUSH), 25, false, false);
-		this.addItem(AbstractItemType.generateItem(ItemType.REFORGE_HAMMER), 10, false, false);
+		this.addItem(Main.game.getItemGen().generateItem(ItemType.DYE_BRUSH), 25, false, false);
+		this.addItem(Main.game.getItemGen().generateItem(ItemType.REFORGE_HAMMER), 10, false, false);
 		
 		for(AbstractItemType item : ItemType.getAllItems()) {
-			if(item.getItemTags().contains(ItemTag.SOLD_BY_RALPH)) {
-				this.addItem(AbstractItemType.generateItem(item), !item.isConsumedOnUse()?1:(6+Util.random.nextInt(12)), false, false);
+			if(item.getItemTags().contains(ItemTag.SOLD_BY_RALPH)
+					&& (!item.getItemTags().contains(ItemTag.SILLY_MODE) || Main.game.isSillyMode())) {
+				this.addItem(Main.game.getItemGen().generateItem(item), !item.isConsumedOnUse()?1:(6+Util.random.nextInt(12)), false, false);
 			}
 		}
 		
 		for(AbstractClothingType clothing : ClothingType.getAllClothing()) {
-			if(clothing.getDefaultItemTags().contains(ItemTag.SOLD_BY_RALPH)) {
+			if(clothing.getDefaultItemTags().contains(ItemTag.SOLD_BY_RALPH)
+					&& (!clothing.getDefaultItemTags().contains(ItemTag.SILLY_MODE) || Main.game.isSillyMode())) {
 				if(clothing.isCondom(clothing.getEquipSlots().get(0))) {
 					Colour condomColour = clothing.getColourReplacement(0).getRandomOfDefaultColours();
 					Colour condomColourSec = PresetColour.CLOTHING_BLACK;
@@ -255,11 +262,11 @@ public class Ralph extends NPC {
 						condomColourTer = clothing.getColourReplacement(2).getRandomOfDefaultColours();
 					}
 					for (int i = 0; i < (3+(Util.random.nextInt(4)))*(clothing.getRarity()==Rarity.COMMON?3:(clothing.getRarity()==Rarity.UNCOMMON?2:1)); i++) {
-						this.addClothing(AbstractClothingType.generateClothing(clothing, condomColour, condomColourSec, condomColourTer, false), false);
+						this.addClothing(Main.game.getItemGen().generateClothing(clothing, condomColour, condomColourSec, condomColourTer, false), false);
 					}
 					
 				} else {
-					this.addClothing(AbstractClothingType.generateClothing(clothing), false);
+					this.addClothing(Main.game.getItemGen().generateClothing(clothing), false);
 				}
 			}
 		}
@@ -287,7 +294,7 @@ public class Ralph extends NPC {
 	
 	@Override
 	public String getTraderDescription() {
-		if(Main.game.getDialogueFlags().ralphDiscountStartTime>0){
+		if(Main.game.getDialogueFlags().getSavedLong(RALPH_DISCOUNT_TIMER_ID)>0){
 			StringBuilder descriptionSB = new StringBuilder();
 			
 			descriptionSB.append("<p>"

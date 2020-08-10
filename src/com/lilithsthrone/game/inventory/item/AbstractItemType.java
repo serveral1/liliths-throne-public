@@ -8,8 +8,6 @@ import java.util.List;
 import java.util.Set;
 
 import com.lilithsthrone.game.character.GameCharacter;
-import com.lilithsthrone.game.character.body.FluidCum;
-import com.lilithsthrone.game.character.body.FluidMilk;
 import com.lilithsthrone.game.combat.DamageType;
 import com.lilithsthrone.game.dialogue.utils.UtilText;
 import com.lilithsthrone.game.inventory.AbstractCoreType;
@@ -18,7 +16,6 @@ import com.lilithsthrone.game.inventory.Rarity;
 import com.lilithsthrone.game.inventory.clothing.AbstractClothing;
 import com.lilithsthrone.game.inventory.enchanting.AbstractItemEffectType;
 import com.lilithsthrone.game.inventory.enchanting.ItemEffect;
-import com.lilithsthrone.game.inventory.enchanting.TFEssence;
 import com.lilithsthrone.game.inventory.weapon.AbstractWeapon;
 import com.lilithsthrone.main.Main;
 import com.lilithsthrone.utils.SvgUtil;
@@ -28,7 +25,7 @@ import com.lilithsthrone.utils.colours.PresetColour;
 
 /**
  * @since 0.1.84
- * @version 0.3.7.7
+ * @version 0.3.9
  * @author Innoxia
  */
 public abstract class AbstractItemType extends AbstractCoreType {
@@ -45,7 +42,6 @@ public abstract class AbstractItemType extends AbstractCoreType {
 	private int value;
 	private Rarity rarity;
 	protected String SVGString;
-	private TFEssence relatedEssence;
 	protected List<ItemEffect> effects;
 	protected Set<ItemTag> itemTags;
 
@@ -61,7 +57,6 @@ public abstract class AbstractItemType extends AbstractCoreType {
 			Colour colourSecondary,
 			Colour colourTertiary,
 			Rarity rarity,
-			TFEssence relatedEssence,
 			List<ItemEffect> effects,
 			List<ItemTag> itemTags) {
 
@@ -70,12 +65,10 @@ public abstract class AbstractItemType extends AbstractCoreType {
 		this.name = name;
 		this.namePlural = namePlural;
 		this.description = description;
-		this.pathName = pathName;
+		this.pathName = pathName==null?"":pathName;
 
 		this.value = value;
 		this.rarity = rarity;
-		
-		this.relatedEssence = relatedEssence;
 		
 		this.itemTags = new HashSet<>();
 		if(itemTags!=null) {
@@ -105,19 +98,23 @@ public abstract class AbstractItemType extends AbstractCoreType {
 		}
 		
 		// Set this item's file image:
-		try {
-			InputStream is = this.getClass().getResourceAsStream("/com/lilithsthrone/res/items/" + pathName + ".svg");
-			if(is==null) {
-				System.err.println("Error! AbstractItemType icon file does not exist (Trying to read from '"+pathName+"')!");
+		if(pathName!=null) {
+			try {
+				InputStream is = this.getClass().getResourceAsStream("/com/lilithsthrone/res/items/" + pathName + ".svg");
+				if(is==null) {
+					System.err.println("Error! AbstractItemType icon file does not exist (Trying to read from '"+pathName+"')!");
+				}
+				String s = Util.inputStreamToString(is);
+	
+				SVGString = colourReplacement(this.getColourPrimary(), this.getColourSecondary(), this.getColourTertiary(), s);
+				
+				is.close();
+	
+			} catch (IOException e1) {
+				e1.printStackTrace();
 			}
-			String s = Util.inputStreamToString(is);
-
-			SVGString = colourReplacement(this.getColourPrimary(), this.getColourSecondary(), this.getColourTertiary(), s);
-			
-			is.close();
-
-		} catch (IOException e1) {
-			e1.printStackTrace();
+		} else {
+			SVGString = "";
 		}
 	}
 	
@@ -132,7 +129,6 @@ public abstract class AbstractItemType extends AbstractCoreType {
 				if(((AbstractItemType)o).getName(false).equals(getName(false))
 						&& ((AbstractItemType)o).getPathName().equals(getPathName())
 						&& ((AbstractItemType)o).getRarity() == getRarity()
-						&& ((AbstractItemType)o).getRelatedEssence() == getRelatedEssence()
 						&& ((AbstractItemType)o).getEffects().equals(getEffects())
 						){
 					return true;
@@ -148,22 +144,8 @@ public abstract class AbstractItemType extends AbstractCoreType {
 		result = 31 * result + getName(false).hashCode();
 		result = 31 * result + getPathName().hashCode();
 		result = 31 * result + getRarity().hashCode();
-		if(getRelatedEssence() != null)
-			result = 31 * result + getRelatedEssence().hashCode();
 		result = 31 * result + getEffects().hashCode();
 		return result;
-	}
-
-	public static AbstractItem generateItem(AbstractItemType itemType) {
-		return new AbstractItem(itemType) {};
-	}
-	
-	public static AbstractItem generateFilledCondom(Colour colour, GameCharacter character, FluidCum cum, int millilitres) {
-		return new AbstractFilledCondom(ItemType.CONDOM_USED, colour, character, cum, millilitres) {};
-	}
-
-	public static AbstractItem generateFilledBreastPump(Colour colour, GameCharacter character, FluidMilk milk, int quantity) {
-		return new AbstractFilledBreastPump(ItemType.MOO_MILKER_FULL, colour, character, milk, quantity) {};
 	}
 	
 	public String getId() {
@@ -190,10 +172,6 @@ public abstract class AbstractItemType extends AbstractCoreType {
 	
 	public AbstractItemEffectType getEnchantmentEffect() {
 		return null;
-	}
-	
-	public TFEssence getRelatedEssence() {
-		return relatedEssence;
 	}
 	
 	public AbstractItemType getEnchantmentItemType(List<ItemEffect> effects) {
@@ -286,8 +264,16 @@ public abstract class AbstractItemType extends AbstractCoreType {
 		return true;
 	}
 	
+	public String getUnableToBeUsedFromInventoryDescription() {
+		return "This item cannot be used in this way!";
+	}
+	
 	public boolean isAbleToBeUsed(GameCharacter target) {
 		return !Main.game.isInCombat() || target.isPlayer();
+	}
+	
+	public String getUnableToBeUsedDescription(GameCharacter target) {
+		return "This item cannot be used in this way!";
 	}
 	
 	public boolean isAbleToBeUsedInSex() {
@@ -312,14 +298,6 @@ public abstract class AbstractItemType extends AbstractCoreType {
 	
 	public boolean isFetishGiving() {
 		return false;
-	}
-	
-	public String getUnableToBeUsedFromInventoryDescription() {
-		return "This item cannot be used in this way!";
-	}
-	
-	public String getUnableToBeUsedDescription(GameCharacter target) {
-		return "This item cannot be used in this way!";
 	}
 	
 	public String getDyeBrushEffects(AbstractClothing clothing, Colour colour) {

@@ -145,13 +145,13 @@ public class OrificeMouth implements OrificeInterface {
 	}
 	
 	@Override
-	public int getMaximumPenetrationDepthComfortable(GameCharacter owner) {
-		return (int) (owner.getHeightValue() * 0.15f * this.getDepth(owner).getDepthPercentage());
+	public int getMaximumPenetrationDepthComfortable(GameCharacter owner, OrificeDepth depth) {
+		return (int) (owner.getHeightValue() * 0.1f * depth.getDepthPercentage());
 	}
 	
 	@Override
-	public int getMaximumPenetrationDepthUncomfortable(GameCharacter owner) {
-		return (int) (getMaximumPenetrationDepthComfortable(owner) * 1.25f);
+	public int getMaximumPenetrationDepthUncomfortable(GameCharacter owner, OrificeDepth depth) {
+		return (int) getMaximumPenetrationDepthComfortable(owner, depth) * 1.2f;
 	}
 	
 	@Override

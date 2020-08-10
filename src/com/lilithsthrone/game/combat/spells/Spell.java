@@ -408,9 +408,10 @@ public enum Spell {
 			if(!caster.hasDiscoveredElemental()) {
 				caster.createElemental();
 			} else {
-				elementalAlreadySummoned = caster.getCompanions().contains(caster.getElemental());
+				elementalAlreadySummoned = caster.isElementalSummoned();
 			}
 			
+			caster.setElementalSummoned(true);
 			caster.getElemental().setElementalSchool(SpellSchool.FIRE);
 			
 			if(elementalAlreadySummoned) {
@@ -427,7 +428,7 @@ public enum Spell {
 									:"With a flash of light and a burst of flames, [npc1.name] binds [npc1.her] elemental, [npc2.name], to the school of Fire!")));
 				
 			} else {
-				caster.addCompanion(caster.getElemental());
+				//caster.addCompanion(caster.getElemental());
 				descriptionSB.append(UtilText.parse(caster, caster.getElemental(),
 								(caster.hasTraitActivated(Perk.CHUUNI)
 										?Util.randomItemFrom(
@@ -441,6 +442,7 @@ public enum Spell {
 									:"With a flash of light and a burst of flames, [npc1.name] summons forth [npc1.her] elemental, [npc2.name], by binding [npc2.herHim] to the school of Fire!")));
 				
 				if(Main.game.isInCombat()) {
+					caster.getElemental().setLocation(caster, false);
 					if(caster.isPlayer() || Combat.getAllies(Main.game.getPlayer()).contains(caster)) {
 						Combat.addAlly(caster.getElemental());
 					} else {
@@ -829,9 +831,10 @@ public enum Spell {
 			if(!caster.hasDiscoveredElemental()) {
 				caster.createElemental();
 			} else {
-				elementalAlreadySummoned = caster.getCompanions().contains(caster.getElemental());
+				elementalAlreadySummoned = caster.isElementalSummoned();
 			}
-			
+
+			caster.setElementalSummoned(true);
 			caster.getElemental().setElementalSchool(SpellSchool.WATER);
 			
 			if(elementalAlreadySummoned) {
@@ -848,7 +851,7 @@ public enum Spell {
 									:"With a huge splash, [npc1.name] binds [npc1.her] elemental, [npc2.name], to the school of Water!")));
 				
 			} else {
-				caster.addCompanion(caster.getElemental());
+				//caster.addCompanion(caster.getElemental());
 				descriptionSB.append(UtilText.parse(caster, caster.getElemental(),
 								(caster.hasTraitActivated(Perk.CHUUNI)
 										?Util.randomItemFrom(
@@ -862,6 +865,7 @@ public enum Spell {
 									:"With a huge splash, [npc1.name] summons forth [npc1.her] elemental, [npc2.name], by binding [npc2.herHim] to the school of Water!")));
 				
 				if(Main.game.isInCombat()) {
+					caster.getElemental().setLocation(caster, false);
 					if(caster.isPlayer() || Combat.getAllies(Main.game.getPlayer()).contains(caster)) {
 						Combat.addAlly(caster.getElemental());
 					} else {
@@ -1175,9 +1179,10 @@ public enum Spell {
 			if(!caster.hasDiscoveredElemental()) {
 				caster.createElemental();
 			} else {
-				elementalAlreadySummoned = caster.getCompanions().contains(caster.getElemental());
+				elementalAlreadySummoned = caster.isElementalSummoned();
 			}
-			
+
+			caster.setElementalSummoned(true);
 			caster.getElemental().setElementalSchool(SpellSchool.AIR);
 			
 			if(elementalAlreadySummoned) {
@@ -1194,7 +1199,7 @@ public enum Spell {
 									:"With a tremendous gust of wind, [npc1.name] binds [npc1.her] elemental, [npc2.name], to the school of Air!")));
 				
 			} else {
-				caster.addCompanion(caster.getElemental());
+				//caster.addCompanion(caster.getElemental());
 				descriptionSB.append(UtilText.parse(caster, caster.getElemental(),
 								(caster.hasTraitActivated(Perk.CHUUNI)
 										?Util.randomItemFrom(
@@ -1208,6 +1213,7 @@ public enum Spell {
 									:"With a tremendous gust of wind, [npc1.name] summons forth [npc1.her] elemental, [npc2.name], by binding [npc2.herHim] to the school of Air!")));
 				
 				if(Main.game.isInCombat()) {
+					caster.getElemental().setLocation(caster, false);
 					if(caster.isPlayer() || Combat.getAllies(Main.game.getPlayer()).contains(caster)) {
 						Combat.addAlly(caster.getElemental());
 					} else {
@@ -1522,9 +1528,10 @@ public enum Spell {
 			if(!caster.hasDiscoveredElemental()) {
 				caster.createElemental();
 			} else {
-				elementalAlreadySummoned = caster.getCompanions().contains(caster.getElemental());
+				elementalAlreadySummoned = caster.isElementalSummoned();
 			}
-			
+
+			caster.setElementalSummoned(true);
 			caster.getElemental().setElementalSchool(SpellSchool.EARTH);
 			
 			if(elementalAlreadySummoned) {
@@ -1541,7 +1548,7 @@ public enum Spell {
 									:"With a burst of rocks and debris, [npc1.name] binds [npc1.her] elemental, [npc2.name], to the school of Earth!")));
 				
 			} else {
-				caster.addCompanion(caster.getElemental());
+				//caster.addCompanion(caster.getElemental());
 				descriptionSB.append(UtilText.parse(caster, caster.getElemental(),
 								(caster.hasTraitActivated(Perk.CHUUNI)
 										?Util.randomItemFrom(
@@ -1555,6 +1562,7 @@ public enum Spell {
 									:"With a burst of rocks and debris, [npc1.name] summons forth [npc1.her] elemental, [npc2.name], by binding [npc2.herHim] to the school of Earth!")));
 				
 				if(Main.game.isInCombat()) {
+					caster.getElemental().setLocation(caster, false);
 					if(caster.isPlayer() || Combat.getAllies(Main.game.getPlayer()).contains(caster)) {
 						Combat.addAlly(caster.getElemental());
 					} else {
@@ -2387,9 +2395,10 @@ public enum Spell {
 			if(!caster.hasDiscoveredElemental()) {
 				caster.createElemental();
 			} else {
-				elementalAlreadySummoned = caster.getCompanions().contains(caster.getElemental());
+				elementalAlreadySummoned = caster.isElementalSummoned();
 			}
-			
+
+			caster.setElementalSummoned(true);
 			caster.getElemental().setElementalSchool(SpellSchool.ARCANE);
 			
 			if(elementalAlreadySummoned) {
@@ -2406,7 +2415,7 @@ public enum Spell {
 									:"With a flash of purple arcane lightning, [npc1.name] binds [npc1.her] elemental, [npc2.name], to the school of Arcane!")));
 				
 			} else {
-				caster.addCompanion(caster.getElemental());
+				//caster.addCompanion(caster.getElemental());
 				descriptionSB.append(UtilText.parse(caster, caster.getElemental(),
 								(caster.hasTraitActivated(Perk.CHUUNI)
 										?Util.randomItemFrom(
@@ -2420,6 +2429,7 @@ public enum Spell {
 									:"With a flash of purple arcane lightning, [npc1.name] summons forth [npc1.her] elemental, [npc2.name], by binding [npc2.herHim] to the school of Arcane!")));
 				
 				if(Main.game.isInCombat()) {
+					caster.getElemental().setLocation(caster, false);
 					if(caster.isPlayer() || Combat.getAllies(Main.game.getPlayer()).contains(caster)) {
 						Combat.addAlly(caster.getElemental());
 					} else {
@@ -3016,7 +3026,7 @@ public enum Spell {
 	public float getModifiedCost(GameCharacter caster) {
 		float calculatedCost = getBaseCost(caster);
 		
-		calculatedCost *= ((100 - Util.getModifiedDropoffValue(caster.getAttributeValue(Attribute.SPELL_COST_MODIFIER), 100)) / 100f);
+		calculatedCost *= ((100 - caster.getAttributeValue(Attribute.SPELL_COST_MODIFIER)) / 100f);
 		
 		// Round float value to nearest 1 decimal place:
 		return (Math.round(calculatedCost*10))/10f;
@@ -3708,11 +3718,11 @@ public enum Spell {
 		return sb.toString();
 	}
 
-	// Applies mana cost effects here. If overriden, don't forget to super call it unless it's a free spell.
+	// Applies mana cost effects here. If overridden, don't forget to super call it unless it's a free spell.
 	public void performOnSelection(int turnIndex, GameCharacter source, GameCharacter target, List<GameCharacter> enemies, List<GameCharacter> allies) {
 		if(getSpellSchool() == SpellSchool.FIRE && source.hasStatusEffect(StatusEffect.FIRE_MANA_BURN)) {
 			if(!Main.game.isInCombat()) {
-				Combat.setupManaBurnStackForOutOfCombat(Main.game.getPlayer());
+				Combat.setupManaBurnStackForOutOfCombat(source);
 			}
 			Combat.getManaBurnStack().get(source).push(source.burnMana(getModifiedCost(source)));
 			

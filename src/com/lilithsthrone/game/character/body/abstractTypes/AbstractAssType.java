@@ -6,19 +6,19 @@ import com.lilithsthrone.game.character.GameCharacter;
 import com.lilithsthrone.game.character.body.Body;
 import com.lilithsthrone.game.character.body.types.BodyCoveringType;
 import com.lilithsthrone.game.character.body.types.BodyPartTypeInterface;
-import com.lilithsthrone.game.character.race.Race;
+import com.lilithsthrone.game.character.race.AbstractRace;
 import com.lilithsthrone.game.dialogue.utils.UtilText;
 import com.lilithsthrone.utils.Util;
 
 /**
  * @since 0.3
- * @version 0.3
+ * @version 0.3.9.1
  * @author Innoxia
  */
 public abstract class AbstractAssType implements BodyPartTypeInterface {
 
 	private BodyCoveringType skinType;
-	private Race race;
+	private AbstractRace race;
 	private AbstractAnusType anusType;
 	
 	private List<String> names;
@@ -42,7 +42,7 @@ public abstract class AbstractAssType implements BodyPartTypeInterface {
 	 * @param assBodyDescription A sentence or two to describe this ass type, as seen in the character view screen. It should follow the same format as all of the other entries in the AssType class.
 	 */
 	public AbstractAssType(BodyCoveringType skinType,
-			Race race,
+			AbstractRace race,
 			AbstractAnusType anusType,
 			List<String> names,
 			List<String> namesPlural,
@@ -110,13 +110,13 @@ public abstract class AbstractAssType implements BodyPartTypeInterface {
 	 */
 	public BodyCoveringType getBodyCoveringType(Body body) {
 		if(body!=null) {
-			return body.getSkin().getBodyCoveringType(body);
+			return body.getTorso().getBodyCoveringType(body);
 		}
 		return skinType;
 	}
 
 	@Override
-	public Race getRace() {
+	public AbstractRace getRace() {
 		return race;
 	}
 

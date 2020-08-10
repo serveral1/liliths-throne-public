@@ -48,9 +48,7 @@ import com.lilithsthrone.game.character.race.RaceStage;
 import com.lilithsthrone.game.character.race.Subspecies;
 import com.lilithsthrone.game.dialogue.DialogueNode;
 import com.lilithsthrone.game.inventory.CharacterInventory;
-import com.lilithsthrone.game.inventory.clothing.AbstractClothingType;
 import com.lilithsthrone.game.inventory.clothing.ClothingType;
-import com.lilithsthrone.game.inventory.item.AbstractItemType;
 import com.lilithsthrone.game.inventory.item.ItemType;
 import com.lilithsthrone.main.Main;
 import com.lilithsthrone.utils.Util;
@@ -101,6 +99,9 @@ public class Loppy extends NPC {
 		}
 		if(Main.isVersionOlderThan(Game.loadingVersion, "0.3.7.3")) {
 			this.setBirthday(LocalDateTime.of(Main.game.getStartingDate().getYear()-22, Month.JANUARY, 7, 12, 0));
+		}
+		if(Main.isVersionOlderThan(Game.loadingVersion, "0.3.9.1")) {
+			this.setPenisVirgin(false);
 		}
 	}
 
@@ -202,6 +203,7 @@ public class Loppy extends NPC {
 		this.setTesticleSize(TesticleSize.THREE_LARGE);
 		this.setPenisCumStorage(CumProduction.FOUR_LARGE.getMaximumValue());
 		this.fillCumToMaxStorage();
+		this.setPenisVirgin(false);
 
 		// Vagina:
 		this.setVaginaVirgin(false);
@@ -222,14 +224,14 @@ public class Loppy extends NPC {
 
 		this.unequipAllClothingIntoVoid(true, true);
 		
-		this.equipClothingFromNowhere(AbstractClothingType.generateClothing(ClothingType.STOMACH_LOWBACK_BODY, PresetColour.CLOTHING_PURPLE, false), true, this);
-		this.equipClothingFromNowhere(AbstractClothingType.generateClothing("innoxia_sock_pantyhose", PresetColour.CLOTHING_BLACK, false), true, this);
-		this.equipClothingFromNowhere(AbstractClothingType.generateClothing("innoxia_foot_stiletto_heels", PresetColour.CLOTHING_PURPLE, false), true, this);
-		this.equipClothingFromNowhere(AbstractClothingType.generateClothing("innoxia_neck_collar_bowtie", PresetColour.CLOTHING_PURPLE, false), true, this);
-		this.equipClothingFromNowhere(AbstractClothingType.generateClothing(ClothingType.WRIST_SUIT_CUFFS, false), true, this);
+		this.equipClothingFromNowhere(Main.game.getItemGen().generateClothing(ClothingType.STOMACH_LOWBACK_BODY, PresetColour.CLOTHING_PURPLE, false), true, this);
+		this.equipClothingFromNowhere(Main.game.getItemGen().generateClothing("innoxia_sock_pantyhose", PresetColour.CLOTHING_BLACK, false), true, this);
+		this.equipClothingFromNowhere(Main.game.getItemGen().generateClothing("innoxia_foot_stiletto_heels", PresetColour.CLOTHING_PURPLE, false), true, this);
+		this.equipClothingFromNowhere(Main.game.getItemGen().generateClothing("innoxia_neck_collar_bowtie", PresetColour.CLOTHING_PURPLE, false), true, this);
+		this.equipClothingFromNowhere(Main.game.getItemGen().generateClothing(ClothingType.WRIST_SUIT_CUFFS, false), true, this);
 		
 		this.setPiercedEar(true);
-		this.equipClothingFromNowhere(AbstractClothingType.generateClothing("innoxia_piercing_ear_ring", PresetColour.CLOTHING_SILVER, false), true, this);
+		this.equipClothingFromNowhere(Main.game.getItemGen().generateClothing("innoxia_piercing_ear_ring", PresetColour.CLOTHING_SILVER, false), true, this);
 
 	}
 	
@@ -240,7 +242,7 @@ public class Loppy extends NPC {
 	
 	@Override
 	public void dailyUpdate() {
-		this.useItem(AbstractItemType.generateItem(ItemType.PROMISCUITY_PILL), this, false);
+		this.useItem(Main.game.getItemGen().generateItem(ItemType.PROMISCUITY_PILL), this, false);
 	}
 	
 	@Override

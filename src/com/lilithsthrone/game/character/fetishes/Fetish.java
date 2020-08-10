@@ -538,7 +538,7 @@ public enum Fetish {
 	
 	FETISH_PENIS_RECEIVING(60,
 			"cock addict",
-			"others cocks",
+			"others' cocks",
 			"fetish_cock_addict",
 			FetishExperience.BASE_EXPERIENCE_GAIN,
 			PresetColour.GENERIC_ARCANE,
@@ -1481,11 +1481,11 @@ public enum Fetish {
 				
 			} else if(owner.isFeminine()) {
 				return UtilText.parse(owner,
-						"[npc.NameIs] obsessed with the idea of acting like a complete bimbo."
+						"[npc.NameIsFull] obsessed with the idea of acting like a complete bimbo."
 						+ " It's gotten to the point where no matter how intelligent [npc.she] might actually be, [npc.she] can't imagine [npc.herself] as anything other than a ditzy airhead.");
 			} else {
 				return UtilText.parse(owner,
-						"[npc.NameIs] obsessed with the idea of acting like a dopey surfer bro."
+						"[npc.NameIsFull] obsessed with the idea of acting like a dopey surfer bro."
 						+ " It's gotten to the point where no matter how intelligent [npc.she] might actually be, [npc.she] can't imagine [npc.herself] as anything other than an airheaded meathead.");
 			}
 		}

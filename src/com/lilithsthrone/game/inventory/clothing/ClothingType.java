@@ -2259,63 +2259,6 @@ public class ClothingType {
 		}
 	};
 	
-	public static AbstractClothingType CHEST_LACY_PLUNGE_BRA = new AbstractClothingType(200,
-			"a",
-			false,
-			"lacy plunge bra",
-			"lacy plunge bras",
-			"A low-cut bra that reveals a lot of the wearer's cleavage. This particular design is made from a soft, thin fabric, and has a lot of lace trimmings.",
-			0,
-			Femininity.FEMININE,
-			InventorySlot.CHEST,
-			Rarity.COMMON,
-			null,
-			"clothing/chest_lacy_plunge_bra",
-			null,
-
-			Util.newArrayListOfValues(
-					new BlockedParts(DisplacementType.REMOVE_OR_EQUIP,
-							Util.newArrayListOfValues(ClothingAccess.ARMS_UP_TO_SHOULDER,
-									ClothingAccess.CHEST),
-							null,
-							null,
-							null),
-					new BlockedParts(DisplacementType.PULLS_DOWN,
-							Util.newArrayListOfValues(ClothingAccess.CHEST),
-							Util.newArrayListOfValues(CoverableArea.NIPPLES),
-							Util.newArrayListOfValues(ClothingAccess.CHEST),
-							PresetConcealmentLists.CONCEALED_BREASTS.getPresetInventorySlotList())
-					),
-			null,
-			ColourListPresets.LINGERIE,
-			ColourListPresets.ALL,
-			null,
-			null,
-			null,
-			null,
-			Util.newArrayListOfValues(ItemTag.SOLD_BY_NYAN)){
-
-		@Override
-		public String equipText(GameCharacter clothingOwner, GameCharacter clothingRemover, InventorySlot slotToEquipInto, boolean rough, AbstractClothing clothing, boolean applyEffects) {
-			return braEquipText(clothingOwner, clothingRemover, slotToEquipInto, rough, clothing, applyEffects);
-		}
-
-		@Override
-		public String unequipText(GameCharacter clothingOwner, GameCharacter clothingRemover, InventorySlot slotToEquipInto, boolean rough, AbstractClothing clothing, boolean applyEffects) {
-			return braUnequipText(clothingOwner, clothingRemover, slotToEquipInto, rough, clothing, applyEffects);
-		}
-		
-		@Override
-		public String displaceText(GameCharacter clothingOwner, GameCharacter clothingRemover, InventorySlot slotToEquipInto, DisplacementType dt, boolean rough) {
-			return braDisplaceText(clothingOwner, clothingRemover, slotToEquipInto, dt, rough);
-		}
-
-		@Override
-		public String replaceText(GameCharacter clothingOwner, GameCharacter clothingRemover, InventorySlot slotToEquipInto, DisplacementType dt, boolean rough) {
-			return braReplaceText(clothingOwner, clothingRemover, slotToEquipInto, dt, rough);
-		}
-	};
-	
 	public static AbstractClothingType CHEST_OPEN_CUP_BRA = new AbstractClothingType(120,
 			"an",
 			false,
@@ -2561,6 +2504,11 @@ public class ClothingType {
 			null,
 			Util.newArrayListOfValues(ItemTag.SOLD_BY_NYAN)){
 
+		@Override
+		public String getAuthorDescription() {
+			return "A tag sewn to the inside of the bra reads 'Made by Blue999'";
+		}
+		
 		@Override
 		public String equipText(GameCharacter clothingOwner, GameCharacter clothingRemover, InventorySlot slotToEquipInto, boolean rough, AbstractClothing clothing, boolean applyEffects) {
 			return braEquipText(clothingOwner, clothingRemover, slotToEquipInto, rough, clothing, applyEffects);
@@ -3640,69 +3588,6 @@ public class ClothingType {
 		}
 	};
 	
-	public static AbstractClothingType GROIN_LACY_PANTIES = new AbstractClothingType(150,
-			"a pair of",
-			true,
-			"lacy panties",
-			"lacy panties",
-			"A pair of distinctly feminine panties, made from soft cotton. This particular design has large sections of semi-transparent fabric, and is trimmed with lace.",
-			0,
-			Femininity.FEMININE,
-			InventorySlot.GROIN,
-			Rarity.COMMON,
-			null,
-			"clothing/groin_lacy_panties",
-			null,
-			Util.newArrayListOfValues(
-					new BlockedParts(DisplacementType.REMOVE_OR_EQUIP,
-							Util.newArrayListOfValues(
-									ClothingAccess.LEGS_UP_TO_GROIN_LOW_LEVEL,
-									ClothingAccess.LEGS_UP_TO_GROIN,
-									ClothingAccess.GROIN),
-							null,
-							null,
-							null),
-					new BlockedParts(DisplacementType.SHIFTS_ASIDE,
-							Util.newArrayListOfValues(
-									ClothingAccess.GROIN),
-							Util.newArrayListOfValues(
-									CoverableArea.ANUS,
-									CoverableArea.PENIS,
-									CoverableArea.VAGINA),
-							null,
-							PresetConcealmentLists.CONCEALED_GENITALS.getPresetInventorySlotList())),
-			null,
-			ColourListPresets.LINGERIE,
-			ColourListPresets.ALL,
-			null,
-			null,
-			null,
-			null,
-			Util.newArrayListOfValues(ItemTag.SOLD_BY_NYAN)){
-		
-		@Override
-		public String equipText(GameCharacter clothingOwner, GameCharacter clothingRemover, InventorySlot slotToEquipInto, boolean rough, AbstractClothing clothing, boolean applyEffects) {
-			return getEquipDescriptions(clothingOwner, clothingRemover, rough,
-					"You step into the panties before pulling them up to cover your private parts.",
-					"You pull the panties up [npc.namePos] [npc.legs] to cover [npc.her] private parts.",
-					null,
-					"[npc.Name] steps into the panties before pulling them up to cover [npc.her] private parts.",
-					"[npc.Name] pulls the panties up your [pc.legs] to cover your private parts.",
-					null, null, null);
-		}
-
-		@Override
-		public String unequipText(GameCharacter clothingOwner, GameCharacter clothingRemover, InventorySlot slotToEquipInto, boolean rough, AbstractClothing clothing, boolean applyEffects) {
-			return getEquipDescriptions(clothingOwner, clothingRemover, rough,
-					"You pull down your panties and kick them off your [pc.feet].",
-					"You pull down [npc.namePos] panties and slide them off [npc.her] [npc.feet].",
-					null,
-					"[npc.Name] pulls [npc.her] panties down and kicks them off [npc.her] [npc.feet].",
-					"[npc.Name] pulls your panties down and slides them off your [pc.feet].",
-					null, null, null);
-		}
-	};
-
 	public static AbstractClothingType GROIN_VSTRING = new AbstractClothingType(200,
 			"a pair of",
 			true,
@@ -5496,6 +5381,10 @@ public class ClothingType {
 			null,
 			null,
 			Util.newArrayListOfValues(ItemTag.SOLD_BY_NYAN, ItemTag.DRESS, ItemTag.FITS_ARM_WINGS)){
+		@Override
+		public String getAuthorDescription() {
+			return "A tag sewn to the inside of the dress reads 'Made by Blue999'";
+		}
 	};
 	
 	public static AbstractClothingType MILK_MAID_HEADBAND = new AbstractClothingType(400,
@@ -5525,7 +5414,11 @@ public class ClothingType {
 			null,
 			null,
 			Util.newArrayListOfValues(ItemTag.SOLD_BY_NYAN)){
-		
+			@Override
+			public String getAuthorDescription() {
+				return "A tag sewn to the inside of the headband reads 'Made by Blue999'";
+			}
+			
 			@Override
 			public String equipText(GameCharacter clothingOwner, GameCharacter clothingRemover, InventorySlot slotToEquipInto, boolean rough, AbstractClothing clothing, boolean applyEffects) {
 				return getEquipDescriptions(clothingOwner, clothingRemover, rough,
@@ -6568,6 +6461,8 @@ public class ClothingType {
 		oldIdConversionMap.put("NECK_TIE", "innoxia_neck_tie");
 		oldIdConversionMap.put("NECK_BREEDER_COLLAR", "innoxia_neck_breeder_collar");
 		oldIdConversionMap.put("NECK_SLAVE_COLLAR", "innoxia_bdsm_metal_collar");
+
+		oldIdConversionMap.put("CHEST_LACY_PLUNGE_BRA", "innoxia_chest_lacy_plunge_bra");
 		
 		oldIdConversionMap.put("LEG_SKIRT", "innoxia_leg_skirt");
 		oldIdConversionMap.put("LEG_PENCIL_SKIRT", "innoxia_leg_pencil_skirt");
@@ -6585,6 +6480,8 @@ public class ClothingType {
 		oldIdConversionMap.put("LEG_YOGA_PANTS", "innoxia_leg_yoga_pants");
 		oldIdConversionMap.put("LEG_ASSLESS_CHAPS", "innoxia_leg_assless_chaps");
 		oldIdConversionMap.put("LEG_CROTCHLESS_CHAPS", "innoxia_leg_crotchless_chaps");
+
+		oldIdConversionMap.put("GROIN_LACY_PANTIES", "innoxia_groin_lacy_panties");
 		
 		oldIdConversionMap.put("FOOT_ANKLE_BOOTS", "innoxia_foot_ankle_boots");
 		oldIdConversionMap.put("FOOT_CHELSEA_BOOTS", "innoxia_foot_chelsea_boots");
@@ -6611,6 +6508,8 @@ public class ClothingType {
 		oldIdConversionMap.put("SOCK_FISHNET_STOCKINGS", "innoxia_sock_fishnets");
 		oldIdConversionMap.put("SOCK_TOELESS_STRIPED_STOCKINGS", "innoxia_sock_toeless_striped_stockings");
 
+		oldIdConversionMap.put("innoxia_insertableVibrator_insertable_vibrator", "innoxia_vagina_insertable_dildo");
+		
 		
 		commonClothingMap = new EnumMap<>(InventorySlot.class);
 		commonClothingMapFemale = new EnumMap<>(InventorySlot.class);
@@ -6801,7 +6700,8 @@ public class ClothingType {
 		suitableFeminineClothing.put(Occupation.NPC_PROSTITUTE,
 				Util.newArrayListOfValues(
 						ClothingType.getClothingTypeFromId("innoxia_ankle_anklet"),
-						ClothingType.CHEST_LACY_PLUNGE_BRA,
+						ClothingType.getClothingTypeFromId("innoxia_chest_lacy_plunge_bra"),
+						
 						ClothingType.CHEST_OPEN_CUP_BRA,
 						ClothingType.CHEST_PLUNGE_BRA,
 						ClothingType.getClothingTypeFromId("innoxia_eye_aviators"),
@@ -6814,7 +6714,7 @@ public class ClothingType {
 						ClothingType.GROIN_BACKLESS_PANTIES,
 						ClothingType.GROIN_CROTCHLESS_PANTIES,
 						ClothingType.GROIN_CROTCHLESS_THONG,
-						ClothingType.GROIN_LACY_PANTIES,
+						ClothingType.getClothingTypeFromId("innoxia_groin_lacy_panties"),
 						ClothingType.GROIN_THONG,
 						ClothingType.GROIN_VSTRING,
 						ClothingType.getClothingTypeFromId("innoxia_hand_elbow_length_gloves"),

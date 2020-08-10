@@ -11,7 +11,7 @@ import com.lilithsthrone.game.character.GameCharacter;
 import com.lilithsthrone.game.character.body.Arm;
 import com.lilithsthrone.game.character.body.BodyPartInterface;
 import com.lilithsthrone.game.character.body.Leg;
-import com.lilithsthrone.game.character.body.Skin;
+import com.lilithsthrone.game.character.body.Torso;
 import com.lilithsthrone.game.character.body.Tail;
 import com.lilithsthrone.game.character.body.Tentacle;
 import com.lilithsthrone.game.dialogue.utils.UtilText;
@@ -835,7 +835,7 @@ public class SexPosition {
 						|| Main.sex.getSexPositionSlot(cumProvider)==SexSlotAgainstWall.BACK_TO_WALL_THREE
 						|| Main.sex.getSexPositionSlot(cumProvider)==SexSlotAgainstWall.BACK_TO_WALL_FOUR)) {
 				return Util.newHashMapOfValues(
-						new Value<>(Skin.class, genericGroinForceCreampieAreas));
+						new Value<>(Torso.class, genericGroinForceCreampieAreas));
 			}
 			return null;
 		}
@@ -1277,7 +1277,7 @@ public class SexPosition {
 						|| Main.sex.getSexPositionSlot(cumProvider)==SexSlotDesk.OVER_DESK_ON_BACK_THREE
 						|| Main.sex.getSexPositionSlot(cumProvider)==SexSlotDesk.OVER_DESK_ON_BACK_FOUR)) {
 				return Util.newHashMapOfValues(
-						new Value<>(Skin.class, genericGroinForceCreampieAreas));
+						new Value<>(Torso.class, genericGroinForceCreampieAreas));
 			}
 			// The character lying back or on front can use their arms to force a facial creampie on characters receiving oral from them:
 			if((Main.sex.getSexPositionSlot(cumTarget)==SexSlotDesk.OVER_DESK_ON_BACK
@@ -1370,6 +1370,7 @@ public class SexPosition {
 			List<String> stocksTaurNames = new ArrayList<>();
 			List<String> standingNames = new ArrayList<>();
 			List<String> standingNamesTaur = new ArrayList<>();
+			List<String> humpingNames = new ArrayList<>();
 			List<String> beneathNames = new ArrayList<>();
 			List<String> performingOralNames = new ArrayList<>();
 			List<String> receivingOralNames = new ArrayList<>();
@@ -1378,6 +1379,7 @@ public class SexPosition {
 			GameCharacter mainStocksTaur = null;
 			GameCharacter mainStanding = null;
 			GameCharacter mainStandingTaur = null;
+			GameCharacter mainHumping = null;
 			GameCharacter mainBeneath = null;
 			GameCharacter mainPerformingOral = null;
 			GameCharacter mainReceivingOral = null;
@@ -1432,6 +1434,19 @@ public class SexPosition {
 							} else {
 								standingNamesTaur.add(UtilText.parse(e.getKey(), "[npc.name]"));
 							}
+						}
+						
+					} else if(e.getValue()==SexSlotStocks.HUMPING
+							|| e.getValue()==SexSlotStocks.HUMPING_TWO
+							|| e.getValue()==SexSlotStocks.HUMPING_THREE
+							|| e.getValue()==SexSlotStocks.HUMPING_FOUR) {
+						if(mainHumping==null) {
+							mainHumping=e.getKey();
+						}
+						if(e.getKey().isPlayer()) {
+							humpingNames.add(0, UtilText.parse(e.getKey(), "[npc.name]"));
+						} else {
+							humpingNames.add(UtilText.parse(e.getKey(), "[npc.name]"));
 						}
 						
 					} else if(e.getValue()==SexSlotStocks.BENEATH_STOCKS
@@ -1497,7 +1512,7 @@ public class SexPosition {
 						+ " allowing anyone to step up and use [npc.her] mouth or genitals as they'd like. ")); 
 			}
 			
-			// Standing behind:
+			// Using stocks target:
 			
 			int standingCount = standingNames.size();
 			if(standingCount>=2) {
@@ -1532,6 +1547,17 @@ public class SexPosition {
 									:UtilText.parse(soloStocks, "effectively mount [npc.name]. ")));
 			}
 			
+			if(humpingNames.size()>=2) {
+				sb.append(Util.capitaliseSentence(Util.stringsToStringList(humpingNames, false))+" have clambered up onto "
+						+(stocksCount>1
+								?(playerStocks?"your lower back":"their lower backs")+", ready to start humping "+(playerStocks?"you. ":"them. ")
+								:UtilText.parse(soloStocks, "[npc.namePos] lower back, ready to start humping [npc.herHim]. ")));
+			
+			
+			} else if(humpingNames.size()==1) {
+					sb.append(Util.capitaliseSentence(Util.stringsToStringList(humpingNames, false))+UtilText.parse(mainHumping," [npc.has] clambered up onto ")
+							+UtilText.parse(soloStocks, "[npc.namePos] lower back, ready to start humping [npc.herHim]. "));
+			}
 			
 			if(performingOralNames.size()>=2) {
 					sb.append(Util.capitaliseSentence(Util.stringsToStringList(performingOralNames, false))+" are positioned so as to be right up between "
@@ -1585,6 +1611,7 @@ public class SexPosition {
 
 			List<SexSlot> inStocks = Util.newArrayListOfValues(SexSlotStocks.LOCKED_IN_STOCKS, SexSlotStocks.LOCKED_IN_STOCKS_TWO, SexSlotStocks.LOCKED_IN_STOCKS_THREE, SexSlotStocks.LOCKED_IN_STOCKS_FOUR);
 			List<SexSlot> standing = Util.newArrayListOfValues(SexSlotStocks.BEHIND_STOCKS, SexSlotStocks.BEHIND_STOCKS_TWO, SexSlotStocks.BEHIND_STOCKS_THREE, SexSlotStocks.BEHIND_STOCKS_FOUR);
+			List<SexSlot> humping = Util.newArrayListOfValues(SexSlotStocks.HUMPING, SexSlotStocks.HUMPING_TWO, SexSlotStocks.HUMPING_THREE, SexSlotStocks.HUMPING_FOUR);
 			List<SexSlot> beneath = Util.newArrayListOfValues(SexSlotStocks.BENEATH_STOCKS, SexSlotStocks.BENEATH_STOCKS_TWO, SexSlotStocks.BENEATH_STOCKS_THREE, SexSlotStocks.BENEATH_STOCKS_FOUR);
 			List<SexSlot> performingOral = Util.newArrayListOfValues(SexSlotStocks.PERFORMING_ORAL, SexSlotStocks.PERFORMING_ORAL_TWO, SexSlotStocks.PERFORMING_ORAL_THREE, SexSlotStocks.PERFORMING_ORAL_FOUR);
 			List<SexSlot> receivingOral = Util.newArrayListOfValues(SexSlotStocks.RECEIVING_ORAL, SexSlotStocks.RECEIVING_ORAL_TWO, SexSlotStocks.RECEIVING_ORAL_THREE, SexSlotStocks.RECEIVING_ORAL_FOUR);
@@ -1593,8 +1620,17 @@ public class SexPosition {
 				for(SexSlot stockSlot : inStocks) {
 					interactions.add(StandardSexActionInteractions.fuckingCharacterInStocks.getSexActionInteractions(slotStanding, stockSlot));
 				}
+				for(SexSlot slotHumping : humping) {
+					interactions.add(StandardSexActionInteractions.allFoursBehind.getSexActionInteractions(slotStanding, slotHumping));
+				}
 			}
 
+			for(SexSlot slotHumping : humping) {
+				for(SexSlot stockSlot : inStocks) {
+					interactions.add(StandardSexActionInteractions.humpingCharacterInStocks.getSexActionInteractions(slotHumping, stockSlot));
+				}
+			}
+			
 			for(SexSlot slotBeneath: beneath) {
 				for(SexSlot stockSlot : inStocks) {
 					interactions.add(StandardSexActionInteractions.fuckedByCharacterInStocks.getSexActionInteractions(slotBeneath, stockSlot));
@@ -1627,27 +1663,16 @@ public class SexPosition {
 		@Override
 		protected Map<Class<? extends BodyPartInterface>,  List<SexAreaOrifice>> getForcedCreampieMap(GameCharacter cumTarget, GameCharacter cumProvider) {
 			// The character in the stocks can use their tails or tentacles to force a creampie on characters fucking them:
-			if((Main.sex.getSexPositionSlot(cumProvider)==SexSlotStocks.BEHIND_STOCKS
-					|| Main.sex.getSexPositionSlot(cumProvider)==SexSlotStocks.BEHIND_STOCKS_TWO
-					|| Main.sex.getSexPositionSlot(cumProvider)==SexSlotStocks.BEHIND_STOCKS_THREE
-					|| Main.sex.getSexPositionSlot(cumProvider)==SexSlotStocks.BEHIND_STOCKS_FOUR)
-				&& (Main.sex.getSexPositionSlot(cumTarget)==SexSlotStocks.LOCKED_IN_STOCKS
-						|| Main.sex.getSexPositionSlot(cumTarget)==SexSlotStocks.LOCKED_IN_STOCKS_TWO
-						|| Main.sex.getSexPositionSlot(cumTarget)==SexSlotStocks.LOCKED_IN_STOCKS_THREE
-						|| Main.sex.getSexPositionSlot(cumTarget)==SexSlotStocks.LOCKED_IN_STOCKS_FOUR)) {
+			if((Main.sex.getSexPositionSlot(cumProvider).hasTag(SexSlotTag.BEHIND_STOCKS)
+					|| Main.sex.getSexPositionSlot(cumProvider).hasTag(SexSlotTag.HUMPING_STOCKS))
+				&& (Main.sex.getSexPositionSlot(cumTarget).hasTag(SexSlotTag.LOCKED_IN_STOCKS))) {
 				return Util.newHashMapOfValues(
 						new Value<>(Tail.class, genericGroinForceCreampieAreas),
 						new Value<>(Tentacle.class, genericGroinForceCreampieAreas));
 			}
 			// The character performing oral can use their arms to force a facial creampie from those locked in stocks:
-			if((Main.sex.getSexPositionSlot(cumTarget)==SexSlotStocks.PERFORMING_ORAL
-					|| Main.sex.getSexPositionSlot(cumTarget)==SexSlotStocks.PERFORMING_ORAL_TWO
-					|| Main.sex.getSexPositionSlot(cumTarget)==SexSlotStocks.PERFORMING_ORAL_THREE
-					|| Main.sex.getSexPositionSlot(cumTarget)==SexSlotStocks.PERFORMING_ORAL_FOUR)
-				&& (Main.sex.getSexPositionSlot(cumProvider)==SexSlotStocks.LOCKED_IN_STOCKS
-						|| Main.sex.getSexPositionSlot(cumProvider)==SexSlotStocks.LOCKED_IN_STOCKS_TWO
-						|| Main.sex.getSexPositionSlot(cumProvider)==SexSlotStocks.LOCKED_IN_STOCKS_THREE
-						|| Main.sex.getSexPositionSlot(cumProvider)==SexSlotStocks.LOCKED_IN_STOCKS_FOUR)) {
+			if((Main.sex.getSexPositionSlot(cumTarget).hasTag(SexSlotTag.PERFORMING_ORAL_STOCKS))
+					&& (Main.sex.getSexPositionSlot(cumProvider).hasTag(SexSlotTag.LOCKED_IN_STOCKS))) {
 				return Util.newHashMapOfValues(
 						new Value<>(Arm.class, genericFaceForceCreampieAreas));
 			}
@@ -1736,6 +1761,8 @@ public class SexPosition {
 			List<String> stocksTaurNames = new ArrayList<>();
 			List<String> standingNames = new ArrayList<>();
 			List<String> standingNamesTaur = new ArrayList<>();
+			List<String> humpingNames = new ArrayList<>();
+			List<String> beneathNames = new ArrayList<>();
 			List<String> performingOralNames = new ArrayList<>();
 			List<String> receivingOralNames = new ArrayList<>();
 
@@ -1743,6 +1770,8 @@ public class SexPosition {
 			GameCharacter mainStocksTaur = null;
 			GameCharacter mainStanding = null;
 			GameCharacter mainStandingTaur = null;
+			GameCharacter mainHumping = null;
+			GameCharacter mainBeneath = null;
 			GameCharacter mainPerformingOral = null;
 			GameCharacter mainReceivingOral = null;
 			
@@ -1796,6 +1825,32 @@ public class SexPosition {
 							} else {
 								standingNamesTaur.add(UtilText.parse(e.getKey(), "[npc.name]"));
 							}
+						}
+						
+					} else if(e.getValue()==SexSlotMilkingStall.HUMPING
+							|| e.getValue()==SexSlotMilkingStall.HUMPING_TWO
+							|| e.getValue()==SexSlotMilkingStall.HUMPING_THREE
+							|| e.getValue()==SexSlotMilkingStall.HUMPING_FOUR) {
+						if(mainHumping==null) {
+							mainHumping=e.getKey();
+						}
+						if(e.getKey().isPlayer()) {
+							humpingNames.add(0, UtilText.parse(e.getKey(), "[npc.name]"));
+						} else {
+							humpingNames.add(UtilText.parse(e.getKey(), "[npc.name]"));
+						}
+						
+					} else if(e.getValue()==SexSlotMilkingStall.BENEATH_MILKING_STALL
+							|| e.getValue()==SexSlotMilkingStall.BENEATH_MILKING_STALL_TWO
+							|| e.getValue()==SexSlotMilkingStall.BENEATH_MILKING_STALL_THREE
+							|| e.getValue()==SexSlotMilkingStall.BENEATH_MILKING_STALL_FOUR) {
+						if(mainBeneath==null) {
+							mainBeneath=e.getKey();
+						}
+						if(e.getKey().isPlayer()) {
+							beneathNames.add(0, UtilText.parse(e.getKey(), "[npc.name]"));
+						} else {
+							beneathNames.add(UtilText.parse(e.getKey(), "[npc.name]"));
 						}
 						
 					} else if(e.getValue()==SexSlotMilkingStall.PERFORMING_ORAL
@@ -1882,7 +1937,19 @@ public class SexPosition {
 											:UtilText.parse(mainStanding,"effectively mount whichever of the "+(Util.intToString(stocksCount))+" of them [npc.she] [npc.verb(want)]. "))
 									:UtilText.parse(soloStocks, "effectively mount [npc.name]. ")));
 			}
+
 			
+			if(humpingNames.size()>=2) {
+				sb.append(Util.capitaliseSentence(Util.stringsToStringList(humpingNames, false))+" have clambered up onto "
+						+(stocksCount>1
+								?(playerStocks?"your lower back":"their lower backs")+", ready to start humping "+(playerStocks?"you. ":"them. ")
+								:UtilText.parse(soloStocks, "[npc.namePos] lower back, ready to start humping [npc.herHim]. ")));
+			
+			
+			} else if(humpingNames.size()==1) {
+					sb.append(Util.capitaliseSentence(Util.stringsToStringList(humpingNames, false))+UtilText.parse(mainHumping," [npc.has] clambered up onto ")
+							+UtilText.parse(soloStocks, "[npc.namePos] lower back, ready to start humping [npc.herHim]. "));
+			}
 			
 			if(performingOralNames.size()>=2) {
 					sb.append(Util.capitaliseSentence(Util.stringsToStringList(performingOralNames, false))+" are positioned so as to be right up between "
@@ -1896,6 +1963,21 @@ public class SexPosition {
 							+(stocksCount>1
 									?(playerStocks?"your legs":"their legs")+", ready to perform oral on "+(playerStocks?"you. ":"them. ")
 									:UtilText.parse(soloStocks, "[npc.namePos] [npc.legs], ready to perform oral on [npc.herHim]. ")));
+			}
+
+			
+			if(beneathNames.size()>=2) {
+					sb.append(Util.capitaliseSentence(Util.stringsToStringList(beneathNames, false))+" have dropped down beneath "
+							+(stocksCount>1
+									?(playerStocks?"you":"them")+", ready to get fucked. "
+									:UtilText.parse(soloStocks, "[npc.name], ready to get fucked by [npc.herHim]. ")));
+				
+				
+			} else if(beneathNames.size()==1) {
+					sb.append(Util.capitaliseSentence(Util.stringsToStringList(beneathNames, false))+UtilText.parse(mainBeneath," [npc.has] dropped down beneath ")
+							+(stocksCount>1
+									?(playerStocks?"you":"them")+", ready to get fucked. "
+									:UtilText.parse(soloStocks, "[npc.name], ready to get fucked by [npc.herHim]. ")));
 			}
 			
 			boolean additionalDoms = !standingNames.isEmpty() || !standingNamesTaur.isEmpty() || !performingOralNames.isEmpty();
@@ -1922,6 +2004,7 @@ public class SexPosition {
 
 			List<SexSlot> inStocks = Util.newArrayListOfValues(SexSlotMilkingStall.LOCKED_IN_MILKING_STALL, SexSlotMilkingStall.LOCKED_IN_MILKING_STALL_TWO, SexSlotMilkingStall.LOCKED_IN_MILKING_STALL_THREE, SexSlotMilkingStall.LOCKED_IN_MILKING_STALL_FOUR);
 			List<SexSlot> standing = Util.newArrayListOfValues(SexSlotMilkingStall.BEHIND_MILKING_STALL, SexSlotMilkingStall.BEHIND_MILKING_STALL_TWO, SexSlotMilkingStall.BEHIND_MILKING_STALL_THREE, SexSlotMilkingStall.BEHIND_MILKING_STALL_FOUR);
+			List<SexSlot> humping = Util.newArrayListOfValues(SexSlotMilkingStall.HUMPING, SexSlotMilkingStall.HUMPING_TWO, SexSlotMilkingStall.HUMPING_THREE, SexSlotMilkingStall.HUMPING_FOUR);
 			List<SexSlot> beneath = Util.newArrayListOfValues(SexSlotMilkingStall.BENEATH_MILKING_STALL, SexSlotMilkingStall.BENEATH_MILKING_STALL_TWO, SexSlotMilkingStall.BENEATH_MILKING_STALL_THREE, SexSlotMilkingStall.BENEATH_MILKING_STALL_FOUR);
 			List<SexSlot> performingOral = Util.newArrayListOfValues(SexSlotMilkingStall.PERFORMING_ORAL, SexSlotMilkingStall.PERFORMING_ORAL_TWO, SexSlotMilkingStall.PERFORMING_ORAL_THREE, SexSlotMilkingStall.PERFORMING_ORAL_FOUR);
 			List<SexSlot> receivingOral = Util.newArrayListOfValues(SexSlotMilkingStall.RECEIVING_ORAL, SexSlotMilkingStall.RECEIVING_ORAL_TWO, SexSlotMilkingStall.RECEIVING_ORAL_THREE, SexSlotMilkingStall.RECEIVING_ORAL_FOUR);
@@ -1929,6 +2012,15 @@ public class SexPosition {
 			for(SexSlot slotStanding : standing) {
 				for(SexSlot stockSlot : inStocks) {
 					interactions.add(StandardSexActionInteractions.fuckingCharacterInStocks.getSexActionInteractions(slotStanding, stockSlot));
+				}
+				for(SexSlot slotHumping : humping) {
+					interactions.add(StandardSexActionInteractions.allFoursBehind.getSexActionInteractions(slotStanding, slotHumping));
+				}
+			}
+			
+			for(SexSlot slotHumping : humping) {
+				for(SexSlot stockSlot : inStocks) {
+					interactions.add(StandardSexActionInteractions.humpingCharacterInStocks.getSexActionInteractions(slotHumping, stockSlot));
 				}
 			}
 
@@ -1964,27 +2056,16 @@ public class SexPosition {
 		@Override
 		protected Map<Class<? extends BodyPartInterface>,  List<SexAreaOrifice>> getForcedCreampieMap(GameCharacter cumTarget, GameCharacter cumProvider) {
 			// The character in the stocks can use their tails or tentacles to force a creampie on characters fucking them:
-			if((Main.sex.getSexPositionSlot(cumProvider)==SexSlotMilkingStall.BEHIND_MILKING_STALL
-					|| Main.sex.getSexPositionSlot(cumProvider)==SexSlotMilkingStall.BEHIND_MILKING_STALL_TWO
-					|| Main.sex.getSexPositionSlot(cumProvider)==SexSlotMilkingStall.BEHIND_MILKING_STALL_THREE
-					|| Main.sex.getSexPositionSlot(cumProvider)==SexSlotMilkingStall.BEHIND_MILKING_STALL_FOUR)
-				&& (Main.sex.getSexPositionSlot(cumTarget)==SexSlotMilkingStall.LOCKED_IN_MILKING_STALL
-						|| Main.sex.getSexPositionSlot(cumTarget)==SexSlotMilkingStall.LOCKED_IN_MILKING_STALL_TWO
-						|| Main.sex.getSexPositionSlot(cumTarget)==SexSlotMilkingStall.LOCKED_IN_MILKING_STALL_THREE
-						|| Main.sex.getSexPositionSlot(cumTarget)==SexSlotMilkingStall.LOCKED_IN_MILKING_STALL_FOUR)) {
+			if((Main.sex.getSexPositionSlot(cumProvider).hasTag(SexSlotTag.BEHIND_STOCKS)
+					|| Main.sex.getSexPositionSlot(cumProvider).hasTag(SexSlotTag.HUMPING_STOCKS))
+				&& (Main.sex.getSexPositionSlot(cumTarget).hasTag(SexSlotTag.LOCKED_IN_STOCKS))) {
 				return Util.newHashMapOfValues(
 						new Value<>(Tail.class, genericGroinForceCreampieAreas),
 						new Value<>(Tentacle.class, genericGroinForceCreampieAreas));
 			}
 			// The character performing oral can use their arms to force a facial creampie from those locked in stocks:
-			if((Main.sex.getSexPositionSlot(cumTarget)==SexSlotMilkingStall.PERFORMING_ORAL
-					|| Main.sex.getSexPositionSlot(cumTarget)==SexSlotMilkingStall.PERFORMING_ORAL_TWO
-					|| Main.sex.getSexPositionSlot(cumTarget)==SexSlotMilkingStall.PERFORMING_ORAL_THREE
-					|| Main.sex.getSexPositionSlot(cumTarget)==SexSlotMilkingStall.PERFORMING_ORAL_FOUR)
-				&& (Main.sex.getSexPositionSlot(cumProvider)==SexSlotMilkingStall.LOCKED_IN_MILKING_STALL
-						|| Main.sex.getSexPositionSlot(cumProvider)==SexSlotMilkingStall.LOCKED_IN_MILKING_STALL_TWO
-						|| Main.sex.getSexPositionSlot(cumProvider)==SexSlotMilkingStall.LOCKED_IN_MILKING_STALL_THREE
-						|| Main.sex.getSexPositionSlot(cumProvider)==SexSlotMilkingStall.LOCKED_IN_MILKING_STALL_FOUR)) {
+			if((Main.sex.getSexPositionSlot(cumTarget).hasTag(SexSlotTag.PERFORMING_ORAL_STOCKS))
+				&& (Main.sex.getSexPositionSlot(cumProvider).hasTag(SexSlotTag.LOCKED_IN_STOCKS))) {
 				return Util.newHashMapOfValues(
 						new Value<>(Arm.class, genericFaceForceCreampieAreas));
 			}
@@ -2207,7 +2288,7 @@ public class SexPosition {
 						case 1:
 							sb.append(UtilText.parse(allFours, fallBackAllFours3,
 									(!allFours.isTaur()
-											?"In a similar manner to [npc2.name], [npc.nameHas] dropped down on all fours, presenting [npc.herself] in order to be fucked like an animal. "
+											?"In a similar manner to [npc2.name], [npc.nameHasFull] dropped down on all fours, presenting [npc.herself] in order to be fucked like an animal. "
 											:"In a similar manner to [npc2.name], [npc.nameHasFull] knelt down with the front half of [npc.her] [npc.legRace] body, while raising [npc.her] [npc.ass+] up in order to be fucked like an animal.")));
 							break;
 						case 2:
@@ -2718,12 +2799,12 @@ public class SexPosition {
 							sb.append(UtilText.parse(lyingDown,
 									(!lyingDown.isTaur()
 											?"[npc.NameIsFull] lying down on [npc.her] back, submissively exposing [npc.her] stomach, [npc.face], and groin. "
-											:"[npc.NameHasFull] lay down on [npc.her] feral [npc.legRace]'s body, before rolling over onto [npc.her] back in order to submissively expose [npc.her] stomach.")));// floofy tummy for strokings and pats.")));
+											:"[npc.NameHasFull] lay down on [npc.her] feral [npc.legRace]'s body, before rolling over onto [npc.her] back in order to submissively expose [npc.her] stomach.")));
 							break;
 						case 1:
 							sb.append(UtilText.parse(lyingDown, fallBackLyingDown3,
 									(!lyingDown.isTaur()
-											?"In a similar manner to [npc2.name], [npc.nameHas] dropped down to lie on [npc.her] back. "
+											?"In a similar manner to [npc2.name], [npc.nameHasFull] dropped down to lie on [npc.her] back. "
 											:"In a similar manner to [npc2.name], [npc.nameHasFull] knelt down onto [npc.her] feral [npc.legRace]'s body, before rolling over and presenting [npc.her] underside.")));
 							break;
 						case 2:
@@ -2739,6 +2820,7 @@ public class SexPosition {
 											:"Finishing off the group of four, [npc.nameIsFull] lying down beside [npc2.name], [npc3.name], and [npc4.name], and [npc.has] rolled over to present the underside of [npc.her] feral [npc.legRace]'s body.")));
 							break;
 					}
+					count++;
 				}
 				
 				boolean continuation = false;
@@ -2766,12 +2848,12 @@ public class SexPosition {
 				if(matingPress!=null) {
 					if(!matingPress.isTaur()) {
 						sb.append(UtilText.parse(matingPress, lyingDown,
-								" [npc.nameHasFull] pushed [npc2.namePos] [npc2.legs] apart and back up towards [npc2.her] head, before lying down on top of [npc2.herHim] with [npc.her] groin hovering just over [npc2.hers]."
+								" [npc.NameHasFull] pushed [npc2.namePos] [npc2.legs] apart and back up towards [npc2.her] head, before lying down on top of [npc2.herHim] with [npc.her] groin hovering just over [npc2.hers]."
 									+ " [npc.SheIs] dominantly using [npc.her] [npc.hands] to pin [npc2.namePos] wrists to the floor on either side of [npc2.her] head,"
 										+ " thereby fully locking [npc2.herHim] down beneath [npc.herHim] in a position suitable for being bred."));
 					} else {
 						sb.append(UtilText.parse(matingPress, lyingDown,
-								" [npc.nameHasFull] pushed [npc2.namePos] [npc2.legs] apart and back up towards [npc2.her] head, before dropping [npc.her] feral [npc.legRace]'s body down on top of [npc2.herHim],"
+								" [npc.NameHasFull] pushed [npc2.namePos] [npc2.legs] apart and back up towards [npc2.her] head, before dropping [npc.her] feral [npc.legRace]'s body down on top of [npc2.herHim],"
 										+ " with [npc.her] animalistic groin hovering just over [npc2.hers]."
 									+ " [npc.SheIs] dominantly using [npc.her] front [npc.legs] to pin [npc2.name] wrists to the floor on either side of [npc2.her] head,"
 										+ " thereby fully locking [npc2.herHim] down beneath [npc.herHim] in a position suitable for being bred."));
@@ -2844,8 +2926,6 @@ public class SexPosition {
 							" Wanting to perform oral on [npc2.name], [npc.nameHasFull] laid down between [npc2.her] [npc2.legs], bringing [npc.her] [npc.face] right down to [npc2.her] groin."));
 				}
 				
-				
-				count++;
 			}
 			
 			if(besideNames.size()>=2) {
@@ -2961,7 +3041,7 @@ public class SexPosition {
 							|| Main.sex.getSexPositionSlot(cumTarget)==SexSlotLyingDown.MATING_PRESS_THREE
 							|| Main.sex.getSexPositionSlot(cumTarget)==SexSlotLyingDown.MATING_PRESS_FOUR) {
 						return Util.newHashMapOfValues(
-								new Value<>(Skin.class, genericGroinForceCreampieAreas));
+								new Value<>(Torso.class, genericGroinForceCreampieAreas));
 					}
 			}
 			// Characters performing sixty-nine or lying down oral can use weight to force a facial creampie:
@@ -2978,7 +3058,7 @@ public class SexPosition {
 						|| Main.sex.getSexPositionSlot(cumProvider)==SexSlotLyingDown.LYING_DOWN_THREE
 						|| Main.sex.getSexPositionSlot(cumProvider)==SexSlotLyingDown.LYING_DOWN_FOUR) {
 					return Util.newHashMapOfValues(
-							new Value<>(Skin.class, genericFaceForceCreampieAreas));
+							new Value<>(Torso.class, genericFaceForceCreampieAreas));
 				}
 			}
 			// Characters lying down can use their legs to force a creampie:
@@ -3538,7 +3618,7 @@ public class SexPosition {
 					|| Main.sex.getSexPositionSlot(cumProvider)==SexSlotSitting.SITTING_THREE
 					|| Main.sex.getSexPositionSlot(cumProvider)==SexSlotSitting.SITTING_FOUR)) {
 				return Util.newHashMapOfValues(
-						new Value<>(Skin.class, genericGroinForceCreampieAreas));
+						new Value<>(Torso.class, genericGroinForceCreampieAreas));
 			}
 			// The character sitting getting fucked can use their legs, tail, or tentacles to force a creampie:
 			if((Main.sex.getSexPositionSlot(cumTarget)==SexSlotSitting.SITTING

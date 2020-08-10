@@ -22,7 +22,6 @@ import com.lilithsthrone.game.combat.DamageType;
 import com.lilithsthrone.game.combat.spells.Spell;
 import com.lilithsthrone.game.combat.spells.SpellSchool;
 import com.lilithsthrone.game.dialogue.utils.UtilText;
-import com.lilithsthrone.game.inventory.enchanting.TFEssence;
 import com.lilithsthrone.game.inventory.item.AbstractItem;
 import com.lilithsthrone.game.inventory.weapon.AbstractWeapon;
 import com.lilithsthrone.main.Main;
@@ -238,7 +237,7 @@ public class CombatMove {
         				boolean maxLust = isTargetAtMaximumLust(target);
         				Value<String, Integer> damageValue = weapon.getDamageType().damageTarget(source, target, damage);
         				int inflictedDamage = damageValue.getValue();
-        				weaponAttacksStringBuilder.append((i>0?"<br/>":"")+source.getMainAttackDescription(i, target, true)+damageValue.getKey());
+        				weaponAttacksStringBuilder.append((i>0?"<br/>":"")+source.getMainAttackDescription(i, target, true, isCrit)+damageValue.getKey());
         				weaponDamages.putIfAbsent(target, new ArrayList<>());
         				weaponDamages.get(target).add(getFormattedDamage(weapon.getDamageType(), inflictedDamage, target, true, maxLust));
         				
@@ -265,7 +264,7 @@ public class CombatMove {
         				boolean maxLust = isTargetAtMaximumLust(target);
         				Value<String, Integer> damageValue = DamageType.UNARMED.getParentDamageType(source, null).damageTarget(source, target, damage);
         				int inflictedDamage = damageValue.getValue();
-        				weaponAttacksStringBuilder.append((i>0?"<br/>":"")+source.getMainAttackDescription(i, target, true)+damageValue.getKey());
+        				weaponAttacksStringBuilder.append((i>0?"<br/>":"")+source.getMainAttackDescription(i, target, true, isCrit)+damageValue.getKey());
         				weaponDamages.putIfAbsent(target, new ArrayList<>());
         				weaponDamages.get(target).add(getFormattedDamage(DamageType.UNARMED.getParentDamageType(source, null), inflictedDamage, target, true, maxLust));
         			}
@@ -292,13 +291,13 @@ public class CombatMove {
         				isCrit?"":null,
         				isCrit?"Extra damage applied!":""));
         		
-        		source.incrementEssenceCount(TFEssence.ARCANE, getArcaneCost(source), false); // Hack to restore essences from loss in performOnSelection() method, as they are also subtracted in applyExtraAttackEffects.
+        		source.incrementEssenceCount(getArcaneCost(source), false); // Hack to restore essences from loss in performOnSelection() method, as they are also subtracted in applyExtraAttackEffects.
         		
         		List<String> extraEffects = new ArrayList<>();
         		for(int i=0; i<Math.min(source.getArmRows(), source.getMainWeaponArray().length); i++) {
             		AbstractWeapon weapon = source.getMainWeaponArray()[i];
 	        		if(weapon != null) {
-	        			String s = weapon.applyExtraEffects(source, target, true);
+	        			String s = weapon.applyExtraEffects(source, target, true, isCrit);
 	        			attackStringBuilder.append((s.isEmpty()?"":"<br/>")+s);
 	        			extraEffects.addAll(Combat.applyExtraAttackEffects(source, target, Attack.MAIN, weapon, true, isCrit));
 	        		} else {
@@ -328,7 +327,7 @@ public class CombatMove {
         			}
         		}
         		
-            	if(source.getEssenceCount(TFEssence.ARCANE)<essenceCost) {
+            	if(source.getEssenceCount()<essenceCost) {
             		return "You don't have enough arcane essences to use your weapon"+(weaponCount>1?"s":"")+"! ("+Util.capitaliseSentence(Util.intToString(essenceCost))+" "+(essenceCost==1?"is":"are")+" required.)";
             	}
             	return super.isUsable(source, target, enemies, allies);
@@ -337,13 +336,13 @@ public class CombatMove {
             @Override
             public void performOnSelection(int turnIndex, GameCharacter source, GameCharacter target, List<GameCharacter> enemies, List<GameCharacter> allies) {
             	int essenceCost = getArcaneCost(source);
-            	source.incrementEssenceCount(TFEssence.ARCANE, -essenceCost, false);
+            	source.incrementEssenceCount(-essenceCost, false);
             }
             
             @Override
             public void performOnDeselection(int turnIndex, GameCharacter source, GameCharacter target, List<GameCharacter> enemies, List<GameCharacter> allies) {
             	int essenceCost = getArcaneCost(source);
-            	source.incrementEssenceCount(TFEssence.ARCANE, essenceCost, false);
+            	source.incrementEssenceCount(essenceCost, false);
             }
         };
         allCombatMoves.add(newCombatMove);
@@ -509,7 +508,7 @@ public class CombatMove {
         				boolean maxLust = isTargetAtMaximumLust(target);
         				Value<String, Integer> damageValue = weapon.getDamageType().damageTarget(source, target, damage);
         				int inflictedDamage = damageValue.getValue();
-        				weaponAttacksStringBuilder.append((i>0?"<br/>":"")+source.getOffhandAttackDescription(i, target, true)+damageValue.getKey());
+        				weaponAttacksStringBuilder.append((i>0?"<br/>":"")+source.getOffhandAttackDescription(i, target, true, isCrit)+damageValue.getKey());
         				weaponDamages.putIfAbsent(target, new ArrayList<>());
         				weaponDamages.get(target).add(getFormattedDamage(weapon.getDamageType(), inflictedDamage, target, true, maxLust));
         				
@@ -536,7 +535,7 @@ public class CombatMove {
         				boolean maxLust = isTargetAtMaximumLust(target);
         				Value<String, Integer> damageValue = DamageType.UNARMED.getParentDamageType(source, null).damageTarget(source, target, damage);
         				int inflictedDamage = damageValue.getValue();
-        				weaponAttacksStringBuilder.append((i>0?"<br/>":"")+source.getOffhandAttackDescription(i, target, true)+damageValue.getKey());
+        				weaponAttacksStringBuilder.append((i>0?"<br/>":"")+source.getOffhandAttackDescription(i, target, true, isCrit)+damageValue.getKey());
         				weaponDamages.putIfAbsent(target, new ArrayList<>());
         				weaponDamages.get(target).add(getFormattedDamage(DamageType.UNARMED.getParentDamageType(source, null), inflictedDamage, target, true, maxLust));
         			}
@@ -593,13 +592,13 @@ public class CombatMove {
 //        				isCrit?"":null,
 //        				isCrit?"[npc2.Name] [npc2.verb(take)] extra damage!":""));
         		
-        		source.incrementEssenceCount(TFEssence.ARCANE, getArcaneCost(source), false); // Hack to restore essences from loss in performOnSelection() method, as they are also subtracted in applyExtraAttackEffects.
+        		source.incrementEssenceCount(getArcaneCost(source), false); // Hack to restore essences from loss in performOnSelection() method, as they are also subtracted in applyExtraAttackEffects.
         		
         		List<String> extraEffects = new ArrayList<>();
         		for(int i=0; i<Math.min(source.getArmRows(), source.getOffhandWeaponArray().length); i++) {
             		AbstractWeapon weapon = source.getOffhandWeaponArray()[i];
 	        		if(weapon != null) {
-	        			String s = weapon.applyExtraEffects(source, target, true);
+	        			String s = weapon.applyExtraEffects(source, target, true, isCrit);
 	        			attackStringBuilder.append((s.isEmpty()?"":"<br/>")+s);
 	        			extraEffects.addAll(Combat.applyExtraAttackEffects(source, target, Attack.OFFHAND, weapon, true, isCrit));
 	        		} else {
@@ -629,7 +628,7 @@ public class CombatMove {
         			}
         		}
         		
-            	if(source.getEssenceCount(TFEssence.ARCANE)<essenceCost) {
+            	if(source.getEssenceCount()<essenceCost) {
             		return "You don't have enough arcane essences to use your weapon"+(weaponCount>1?"s":"")+"! ("+Util.capitaliseSentence(Util.intToString(essenceCost))+" "+(essenceCost==1?"is":"are")+" required.)";
             	}
             	return super.isUsable(source, target, enemies, allies);
@@ -638,13 +637,13 @@ public class CombatMove {
             @Override
             public void performOnSelection(int turnIndex, GameCharacter source, GameCharacter target, List<GameCharacter> enemies, List<GameCharacter> allies) {
             	int essenceCost = getArcaneCost(source);
-            	source.incrementEssenceCount(TFEssence.ARCANE, -essenceCost, false);
+            	source.incrementEssenceCount(-essenceCost, false);
             }
             
             @Override
             public void performOnDeselection(int turnIndex, GameCharacter source, GameCharacter target, List<GameCharacter> enemies, List<GameCharacter> allies) {
             	int essenceCost = getArcaneCost(source);
-            	source.incrementEssenceCount(TFEssence.ARCANE, essenceCost, false);
+            	source.incrementEssenceCount(essenceCost, false);
             }
         };
         allCombatMoves.add(newCombatMove);
@@ -797,7 +796,7 @@ public class CombatMove {
         				boolean maxLust = isTargetAtMaximumLust(target);
         				Value<String, Integer> damageValue = weapon.getDamageType().damageTarget(source, target, damage);
         				int inflictedDamage = damageValue.getValue();
-        				weaponAttacksStringBuilder.append((i>0?"<br/>":"")+source.getMainAttackDescription(i, target, true)+damageValue.getKey());
+        				weaponAttacksStringBuilder.append((i>0?"<br/>":"")+source.getMainAttackDescription(i, target, true, isCrit)+damageValue.getKey());
         				weaponDamages.putIfAbsent(target, new ArrayList<>());
         				weaponDamages.get(target).add(getFormattedDamage(weapon.getDamageType(), inflictedDamage, target, true, maxLust));
         				
@@ -824,7 +823,7 @@ public class CombatMove {
         				boolean maxLust = isTargetAtMaximumLust(target);
         				Value<String, Integer> damageValue = DamageType.UNARMED.getParentDamageType(source, null).damageTarget(source, target, damage);
         				int inflictedDamage = damageValue.getValue();
-        				weaponAttacksStringBuilder.append((i>0?"<br/>":"")+source.getMainAttackDescription(i, target, true)+damageValue.getKey());
+        				weaponAttacksStringBuilder.append((i>0?"<br/>":"")+source.getMainAttackDescription(i, target, true, isCrit)+damageValue.getKey());
         				weaponDamages.putIfAbsent(target, new ArrayList<>());
         				weaponDamages.get(target).add(getFormattedDamage(DamageType.UNARMED.getParentDamageType(source, null), inflictedDamage, target, true, maxLust));
         			}
@@ -837,7 +836,7 @@ public class CombatMove {
         				boolean maxLust = isTargetAtMaximumLust(target);
         				Value<String, Integer> damageValue = weapon.getDamageType().damageTarget(source, target, damage);
         				int inflictedDamage = damageValue.getValue();
-        				weaponAttacksStringBuilder.append((i>0?"<br/>":"")+source.getOffhandAttackDescription(i, target, true)+damageValue.getKey());
+        				weaponAttacksStringBuilder.append((i>0?"<br/>":"")+source.getOffhandAttackDescription(i, target, true, isCrit)+damageValue.getKey());
         				weaponDamages.putIfAbsent(target, new ArrayList<>());
         				weaponDamages.get(target).add(getFormattedDamage(weapon.getDamageType(), inflictedDamage, target, true, maxLust));
         				
@@ -864,7 +863,7 @@ public class CombatMove {
         				boolean maxLust = isTargetAtMaximumLust(target);
         				Value<String, Integer> damageValue = DamageType.UNARMED.getParentDamageType(source, null).damageTarget(source, target, damage);
         				int inflictedDamage = damageValue.getValue();
-        				weaponAttacksStringBuilder.append((i>0?"<br/>":"")+source.getOffhandAttackDescription(i, target, true)+damageValue.getKey());
+        				weaponAttacksStringBuilder.append((i>0?"<br/>":"")+source.getOffhandAttackDescription(i, target, true, isCrit)+damageValue.getKey());
         				weaponDamages.putIfAbsent(target, new ArrayList<>());
         				weaponDamages.get(target).add(getFormattedDamage(DamageType.UNARMED.getParentDamageType(source, null), inflictedDamage, target, true, maxLust));
         			}
@@ -893,13 +892,13 @@ public class CombatMove {
         				isCrit?"Extra damage applied!":""));
 
 
-        		source.incrementEssenceCount(TFEssence.ARCANE, getArcaneCost(source), false); // Hack to restore essences from loss in performOnSelection() method, as they are also subtracted in applyExtraAttackEffects.
+        		source.incrementEssenceCount(getArcaneCost(source), false); // Hack to restore essences from loss in performOnSelection() method, as they are also subtracted in applyExtraAttackEffects.
         		
         		List<String> extraEffects = new ArrayList<>();
         		for(int i=0; i<Math.min(source.getArmRows(), source.getMainWeaponArray().length); i++) {
             		AbstractWeapon weapon = source.getMainWeaponArray()[i];
 	        		if(weapon != null) {
-	        			String s = weapon.applyExtraEffects(source, target, true);
+	        			String s = weapon.applyExtraEffects(source, target, true, isCrit);
 	        			attackStringBuilder.append((s.isEmpty()?"":"<br/>")+s);
 	        			extraEffects.addAll(Combat.applyExtraAttackEffects(source, target, Attack.MAIN, weapon, true, isCrit));
 	        		} else {
@@ -909,7 +908,7 @@ public class CombatMove {
         		for(int i=0; i<Math.min(source.getArmRows(), source.getOffhandWeaponArray().length); i++) {
             		AbstractWeapon weapon = source.getOffhandWeaponArray()[i];
 	        		if(weapon != null) {
-	        			String s = weapon.applyExtraEffects(source, target, true);
+	        			String s = weapon.applyExtraEffects(source, target, true, isCrit);
 	        			attackStringBuilder.append((s.isEmpty()?"":"<br/>")+s);
 	        			extraEffects.addAll(Combat.applyExtraAttackEffects(source, target, Attack.OFFHAND, weapon, true, isCrit));
 	        		} else {
@@ -939,7 +938,7 @@ public class CombatMove {
 	            	}
             	}
         		int cost = getArcaneCost(source);
-            	if(source.getEssenceCount(TFEssence.ARCANE)<cost) {
+            	if(source.getEssenceCount()<cost) {
             		return "You don't have enough arcane essences to use your weapon! ("+Util.capitaliseSentence(Util.intToString(cost))+" "+(cost==1?"is":"are")+" required.)";
             	}
             	return super.isUsable(source, target, enemies, allies);
@@ -947,12 +946,12 @@ public class CombatMove {
             
             @Override
             public void performOnSelection(int turnIndex, GameCharacter source, GameCharacter target, List<GameCharacter> enemies, List<GameCharacter> allies) {
-            	source.incrementEssenceCount(TFEssence.ARCANE, -getArcaneCost(source), false);
+            	source.incrementEssenceCount(-getArcaneCost(source), false);
             }
             
             @Override
             public void performOnDeselection(int turnIndex, GameCharacter source, GameCharacter target, List<GameCharacter> enemies, List<GameCharacter> allies) {
-            	source.incrementEssenceCount(TFEssence.ARCANE, getArcaneCost(source), false);
+            	source.incrementEssenceCount(getArcaneCost(source), false);
             }
         };
         allCombatMoves.add(newCombatMove);

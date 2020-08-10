@@ -22,6 +22,7 @@ import com.lilithsthrone.game.character.npc.NPC;
 import com.lilithsthrone.game.character.npc.NPCGenerationFlag;
 import com.lilithsthrone.game.character.persona.Name;
 import com.lilithsthrone.game.character.persona.Occupation;
+import com.lilithsthrone.game.character.persona.PersonalityTrait;
 import com.lilithsthrone.game.character.race.RacialBody;
 import com.lilithsthrone.game.character.race.Subspecies;
 import com.lilithsthrone.game.combat.CombatBehaviour;
@@ -34,12 +35,9 @@ import com.lilithsthrone.game.dialogue.utils.UtilText;
 import com.lilithsthrone.game.inventory.CharacterInventory;
 import com.lilithsthrone.game.inventory.InventorySlot;
 import com.lilithsthrone.game.inventory.clothing.AbstractClothing;
-import com.lilithsthrone.game.inventory.clothing.AbstractClothingType;
 import com.lilithsthrone.game.inventory.clothing.ClothingType;
-import com.lilithsthrone.game.inventory.enchanting.TFEssence;
 import com.lilithsthrone.game.inventory.item.AbstractItem;
 import com.lilithsthrone.game.inventory.outfit.OutfitType;
-import com.lilithsthrone.game.inventory.weapon.AbstractWeaponType;
 import com.lilithsthrone.game.sex.sexActions.dominion.EnforcerPatrolSA;
 import com.lilithsthrone.main.Main;
 import com.lilithsthrone.utils.Util;
@@ -121,12 +119,13 @@ public class EnforcerPatrol extends NPC {
 			if(Math.random()<Main.getProperties().halfDemonSpawnRate/100f) { // Half-demon spawn rate
 				this.setBody(CharacterUtils.generateHalfDemonBody(this, gender, Subspecies.getFleshSubspecies(this), true), true);
 			}
-			if(Math.random()<Main.getProperties().taurSpawnRate/100f && this.isLegConfigurationAvailable(LegConfiguration.TAUR)) { // Taur spawn rate
+			if(Math.random()<Main.getProperties().taurSpawnRate/100f
+					&& this.getLegConfiguration()!=LegConfiguration.TAUR // Do not reset this charatcer's taur body if they spawned as a taur (as otherwise subspecies-specific settings get overridden by global taur settings)
+					&& this.isLegConfigurationAvailable(LegConfiguration.TAUR)) { // Taur spawn rate
 				CharacterUtils.applyTaurConversion(this);
 			}
 			
 			setSexualOrientation(RacialBody.valueOfRace(this.getRace()).getSexualOrientation(gender));
-			
 			
 			setName(Name.getRandomTriplet(this.getRace()));
 			
@@ -140,6 +139,7 @@ public class EnforcerPatrol extends NPC {
 					Fetish.FETISH_ANAL_GIVING,
 					Fetish.FETISH_ORAL_RECEIVING,
 					Fetish.FETISH_VAGINAL_GIVING,
+					Fetish.FETISH_VAGINAL_RECEIVING,
 					Fetish.FETISH_PENIS_GIVING,
 					Fetish.FETISH_PENIS_RECEIVING,
 					Fetish.FETISH_DOMINANT);
@@ -154,7 +154,7 @@ public class EnforcerPatrol extends NPC {
 			resetInventory(true);
 			inventory.setMoney(10 + Util.random.nextInt(getLevel()*10) + 1);
 			CharacterUtils.generateItemsInInventory(this);
-			this.addClothing(AbstractClothingType.generateClothing("innoxia_penis_condom", PresetColour.CLOTHING_PURPLE_DARK, false), 5, false, false);
+			this.addClothing(Main.game.getItemGen().generateClothing("innoxia_penis_condom", PresetColour.CLOTHING_PURPLE_DARK, false), 5, false, false);
 			
 			if(!Arrays.asList(generationFlags).contains(NPCGenerationFlag.NO_CLOTHING_EQUIP)) {
 				this.equipClothing(EquipClothingSetting.getAllClothingSettings());
@@ -163,7 +163,9 @@ public class EnforcerPatrol extends NPC {
 			
 			initPerkTreeAndBackgroundPerks(); // Set starting perks based on the character's race
 			
-			this.setEssenceCount(TFEssence.ARCANE, 100);
+			this.removePersonalityTrait(PersonalityTrait.MUTE);
+			
+			this.setEssenceCount(100);
 
 			this.setLocation(Main.game.getPlayer(), false); // Move to player location
 			
@@ -205,8 +207,8 @@ public class EnforcerPatrol extends NPC {
 	 */
 	public void setWeapons(String offhandWeaponID) {
 		this.unequipAllWeaponsIntoVoid(false);
-		this.equipMainWeaponFromNowhere(AbstractWeaponType.generateWeapon("dsg_eep_enbaton_enbaton"));
-		this.equipOffhandWeaponFromNowhere(AbstractWeaponType.generateWeapon(offhandWeaponID));
+		this.equipMainWeaponFromNowhere(Main.game.getItemGen().generateWeapon("dsg_eep_enbaton_enbaton"));
+		this.equipOffhandWeaponFromNowhere(Main.game.getItemGen().generateWeapon(offhandWeaponID));
 	}
 	
 	@Override
@@ -263,7 +265,7 @@ public class EnforcerPatrol extends NPC {
 	
 	@Override
 	public void applyEscapeCombatEffects() {
-		EnforcerAlleywayDialogue.banishEnforcers();
+		EnforcerAlleywayDialogue.banishEnforcers(false);
 	}
 	
 	@Override
@@ -287,22 +289,22 @@ public class EnforcerPatrol extends NPC {
 		return null; // Do not want Enforcers using items during sex
 	}
 	
-	@Override
-	public Value<AbstractClothing, String> getSexClothingToSelfEquip(GameCharacter partner, boolean inQuickSex) {
-		if(Main.game.isInSex()) {
-			if(this.hasPenisIgnoreDildo() && this.getClothingInSlot(InventorySlot.PENIS)==null) {
-				AbstractClothing condom = null;
-				for(AbstractClothing clothing : this.getAllClothingInInventory().keySet()) {
-					if(clothing.isCondom()) {
-						condom = clothing;
-						break;
-					}
-				}
-				if(condom!=null && this.isAbleToEquip(condom, inQuickSex, this)) {
-					return new Value<>(condom, UtilText.parse(this, "[npc.Name] grabs a "+condom.getName()+" from out of [npc.her] inventory..."));
-				}
-			}
-		}
-		return null;
-	}
+//	@Override
+//	public Value<AbstractClothing, String> getSexClothingToSelfEquip(GameCharacter partner, boolean inQuickSex) {
+//		if(Main.game.isInSex() && (inQuickSex || !Main.sex.getInitialSexManager().isPartnerWantingToStopSex(this))) {
+//			if(this.hasPenisIgnoreDildo() && this.getClothingInSlot(InventorySlot.PENIS)==null) {
+//				AbstractClothing condom = null;
+//				for(AbstractClothing clothing : this.getAllClothingInInventory().keySet()) {
+//					if(clothing.isCondom()) {
+//						condom = clothing;
+//						break;
+//					}
+//				}
+//				if(condom!=null && this.isAbleToEquip(condom, inQuickSex, this)) {
+//					return new Value<>(condom, UtilText.parse(this, "[npc.Name] grabs a "+condom.getName()+" from out of [npc.her] inventory..."));
+//				}
+//			}
+//		}
+//		return null;
+//	}
 }

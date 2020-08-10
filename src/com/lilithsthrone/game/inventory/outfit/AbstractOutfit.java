@@ -26,10 +26,10 @@ import com.lilithsthrone.game.inventory.Rarity;
 import com.lilithsthrone.game.inventory.clothing.AbstractClothing;
 import com.lilithsthrone.game.inventory.clothing.AbstractClothingType;
 import com.lilithsthrone.game.inventory.clothing.ClothingType;
-import com.lilithsthrone.game.inventory.enchanting.TFEssence;
 import com.lilithsthrone.game.inventory.weapon.AbstractWeapon;
 import com.lilithsthrone.game.inventory.weapon.AbstractWeaponType;
 import com.lilithsthrone.game.inventory.weapon.WeaponType;
+import com.lilithsthrone.main.Main;
 import com.lilithsthrone.utils.Util;
 import com.lilithsthrone.utils.colours.Colour;
 import com.lilithsthrone.utils.colours.ColourListPresets;
@@ -255,7 +255,7 @@ public abstract class AbstractOutfit {
 							AbstractWeapon wep = Util.randomItemFrom(weapons);
 							character.equipMainWeaponFromNowhere(wep);
 							if(wep.getWeaponType().getArcaneCost()>0) {
-								character.incrementEssenceCount(TFEssence.ARCANE, wep.getWeaponType().getArcaneCost()*(10+Util.random.nextInt(21)), false); // Give them enough essences for 10-20 shots
+								character.incrementEssenceCount(wep.getWeaponType().getArcaneCost()*(10+Util.random.nextInt(21)), false); // Give them enough essences for 10-20 shots
 							}
 						}
 					} catch(Exception e){
@@ -279,7 +279,7 @@ public abstract class AbstractOutfit {
 							AbstractWeapon wep = Util.randomItemFrom(weapons);
 							character.equipOffhandWeaponFromNowhere(wep);
 							if(wep.getWeaponType().getArcaneCost()>0) {
-								character.incrementEssenceCount(TFEssence.ARCANE, wep.getWeaponType().getArcaneCost()*(10+Util.random.nextInt(21)), false); // Give them enough essences for 10-20 shots
+								character.incrementEssenceCount(wep.getWeaponType().getArcaneCost()*(10+Util.random.nextInt(21)), false); // Give them enough essences for 10-20 shots
 							}
 						}
 					} catch(Exception e){
@@ -298,7 +298,7 @@ public abstract class AbstractOutfit {
 							.getMandatoryFirstOf("guaranteedClothingEquips")
 							.getAllOf("uniqueClothing")
 							.stream()
-							.map( e -> {
+							.map(e -> {
 								try {
 									AbstractClothing ac = AbstractClothing.loadFromXML(e.getMandatoryFirstOf("clothing").getInnerElement(), e.getDocument());
 									
@@ -315,21 +315,30 @@ public abstract class AbstractOutfit {
 									if(colourText.startsWith("presetColourGroup")) {
 										int index = Integer.valueOf(colourText.substring(colourText.length()-1))-1;
 										List<Colour> colours = presetColourGroups.get(index);
-										ac.setColour(0, Util.randomItemFrom(colours));
+										colours.removeIf(c->!ac.getClothingType().getColourReplacement(0).getAllColours().contains(c));
+										if(!colours.isEmpty()) {
+											ac.setColour(0, Util.randomItemFrom(colours));
+										}
 									}
 	
 									colourText = e.getAttribute("colourSecondary");
 									if(colourText.startsWith("presetColourGroup")) {
 										int index = Integer.valueOf(colourText.substring(colourText.length()-1))-1;
 										List<Colour> colours = presetColourGroups.get(index);
-										ac.setColour(1, Util.randomItemFrom(colours));
+										colours.removeIf(c->!ac.getClothingType().getColourReplacement(1).getAllColours().contains(c));
+										if(!colours.isEmpty()) {
+											ac.setColour(1, Util.randomItemFrom(colours));
+										}
 									}
 	
 									colourText = e.getAttribute("colourTertiary");
 									if(colourText.startsWith("presetColourGroup")) {
 										int index = Integer.valueOf(colourText.substring(colourText.length()-1))-1;
 										List<Colour> colours = presetColourGroups.get(index);
-										ac.setColour(2, Util.randomItemFrom(colours));
+										colours.removeIf(c->!ac.getClothingType().getColourReplacement(2).getAllColours().contains(c));
+										if(!colours.isEmpty()) {
+											ac.setColour(2, Util.randomItemFrom(colours));
+										}
 									}
 									
 									return ac;
@@ -543,7 +552,7 @@ public abstract class AbstractOutfit {
 						if(character.getClothingInSlot(ct.getEquipSlots().get(0))==null
 								&& (ct.getEquipSlots().get(0).isCoreClothing() || settings.contains(EquipClothingSetting.ADD_ACCESSORIES))) {
 							if(!character.isSlotIncompatible(ct.getEquipSlots().get(0))) {
-								AbstractClothing clothing = AbstractClothingType.generateClothing(ct, ot.getColoursForClothingGeneration(), null);
+								AbstractClothing clothing = Main.game.getItemGen().generateClothing(ct, ot.getColoursForClothingGeneration(), null);
 								
 								character.equipClothingOverride(
 										clothing,
@@ -797,18 +806,10 @@ public abstract class AbstractOutfit {
 			
 			AbstractWeapon weapon;
 			if(dt!=null) {
-				weapon = AbstractWeaponType.generateWeapon(wt, dt, coloursForGeneration);
+				weapon = Main.game.getItemGen().generateWeapon(wt, dt, coloursForGeneration);
 			} else {
-				weapon = AbstractWeaponType.generateWeapon(wt, Util.randomItemFrom(wt.getAvailableDamageTypes()), coloursForGeneration);
+				weapon = Main.game.getItemGen().generateWeapon(wt, Util.randomItemFrom(wt.getAvailableDamageTypes()), coloursForGeneration);
 			}
-			
-//			if(!primaryColours.isEmpty()) {
-//				weapon.setColour(0, Util.randomItemFrom(primaryColours));
-//			}
-//			
-//			if(!secondaryColours.isEmpty()) {
-//				weapon.setColour(1, Util.randomItemFrom(secondaryColours));
-//			}
 			
 			return weapon;
 

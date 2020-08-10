@@ -6,8 +6,10 @@ import java.time.format.DateTimeFormatter;
 import java.time.format.TextStyle;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 import com.lilithsthrone.game.Game;
@@ -37,13 +39,21 @@ import com.lilithsthrone.game.dialogue.responses.ResponseTag;
 import com.lilithsthrone.game.dialogue.utils.BodyChanging;
 import com.lilithsthrone.game.dialogue.utils.MiscDialogue;
 import com.lilithsthrone.game.dialogue.utils.UtilText;
-import com.lilithsthrone.game.occupantManagement.SlaveJob;
-import com.lilithsthrone.game.occupantManagement.SlaveJobSetting;
-import com.lilithsthrone.game.occupantManagement.SlavePermissionSetting;
+import com.lilithsthrone.game.occupantManagement.slave.SlaveJob;
+import com.lilithsthrone.game.occupantManagement.slave.SlaveJobSetting;
+import com.lilithsthrone.game.occupantManagement.slave.SlavePermissionSetting;
+import com.lilithsthrone.game.sex.managers.universal.SMBath;
 import com.lilithsthrone.game.sex.managers.universal.SMGeneric;
+import com.lilithsthrone.game.sex.managers.universal.SMShower;
+import com.lilithsthrone.game.sex.positions.SexPosition;
+import com.lilithsthrone.game.sex.positions.slots.SexSlot;
+import com.lilithsthrone.game.sex.positions.slots.SexSlotLyingDown;
+import com.lilithsthrone.game.sex.positions.slots.SexSlotStanding;
 import com.lilithsthrone.main.Main;
 import com.lilithsthrone.utils.Units;
 import com.lilithsthrone.utils.Util;
+import com.lilithsthrone.utils.Util.Value;
+import com.lilithsthrone.utils.colours.Colour;
 import com.lilithsthrone.utils.colours.PresetColour;
 import com.lilithsthrone.utils.time.DateAndTime;
 import com.lilithsthrone.utils.time.SolarElevationAngle;
@@ -61,6 +71,8 @@ public class RoomPlayer {
 
     private static GameCharacter makeupTarget;
     
+    private static List<GameCharacter> slavesWashing;
+    
     public static GameCharacter getMakeupTarget() {
         if(makeupTarget==null) {
             return Main.game.getPlayer();
@@ -68,10 +80,15 @@ public class RoomPlayer {
         return makeupTarget;
     }
     
+    /**
+     * @param sleepTimeInMinutes Calls an endTurn(sleepTimeInMinutes*60) so that NPCs have their status effects updated before the next scene is parsed.
+     */
 	public static void applySleep(int sleepTimeInMinutes) {
 		List<GameCharacter> charactersPresent = new ArrayList<>(LilayaHomeGeneric.getSlavesAndOccupantsPresent());
 		charactersPresent.addAll(Main.game.getPlayer().getCompanions());
 		charactersPresent.add(Main.game.getPlayer());
+		
+		Main.game.endTurn(sleepTimeInMinutes*60);
 		
 		for(GameCharacter character : charactersPresent) {
 			character.setHealth(character.getAttributeValue(Attribute.HEALTH_MAXIMUM));
@@ -94,28 +111,8 @@ public class RoomPlayer {
 			} else if(emperorBed) {
 				restedEffect = StatusEffect.WELL_RESTED_BOOSTED;
 			}
-			character.addStatusEffect(restedEffect, ((neet?8:6)*60*60) + (240*60) + (sleepTimeInMinutes*60));
+			character.addStatusEffect(restedEffect, ((neet?8:6)*60*60) + (240*60));
 		}
-	}
-	
-	public static String applyWash(GameCharacter character, boolean washAllOrifices, boolean cleanAllClothing, AbstractStatusEffect effect, int additionalMinutes) {
-		StringBuilder sb = new StringBuilder();
-		
-		character.setHealth(character.getAttributeValue(Attribute.HEALTH_MAXIMUM));
-		character.setMana(character.getAttributeValue(Attribute.MANA_MAXIMUM));
-		
-		sb.append(character.washAllOrifices(washAllOrifices));
-		character.calculateStatusEffects(0);
-		character.cleanAllDirtySlots(true);
-		sb.append(character.cleanAllClothing(cleanAllClothing));
-
-		character.removeStatusEffect(StatusEffect.BATH);
-		character.removeStatusEffect(StatusEffect.BATH_BOOSTED);
-		if(effect!=null) {
-			character.addStatusEffect(effect, (240+additionalMinutes)*60);
-		}
-		
-		return sb.toString();
 	}
 	
 	private static Response getResponseRoom(int responseTab, int index) {
@@ -160,17 +157,19 @@ public class RoomPlayer {
 				};
 	
 			} else if (index == 4) {
-				int timeUntilChange = Main.game.getMinutesUntilNextMorningOrEvening();
+				int timeUntilChange = Main.game.getMinutesUntilNextMorningOrEvening() + 5; // Add 5 minutes so that if the days are drawing in, you don't get stuck in a loop of always sleeping to sunset/sunrise
 				LocalDateTime[] sunriseSunset = DateAndTime.getTimeOfSolarElevationChange(Main.game.getDateNow(), SolarElevationAngle.SUN_ALTITUDE_SUNRISE_SUNSET, Game.DOMINION_LATITUDE, Game.DOMINION_LONGITUDE);
 				return new Response("Rest until " + (Main.game.isDayTime() ? "Sunset" : "Sunrise"),
 						"Rest for " + (timeUntilChange >= 60 ?timeUntilChange / 60 + " hours " : " ")
 							+ (timeUntilChange % 60 != 0 ? timeUntilChange % 60 + " minutes" : "")
-							+ " until " + (Main.game.isDayTime() ? "evening ("+Units.time(sunriseSunset[1])+")." : "morning ("+Units.time(sunriseSunset[0])+").")
+							+ (Main.game.isDayTime()
+									? " until five minutes past sunset ("+Units.time(sunriseSunset[1].plusMinutes(5))+")."
+									: " until five minutes past sunrise ("+Units.time(sunriseSunset[0].plusMinutes(5))+").")
 							+ " As well as replenishing your "+Attribute.HEALTH_MAXIMUM.getName()+" and "+Attribute.MANA_MAXIMUM.getName()+", you will also get the 'Well Rested' status effect.",
 							AUNT_HOME_PLAYERS_ROOM_SLEEP){
 					@Override
 					public void effects() {
-						sleepTimeInMinutes = Main.game.getMinutesUntilNextMorningOrEvening();
+						sleepTimeInMinutes = timeUntilChange;
 						applySleep(sleepTimeInMinutes);
 					}
 				};
@@ -220,6 +219,10 @@ public class RoomPlayer {
 							?SlaveDialogue.SLAVE_START
 							:OccupantDialogue.OCCUPANT_START) {
 					@Override
+					public Colour getHighlightColour() {
+						return character.getFemininity().getColour();
+					}
+					@Override
 					public void effects() {
 						if(character.isSlave()) {
 							SlaveDialogue.initDialogue(character, false);
@@ -235,17 +238,19 @@ public class RoomPlayer {
 				return new Response("Quick shower",
 						"Use your room's ensuite to take a bath or shower."
 								+ "<br/>[style.italicsGood(Cleans <b>a maximum of "+Units.fluid(500)+"</b> of fluids from all orifices.)]"
-								+ "<br/>[style.italicsGood(This will clean <b>only</b> your currently equipped clothing.)]"
-								+ "<br/>[style.italicsMinorBad(This does <b>not</b> clean companions.)]",
+								+ "<br/>[style.italicsGood(This will clean <b>only</b> your currently equipped clothing.)]",
+//								+ "<br/>[style.italicsMinorBad(This does <b>not</b> clean companions.)]",
 						AUNT_HOME_PLAYERS_ROOM_QUICK_SHOWER){
 					@Override
 					public void effects() {
 						List<NPC> charactersPresent = LilayaHomeGeneric.getSlavesAndOccupantsPresent();
-						List<NPC> slavesWashing = charactersPresent.stream().filter((npc) -> npc.hasSlaveJobSetting(SlaveJob.BEDROOM, SlaveJobSetting.BEDROOM_HELP_WASH)).collect(Collectors.toList());
-						for(NPC npc : slavesWashing) {
-							applyWash(npc, true, true, null, 0);
+						slavesWashing = charactersPresent.stream().filter((npc) -> npc.hasSlaveJobSetting(SlaveJob.BEDROOM, SlaveJobSetting.BEDROOM_HELP_WASH)).collect(Collectors.toList());
+						for(GameCharacter npc : slavesWashing) {
+							npc.applyWash(true, true, null, 240+30);
 						}
-						Main.game.getTextEndStringBuilder().append(applyWash(Main.game.getPlayer(), false, false, null, 0));
+
+						Main.game.getTextEndStringBuilder().append("<p style='text-align:center'><i>You leave your clothes outside of your bathroom so that they can be cleaned while you wash yourself...</i></p>");
+						Main.game.getTextEndStringBuilder().append(Main.game.getPlayer().applyWash(false, false, null, 240+30));
 					}
 					@Override
 					public int getSecondsPassed() {
@@ -257,17 +262,19 @@ public class RoomPlayer {
 				return new Response("Thorough shower",
 						"Use your room's en-suite to take a shower, and spend some time thoroughly cleaning yourself."
 								+ "<br/>[style.italicsExcellent(This will clean <b>all</b> fluids out of all your orifices.)]"
-								+ "<br/>[style.italicsExcellent(This will clean <b>all</b> clothing in your inventory.)]"
-								+ "<br/>[style.italicsMinorBad(This does <b>not</b> clean companions.)]",
+								+ "<br/>[style.italicsGood(This will clean <b>only</b> your currently equipped clothing.)]",
+//								+ "<br/>[style.italicsMinorBad(This does <b>not</b> clean companions.)]",
 						AUNT_HOME_PLAYERS_ROOM_THOROUGH_SHOWER){
 					@Override
 					public void effects() {
 						List<NPC> charactersPresent = LilayaHomeGeneric.getSlavesAndOccupantsPresent();
-						List<NPC> slavesWashing = charactersPresent.stream().filter((npc) -> npc.hasSlaveJobSetting(SlaveJob.BEDROOM, SlaveJobSetting.BEDROOM_HELP_WASH)).collect(Collectors.toList());
-						for(NPC npc : slavesWashing) {
-							applyWash(npc, true, true, null, 0);
+						slavesWashing = charactersPresent.stream().filter((npc) -> npc.hasSlaveJobSetting(SlaveJob.BEDROOM, SlaveJobSetting.BEDROOM_HELP_WASH)).collect(Collectors.toList());
+						for(GameCharacter npc : slavesWashing) {
+							npc.applyWash(true, true, null, 240+30);
 						}
-						Main.game.getTextEndStringBuilder().append(applyWash(Main.game.getPlayer(), true, true, null, 0));
+						
+						Main.game.getTextEndStringBuilder().append("<p style='text-align:center'><i>You leave your clothes outside of your bathroom so that they can be cleaned while you wash yourself...</i></p>");
+						Main.game.getTextEndStringBuilder().append(Main.game.getPlayer().applyWash(true, false, null, 240+30));
 					}
 					@Override
 					public int getSecondsPassed() {
@@ -279,18 +286,19 @@ public class RoomPlayer {
 				return new Response("Bath time",
 						"Use your room's en-suite to take a bath, and spend some time thoroughly cleaning yourself."
 								+ "<br/>[style.italicsExcellent(This will clean <b>all</b> fluids out of all your orifices.)]"
-								+ "<br/>[style.italicsExcellent(This will clean <b>all</b> clothing in your inventory.)]"
-								+ "<br/>[style.italicsMinorGood(This <b>does</b> clean companions.)]",
+								+ "<br/>[style.italicsExcellent(This will clean <b>all</b> clothing in your inventory.)]",
+//								+ "<br/>[style.italicsMinorGood(This <b>does</b> clean companions.)]",
 						AUNT_HOME_PLAYERS_ROOM_BATH){
 					@Override
 					public void effects() {
 						List<GameCharacter> charactersPresent = new ArrayList<>(LilayaHomeGeneric.getSlavesAndOccupantsPresent());
-						List<GameCharacter> slavesWashing = charactersPresent.stream().filter((npc) -> npc.hasSlaveJobSetting(SlaveJob.BEDROOM, SlaveJobSetting.BEDROOM_HELP_WASH)).collect(Collectors.toList());
-						slavesWashing.addAll(Main.game.getPlayer().getCompanions());
+						slavesWashing = charactersPresent.stream().filter((npc) -> npc.hasSlaveJobSetting(SlaveJob.BEDROOM, SlaveJobSetting.BEDROOM_HELP_WASH)).collect(Collectors.toList());
 						for(GameCharacter npc : slavesWashing) {
-							applyWash(npc, true, true, StatusEffect.BATH, 30);
+							npc.applyWash(true, true, StatusEffect.getStatusEffectFromId("innoxia_cleaned_bath"), 240+30);
 						}
-						Main.game.getTextEndStringBuilder().append(applyWash(Main.game.getPlayer(), true, true, StatusEffect.BATH, 30));
+						
+						Main.game.getTextEndStringBuilder().append("<p style='text-align:center'><i>You leave your clothes outside of your bathroom so that they can be cleaned while you wash yourself...</i></p>");
+						Main.game.getTextEndStringBuilder().append(Main.game.getPlayer().applyWash(true, true, StatusEffect.getStatusEffectFromId("innoxia_cleaned_bath"), 240+30));
 					}
 					@Override
 					public int getSecondsPassed() {
@@ -339,776 +347,6 @@ public class RoomPlayer {
 		}
 		return null;
 	}
-
-	public static final DialogueNode ROOM = new DialogueNode("Your Room", "", false) {
-		@Override
-		public void applyPreParsingEffects() {
-			makeupTarget = Main.game.getPlayer();
-		}
-		@Override
-		public String getContent() {
-			StringBuilder sb = new StringBuilder();
-
-			GenericPlace place = Main.game.getPlayerCell().getPlace();
-			
-			sb.append("<p>"
-					+ "Your bedroom is positioned close to the main staircase linking the entrance hall to the first-floor corridor, and is one of the largest chambers in the entire mansion."
-					+ " Opposite the room's main doorway, a set of four large, sach windows provide an excellent view of the courtyard garden below, while off to the left, another door leads through into your private ensuite bathroom."
-				+ "</p>");
-			
-			if(place.getPlaceUpgrades().contains(PlaceUpgrade.LILAYA_PLAYER_ROOM_BED)) {
-				sb.append("<p>"
-							+ "Your room is well furnished, and contains both two sets of drawers and a full-height wardrobe, which provide you with all the storage space you'd ever need."
-							+ " Other than those items of furniture, you also have a sofa, a writing desk complete with matching chair, and a full-height free-standing mirror."
-						+ "</p>");
-			} else {
-				sb.append("<p>"
-						+ "A king-sized bed sits against the right-hand wall, while two sets of drawers and a full-height wardrobe provide you with all the storage space you'd ever need."
-						+ " Other than those items of furniture, you also have a sofa, a writing desk complete with matching chair, and a full-height free-standing mirror."
-					+ "</p>");
-			}
-			
-			sb.append(
-					"<p>"
-						+ "Like everything else that normally would have run on electricity in your world, the lighting, radiators, and plumbing all appear to be powered by the arcane."
-					+ "</p>");
-			
-			sb.append(LilayaHomeGeneric.getRoomModificationsDescription());
-
-			List<NPC> charactersPresent = LilayaHomeGeneric.getSlavesAndOccupantsPresent();
-			if(!charactersPresent.isEmpty()) {
-				List<String> names = new ArrayList<>();
-				boolean soloSlave = charactersPresent.size()==1;
-				for(NPC npc : charactersPresent) {
-					names.add("<span style='color:"+npc.getFemininity().getColour().toWebHexString()+";'>"+npc.getName()+"</span>");
-				}
-				sb.append("<p>"
-							+ "Assigned to your room "+(soloSlave?"is your slave":"are your slaves")+"; "+Util.stringsToStringList(names, false)+".");
-				
-				List<NPC> greetings = charactersPresent.stream().filter(npc -> npc.hasSlaveJobSetting(SlaveJob.BEDROOM, SlaveJobSetting.BEDROOM_GREETING)).collect(Collectors.toList());
-				names = new ArrayList<>();
-				for(NPC npc : greetings) {
-					names.add(npc.getName());
-				}
-				soloSlave = greetings.size()==1;
-				if(!greetings.isEmpty()) {
-					sb.append(" Having been instructed to greet you upon your arrival, "
-								+(soloSlave
-										?UtilText.parse(charactersPresent.get(0), "[npc.she] steps forwards and welcomes you back.")
-										:Util.stringsToStringList(names, false)+" step forwards and welcome you back.")
-							+ "</p>");
-
-					List<NPC> greetingsNice = greetings.stream().filter(npc -> npc.getObedienceBasic()==ObedienceLevelBasic.OBEDIENT || npc.getAffectionLevelBasic(Main.game.getPlayer())==AffectionLevelBasic.LIKE).collect(Collectors.toList());
-					for(NPC npc : greetingsNice) {
-						sb.append("<p>");
-						List<String> speechGreetings = new ArrayList<>();
-						List<String> endGreetings = new ArrayList<>();
-						List<String> endSpeechGreetings = new ArrayList<>();
-						
-						if(npc.hasSlavePermissionSetting(SlavePermissionSetting.BEHAVIOUR_PROFESSIONAL)) {
-							speechGreetings.add("[npc.speech(Welcome back, [pc.name],)]");
-							speechGreetings.add("[npc.speech(Good [game.morning], [pc.name],)]");
-							speechGreetings.add("[npc.speech(Welcome home, [pc.name],)]");
-							
-							if(npc.isFeminine()) {
-								endGreetings.add("[npc.name] says, curtsying respectfully towards you.");
-								endGreetings.add("[npc.name] greets you, curtsying respectfully as [npc.she] does so.");
-								endGreetings.add("[npc.name] addresses you, curtsying in the process.");
-							} else {
-								endGreetings.add("[npc.name] says, bowing respectfully towards you.");
-								endGreetings.add("[npc.name] greets you, bowing respectfully as [npc.she] does so.");
-								endGreetings.add("[npc.name] addresses you, bowing in the process.");
-							}
-							
-						} else if(npc.hasSlavePermissionSetting(SlavePermissionSetting.BEHAVIOUR_SEDUCTIVE)) {
-							speechGreetings.add("[npc.speech(Back so soon, [pc.name]?)]");
-							speechGreetings.add("[npc.speech(Back already, [pc.name]?)]");
-							speechGreetings.add("[npc.speech(You're back to see me so soon, [pc.name]?)]");
-							
-							if(npc.isFeminine()) {
-								endGreetings.add("[npc.name] coyly asks, before biting [npc.her] lip and winking at you.");
-								endGreetings.add("[npc.name] coyly asks, before turning slightly to one side and flashing you a seductive smile.");
-								endGreetings.add("[npc.name] coyly asks, winking at you before blowing you a little kiss.");
-							} else {
-								endGreetings.add("[npc.name] flirtatiously asks, before flashing you a charming smile.");
-								endGreetings.add("[npc.name] flirtatiously asks, before puffing his chest up and flashing you a winning smile.");
-								endGreetings.add("[npc.name] flirtatiously asks, smiling at you in a charming manner.");
-							}
-							
-						} else if(npc.hasSlavePermissionSetting(SlavePermissionSetting.BEHAVIOUR_SLUTTY)) {
-							speechGreetings.add("[npc.speech(You're back to fuck, right, [pc.name]?)]");
-							speechGreetings.add("[npc.speech(Oh, [pc.name], you're here for a good fuck, aren't you?)]");
-							speechGreetings.add("[npc.speech(Hey, [pc.name], you wanna fuck, right?)]");
-
-							endGreetings.add("[npc.name] bluntly asks,");
-							endGreetings.add("[npc.name] tactlessly asks,");
-							endGreetings.add("[npc.name] gracelessly asks,");
-							
-							if(npc.isFeminine()) {
-								endSpeechGreetings.add("[npc.speech(You know I'm always horny for you...)]");
-								endSpeechGreetings.add("[npc.speech(I can't stop fantasising about you...)]");
-								endSpeechGreetings.add("[npc.speech(I get so horny just thinking about you...)]");
-							} else {
-								endSpeechGreetings.add("[npc.speech(I want you so badly right now.)]");
-								endSpeechGreetings.add("[npc.speech(I can't stop fantasising about you.)]");
-								endSpeechGreetings.add("[npc.speech(You know I'm always ready whenever you are.)]");
-							}
-							
-						} else if(npc.hasSlavePermissionSetting(SlavePermissionSetting.BEHAVIOUR_STANDARD)) {
-							speechGreetings.add("[npc.speech(Hello, [pc.name],)]");
-							speechGreetings.add("[npc.speech(Good [game.morning], [pc.name],)]");
-							speechGreetings.add("[npc.speech(Welcome back, [pc.name],)]");
-							
-							if(npc.isShy()) {
-								endGreetings.add("[npc.name] says, looking at the floor and shyly shuffling [npc.her] [npc.feet].");
-								endGreetings.add("[npc.name] says in a quiet voice, before blushing and looking down at the floor.");
-								endGreetings.add("[npc.name] quietly greets you while shyly shuffling [npc.her] [npc.feet].");
-								
-							} else if(npc.isKind()) {
-								endGreetings.add("[npc.name] says, smiling kindly at you,");
-								endGreetings.add("[npc.name] says in a kind voice, before gently smiling at you and continuing,");
-								endGreetings.add("[npc.name] happily greets you in a loving tone,");
-								
-								endSpeechGreetings.add("[npc.speech(Is there anything I can do for you?)]");
-								endSpeechGreetings.add("[npc.speech(How are you this [game.morning]?)]");
-								endSpeechGreetings.add("[npc.speech(Please let me know if there's anything I can do for you!)]");
-								
-							} else {
-								endGreetings.add("[npc.name] calls out, before smiling happily at you.");
-								endGreetings.add("[npc.name] happily greets you, before smiling and waiting for your orders.");
-								endGreetings.add("[npc.name] says, smiling at you.");
-								endGreetings.add("[npc.name] happily says, before smiling at you.");
-								endGreetings.add("[npc.name] addresses you, before smiling and waiting to see what it is you'll do next.");
-								endGreetings.add("[npc.name] greets you with a smile.");
-							}
-							
-						} else if(npc.hasSlavePermissionSetting(SlavePermissionSetting.BEHAVIOUR_WHOLESOME)) {
-							speechGreetings.add("[npc.speech(Hello, [pc.name],)]");
-							speechGreetings.add("[npc.speech(Good [game.morning], [pc.name],)]");
-							speechGreetings.add("[npc.speech(Welcome home, [pc.name],)]");
-							
-							if(npc.isShy()) {
-								endGreetings.add("[npc.name] says, looking at the floor and shyly shuffling [npc.her] [npc.feet], before continuing,");
-								endGreetings.add("[npc.name] says in a quiet voice, before blushing and shyly continuing,");
-								endGreetings.add("[npc.name] quietly greets you while shyly shuffling [npc.her] [npc.feet], before blushing and continuing,");
-								
-								endSpeechGreetings.add("[npc.speech(I'm so happy that you're back; I really missed you...)]");
-								endSpeechGreetings.add("[npc.speech(It really makes me happy to see you again...)]");
-								endSpeechGreetings.add("[npc.speech(I really missed you while you were gone...)]");
-								
-							} else if(npc.isKind()) {
-								endGreetings.add("[npc.name] says, smiling happily at you for a moment, before continuing,");
-								endGreetings.add("[npc.name] says in a kind voice, before smiling at you in a loving manner and continuing,");
-								endGreetings.add("[npc.name] greets you in a kind tone, before throwing you a loving smile and continuing,");
-
-								endSpeechGreetings.add("[npc.speech(It's so good to see you again; it felt like you were gone forever!)]");
-								endSpeechGreetings.add("[npc.speech(I'm so happy to see you again; I hope that you won't be gone for so long next time!)]");
-								endSpeechGreetings.add("[npc.speech(I really missed you, you know; thank goodness you're back now!)]");
-								
-							} else {
-								endGreetings.add("[npc.name] cheerfully says, before continuing,");
-								endGreetings.add("[npc.name] happily says, before smiling at you and continuing,");
-								endGreetings.add("[npc.name] greets you in an exited tone, before flashing you a happy smile and continuing,");
-
-								endSpeechGreetings.add("[npc.speech(I'm so happy to see you again!)]");
-								endSpeechGreetings.add("[npc.speech(It really makes me happy to see you again!)]");
-								endSpeechGreetings.add("[npc.speech(I hope you aren't gone for so long next time! I miss you, you know?)]");
-							}
-						}
-						sb.append(UtilText.parse(npc,Util.randomItemFrom(speechGreetings)));
-						sb.append(" ");
-						sb.append(UtilText.parse(npc,Util.randomItemFrom(endGreetings)));
-						if(!endSpeechGreetings.isEmpty()) {
-							sb.append(" ");
-							sb.append(UtilText.parse(npc,Util.randomItemFrom(endSpeechGreetings)));
-						}
-						sb.append("</p>");
-					}
-					
-					List<NPC> greetingsRude = new ArrayList<>(greetings);
-					greetingsRude.removeAll(greetingsNice);
-					for(NPC npc : greetingsRude) {
-						sb.append("<p>");
-						List<String> speechGreetings = new ArrayList<>();
-						List<String> endGreetings = new ArrayList<>();
-						
-							if(npc.isShy()) {
-								speechGreetings.add("[npc.speech(Oh, it's just you,)]");
-								speechGreetings.add("[npc.speech(Damn, I was hoping it was someone else,)]");
-								speechGreetings.add("[npc.speech(Oh no, not you,)]");
-								speechGreetings.add("[npc.speech(Why did [pc.she] have to come back,)]");
-								
-								endGreetings.add("[npc.name] mutters under [npc.her] breath, before looking at the floor and shuffling [npc.her] [npc.feet].");
-								endGreetings.add("[npc.name] mumbles, before casting [npc.her] gaze to the floor and refusing to look up at you.");
-								endGreetings.add("[npc.name] mutters in annoyance, before shuffling [npc.her] [npc.feet] and letting out another quiet curse.");
-								
-							} else if(npc.isSelfish()) {
-								speechGreetings.add("[npc.speech(Eugh, what do you want now, [pc.name]?)]");
-								speechGreetings.add("[npc.speech(And what exactly do you want <i>this</i> time, [pc.name]?)]");
-								speechGreetings.add("[npc.speech(So, why are you back?)]");
-								speechGreetings.add("[npc.speech(Why did you have to come back?)]");
-								
-								endGreetings.add("[npc.name] angrily asks, not even trying to conceal [npc.her] animosity towards you.");
-								endGreetings.add("[npc.name] questions, before narrowing [npc.her] [npc.eyes] and glaring angrily at you.");
-								endGreetings.add("[npc.name] snaps, before glaring at you with resentment in [npc.her] [npc.eyes].");
-								
-							} else {
-								speechGreetings.add("[npc.speech(Just do whatever it is you're here to do, [pc.name],)]");
-								speechGreetings.add("[npc.speech(Go on then, [pc.name], do whatever it is you're here to do,)]");
-								speechGreetings.add("[npc.speech(Let's just get this over with,)]");
-								speechGreetings.add("[npc.speech(Go on then, tell me what it is you want this time,)]");
-								
-								endGreetings.add("[npc.name] sighs, before rolling [npc.her] [npc.eyes] in annoyance.");
-								endGreetings.add("[npc.name] sighs in annoyance, crossing [npc.her] [npc.arms] and waiting for you to make the next move.");
-								endGreetings.add("[npc.name] sighs, clearly not at all happy with being assigned to your room.");
-								endGreetings.add("[npc.name] says, before letting out a weary sigh and tapping [npc.her] [npc.foot] on the floor.");
-								endGreetings.add("[npc.name] says, before sighing and rolling [npc.her] [npc.eyes] in a clear sign of displeasure.");
-								endGreetings.add("[npc.name] says, crossing [npc.her] [npc.arms] and letting out an annoyed sigh.");
-							}
-
-						sb.append(UtilText.parse(npc,Util.randomItemFrom(speechGreetings)));
-						sb.append(" ");
-						sb.append(UtilText.parse(npc,Util.randomItemFrom(endGreetings)));
-						sb.append("</p>");
-					}
-				}
-			}
-			
-			return sb.toString();
-		}
-
-		@Override
-		public String getResponseTabTitle(int index) {
-			return LilayaHomeGeneric.getLilayasHouseStandardResponseTabs(index);
-		}
-		
-		@Override
-		public Response getResponse(int responseTab, int index) {
-			return getResponseRoom(responseTab, index);
-		}
-	};
-
-	private static List<GameCharacter> slavesInRoom(int hour) {
-		List<GameCharacter> charactersPresent = new ArrayList<>();
-		
-		for(String slaveId : Main.game.getPlayer().getSlavesOwned()) {
-			try {
-				GameCharacter slave = Main.game.getNPCById(slaveId);
-				if(slave.getSlaveJob(hour)==SlaveJob.BEDROOM) {
-					charactersPresent.add(slave);
-				}
-				
-			} catch (Exception e) {
-				e.printStackTrace();
-			}
-		}
-		return charactersPresent;
-	}
-	
-	private static List<GameCharacter> slavesWantingToSexPlayer(int hour) {
-		List<GameCharacter> charactersPresent = new ArrayList<>();
-		
-		for(String slaveId : Main.game.getPlayer().getSlavesOwned()) {
-			try {
-				GameCharacter slave = Main.game.getNPCById(slaveId);
-				if(slave.getSlaveJob(hour)==SlaveJob.BEDROOM
-						&& slave.hasSlavePermissionSetting(SlavePermissionSetting.SEX_INITIATE_PLAYER)
-						&& slave.isAttractedTo(Main.game.getPlayer())
-						&& slave.hasStatusEffect(StatusEffect.PENT_UP_SLAVE)) {
-					charactersPresent.add(slave);
-				}
-				
-			} catch (Exception e) {
-				e.printStackTrace();
-			}
-		}
-		return charactersPresent;
-	}
-	
-	private static int getHourPlusSleep() {
-		return (Main.game.getHourOfDay() + (sleepTimeInMinutes/60))%24;
-	}
-	
-	public static final DialogueNode AUNT_HOME_PLAYERS_ROOM_SLEEP = new DialogueNode("Your Room", "", false) {
-
-		@Override
-		public boolean isTravelDisabled() {
-			return !slavesWantingToSexPlayer(Main.game.getHourOfDay()).isEmpty();
-		}
-		
-		@Override
-		public int getSecondsPassed() {
-			return sleepTimeInMinutes*60;
-		}
-
-		@Override
-		public String getContent() {
-			StringBuilder sb = new StringBuilder();
-			
-			List<GameCharacter> charactersPresent = slavesInRoom(getHourPlusSleep());
-			
-			if(!charactersPresent.isEmpty()) {
-				boolean soloSlave = charactersPresent.size()==1;
-				List<GameCharacter> slavesToWakePlayer = charactersPresent.stream().filter((npc) -> npc.hasSlaveJobSetting(SlaveJob.BEDROOM, SlaveJobSetting.BEDROOM_WAKE_UP)).collect(Collectors.toList());
-				List<String> names = new ArrayList<>();
-				charactersPresent.stream().forEach((npc) -> names.add(npc.getName()));
-
-				sb.append("<p>"
-						+ "Feeling tired and in need of some rest, you head over to your bed and collapse down onto the mattress, before pulling back the covers and slipping beneath them."
-						+ " Realising that you want to go to sleep, "+Util.stringsToStringList(names, false)+(soloSlave?" quickly draws the curtains":" quickly draw the curtains")+", before stepping back over towards you."
-					+ "</p>");
-
-				// Sleeping arrangements:
-				List<GameCharacter> floorSlaves = charactersPresent.stream().filter((npc) -> npc.hasSlaveJobSetting(SlaveJob.BEDROOM, SlaveJobSetting.BEDROOM_SLEEP_FLOOR)).collect(Collectors.toList());
-				List<GameCharacter> onBedSlaves = charactersPresent.stream().filter((npc) -> npc.hasSlaveJobSetting(SlaveJob.BEDROOM, SlaveJobSetting.BEDROOM_SLEEP_ON_BED)).collect(Collectors.toList());
-				if(!floorSlaves.isEmpty() || !onBedSlaves.isEmpty()) {
-					sb.append("<p>");
-					boolean soloFloor = floorSlaves.size()==1;
-					List<String> floorNames = new ArrayList<>();
-					floorSlaves.stream().forEach((npc) -> floorNames.add(npc.getName()));
-					if(!floorSlaves.isEmpty()) {
-						sb.append(soloFloor
-								?UtilText.parse(floorSlaves.get(0), "Knowing that [npc.sheIs] not allowed to sleep on your bed, [npc.name] lies down on the floor and prepares to try to get some sleep.")
-								:"Knowing that they aren't allowed to sleep on your bed, "+Util.stringsToStringList(floorNames, false)+" lie down on the floor and prepare to try to get some sleep.");
-					}
-					if(!onBedSlaves.isEmpty()) {
-						boolean soloOnBed = onBedSlaves.size()==1;
-						List<String> onBedNames = new ArrayList<>();
-						onBedSlaves.stream().forEach((npc) -> onBedNames.add(npc.getName()));
-						if(!floorSlaves.isEmpty()) {
-							sb.append(soloOnBed
-									?UtilText.parse(onBedSlaves.get(0),  "Stepping past "+Util.stringsToStringList(floorNames, false)+", [npc.name] climbs up onto your bed, before letting out a relaxed sigh and curling up on your covers.")
-									:"Stepping past "+(soloFloor?UtilText.parse(floorSlaves.get(0), "[npc.name]"):"your slaves on the floor")
-										+", "+Util.stringsToStringList(onBedNames, false)+" climb up onto your bed, before each letting out relaxed sighs and curling up on your covers.");
-						} else {
-							sb.append(soloOnBed
-									?UtilText.parse(onBedSlaves.get(0), "Knowing that [npc.sheIs] allowed to sleep on the covers, [npc.name] climbs up onto your bed, before letting out a relaxed sigh and curling up, ready to sleep.")
-									:"Knowing that they're allowed to sleep on the covers, "+Util.stringsToStringList(onBedNames, false)+" climb up onto your bed, before each letting out relaxed sighs and curling up, ready to sleep.");
-						}
-					}
-					sb.append("</p>");
-				}
-
-				List<GameCharacter> inBedSlaves = charactersPresent.stream().filter((npc) -> npc.hasSlaveJobSetting(SlaveJob.BEDROOM, SlaveJobSetting.BEDROOM_SLEEP_IN_BED)).collect(Collectors.toList());
-				if(!inBedSlaves.isEmpty()) {
-					sb.append("<p>");
-					boolean soloInBed = inBedSlaves.size()==1;
-					List<String> inBedNames = new ArrayList<>();
-					inBedSlaves.stream().forEach((npc) -> inBedNames.add(npc.getName()));
-					sb.append(soloInBed
-							?UtilText.parse(inBedSlaves.get(0), "Having been given your explicit permission to do so, [npc.name] pulls back a corner of the duvet, and then quickly slips in under the covers.")
-							:"Having been given your explicit permission to do so, "+Util.stringsToStringList(inBedNames, false)
-								+" pull back the top two corners of the duvet, and then "+(inBedSlaves.size()==2?"both":"each")+" of them quickly slip in under the covers.");
-					sb.append("</p>");
-					
-					List<GameCharacter> niceSlaves = inBedSlaves.stream().filter(npc -> npc.getObedienceBasic()==ObedienceLevelBasic.OBEDIENT || npc.getAffectionLevelBasic(Main.game.getPlayer())==AffectionLevelBasic.LIKE).collect(Collectors.toList());
-					for(GameCharacter npc : niceSlaves) {
-						sb.append("<p>");
-						List<String> speechGreetings = new ArrayList<>();
-						List<String> endGreetings = new ArrayList<>();
-						List<String> endSpeechGreetings = new ArrayList<>();
-						
-						if(npc.hasSlavePermissionSetting(SlavePermissionSetting.BEHAVIOUR_PROFESSIONAL)) {
-							speechGreetings.add(UtilText.parse(npc, "[npc.speech(Allow me to keep you warm, [pc.name],)]"));
-							speechGreetings.add(UtilText.parse(npc, "[npc.speech(Please let me provide you with some extra comfort, [pc.name],)]"));
-							speechGreetings.add(UtilText.parse(npc, "[npc.speech(Please allow me to keep you warm, [pc.name],)]"));
-							
-							endGreetings.add(UtilText.parse(npc, "[npc.name] offers, before snuggling up against you."));
-							endGreetings.add(UtilText.parse(npc, "[npc.name] offers, moving up beneath the sheets to snuggle in alongside you."));
-							endGreetings.add(UtilText.parse(npc, "[npc.name] says, before shuffling up against you and pressing [npc.her] body against yours."));
-							
-						} else if(npc.hasSlavePermissionSetting(SlavePermissionSetting.BEHAVIOUR_SEDUCTIVE)) {
-							speechGreetings.add(UtilText.parse(npc, "[npc.speech(Perhaps we could do something else in this bed after you wake up?)]"));
-							speechGreetings.add(UtilText.parse(npc, "[npc.speech(After you've got some rest, perhaps the two of us could spend some energy together?)]"));
-							speechGreetings.add(UtilText.parse(npc, "[npc.speech(Would you like to have some fun with me after you've woken up, [pc.name]?)]"));
-							
-							endGreetings.add(UtilText.parse(npc, "[npc.name] teases, pressing [npc.herself] against you."));
-							endGreetings.add(UtilText.parse(npc, "[npc.name] seductively suggests, before moving up beneath the sheets to press [npc.herself] against you."));
-							endGreetings.add(UtilText.parse(npc, "[npc.name] teases, before sliding up beneath the sheets to press [npc.her] body against you."));
-							
-						} else if(npc.hasSlavePermissionSetting(SlavePermissionSetting.BEHAVIOUR_SLUTTY)) {
-							if(npc.hasBreasts()) {
-								speechGreetings.add(UtilText.parse(npc, "[npc.speech(You can use my tits as a pillow if you want,)]"));
-								speechGreetings.add(UtilText.parse(npc, "[npc.speech(Give my tits a good grope; it'll help you sleep better,)]"));
-								speechGreetings.add(UtilText.parse(npc, "[npc.speech(Come on, play with my tits a bit before you sleep,)]"));
-								
-								endGreetings.add(UtilText.parse(npc, "[npc.name] offers, pressing [npc.her] [npc.breastSize] breasts in against you."));
-								endGreetings.add(UtilText.parse(npc, "[npc.name] cheekily suggests, before sliding up under the covers and pressing [npc.her] [npc.breastSize] breasts into you."));
-								endGreetings.add(UtilText.parse(npc, "[npc.name] suggests, before shuffling up and pressing [npc.her] [npc.breastSize] breasts against you."));
-								
-							} else {
-								speechGreetings.add(UtilText.parse(npc, "[npc.speech(We can have a good fuck after you've slept, right?)]"));
-								speechGreetings.add(UtilText.parse(npc, "[npc.speech(After you've got some rest, you'll be up for having a good fuck, won't you?)]"));
-								speechGreetings.add(UtilText.parse(npc, "[npc.speech(When you get up, we can have a good fuck, right?)]"));
-								
-								endGreetings.add(UtilText.parse(npc, "[npc.name] bluntly asks, reaching down under the covers to stroke your [pc.leg]."));
-								endGreetings.add(UtilText.parse(npc, "[npc.name] cheekily suggests, before sliding up under the covers and pressing [npc.herself] against you."));
-								endGreetings.add(UtilText.parse(npc, "[npc.name] suggests, before shuffling up and pressing [npc.herself] against you."));
-							}
-							
-						} else if(npc.hasSlavePermissionSetting(SlavePermissionSetting.BEHAVIOUR_STANDARD)) {
-							if(npc.isShy()) {
-								speechGreetings.add(UtilText.parse(npc, "[npc.speech(Erm, [pc.name], just let me know if I'm taking up too much room,)]"));
-								speechGreetings.add(UtilText.parse(npc, "[npc.speech(Just let me know if I'm getting in your way,)]"));
-								speechGreetings.add(UtilText.parse(npc, "[npc.speech(If I'm getting too close, just let me know,)]"));
-								
-								endGreetings.add(UtilText.parse(npc, "[npc.name] shyly says, using the top edge of the sheets to hide [npc.her] blushing [npc.face]."));
-								endGreetings.add(UtilText.parse(npc, "[npc.name] says, nervously clutching the sheets as [npc.she] shuffles up alongside you."));
-								endGreetings.add(UtilText.parse(npc, "[npc.name] mutters, furiously blushing as [npc.she] moves up alongside you beneath the sheets."));
-								
-							} else {
-								speechGreetings.add(UtilText.parse(npc, "[npc.speech(Let me get a little closer,)]"));
-								speechGreetings.add(UtilText.parse(npc, "[npc.speech(I just need to get comfortable,)]"));
-								speechGreetings.add(UtilText.parse(npc, "[npc.speech(There we go, that's better,)]"));
-								
-								endGreetings.add(UtilText.parse(npc, "[npc.name] says, shuffling up alongside you before nestling in against your [pc.breasts]."));
-								endGreetings.add(UtilText.parse(npc, "[npc.name] says, before sliding up under the covers and pressing [npc.herself] against you."));
-								endGreetings.add(UtilText.parse(npc, "[npc.name] says, smiling as [npc.she] presses [npc.herself] against you."));
-							}
-							
-						} else if(npc.hasSlavePermissionSetting(SlavePermissionSetting.BEHAVIOUR_WHOLESOME)) {
-							speechGreetings.add(UtilText.parse(npc, "[npc.speech(I love getting to sleep with you, [pc.name],)]"));
-							speechGreetings.add(UtilText.parse(npc, "[npc.speech(This is the best; getting to sleep with you like this,)]"));
-							speechGreetings.add(UtilText.parse(npc, "[npc.speech(Getting to sleep with you is the best part of the day,)]"));
-							
-							if(npc.isShy()) {
-								endGreetings.add(UtilText.parse(npc, "[npc.name] shyly says, using the top edge of the sheets to hide [npc.her] blushing [npc.face] as [npc.she] shuffles up to press [npc.herself] against you."));
-								endGreetings.add(UtilText.parse(npc, "[npc.name] says, nervously clutching the sheets as [npc.she] shuffles up alongside you."));
-								endGreetings.add(UtilText.parse(npc, "[npc.name] nervously mutters, furiously blushing as [npc.she] moves up alongside you beneath the sheets."));
-								
-							} else {
-								endGreetings.add(UtilText.parse(npc, "[npc.name] says, smiling happily as [npc.she] snuggles up against you."));
-								endGreetings.add(UtilText.parse(npc, "[npc.name] says, before sliding up under the covers and lovingly pressing [npc.herself] against you."));
-								endGreetings.add(UtilText.parse(npc, "[npc.name] lovingly says, before shuffling up and pressing [npc.herself] against you."));
-							}
-						}
-						if(npc.getTailType().isSuitableForSleepHugging()) {
-							endSpeechGreetings.add(UtilText.parse(npc, "With a satisfied sigh, the [npc.race] moves [npc.her] [npc.tail+] around beneath the covers, before laying it over your body and using it to give you a loving tail-hug."));
-							endSpeechGreetings.add(UtilText.parse(npc, "Moving [npc.her] [npc.tail+] around beneath the covers, the [npc.race] wraps it around your [pc.leg], before moving in even closer against you."));
-							endSpeechGreetings.add(
-									UtilText.parse(npc, "Displaying an impressive level of control over [npc.her] [npc.tail+], the [npc.race] swiftly moves it up and wraps it around your lower body, before snuggling in even closer against you."));
-						}
-						
-						sb.append(UtilText.parse(npc,Util.randomItemFrom(speechGreetings)));
-						sb.append(" ");
-						sb.append(UtilText.parse(npc,Util.randomItemFrom(endGreetings)));
-						if(!endSpeechGreetings.isEmpty()) {
-							sb.append(" ");
-							sb.append(UtilText.parse(npc,Util.randomItemFrom(endSpeechGreetings)));
-						}
-						sb.append("</p>");
-					}
-					
-					List<GameCharacter> rudeSlaves = new ArrayList<>(inBedSlaves);
-					rudeSlaves.removeAll(niceSlaves);
-					for(GameCharacter npc : rudeSlaves) {
-						sb.append("<p>");
-							List<String> speechGreetings = new ArrayList<>();
-							List<String> endGreetings = new ArrayList<>();
-							if(npc.isShy()) {
-								speechGreetings.add(UtilText.parse(npc, "[npc.speech(Please respect my side of the bed,)]"));
-								speechGreetings.add(UtilText.parse(npc, "[npc.speech(I really would prefer it if you didn't get too close,)]"));
-								speechGreetings.add(UtilText.parse(npc, "[npc.speech(I'd really like it if you didn't touch me,)]"));
-								
-								endGreetings.add(UtilText.parse(npc, "[npc.name] nervously requests, before rolling over and turning [npc.her] back to you."));
-								endGreetings.add(UtilText.parse(npc, "[npc.name] mutters, before shuffling away from you."));
-								endGreetings.add(UtilText.parse(npc, "[npc.name] shyly requests, before shuffling away under the covers and turning [npc.her] back to you."));
-								
-							} else if(npc.isSelfish()) {
-								speechGreetings.add(UtilText.parse(npc, "[npc.speech(Don't roll over into my personal space in your sleep,)]"));
-								speechGreetings.add(UtilText.parse(npc, "[npc.speech(Keep to your side of the bed,)]"));
-								speechGreetings.add(UtilText.parse(npc, "[npc.speech(There's plenty of room on your side of the bed; don't come into mine,)]"));
-								
-								endGreetings.add(UtilText.parse(npc, "[npc.name] warns, letting out an annoyed huff as [npc.she] shuffles away from you."));
-								endGreetings.add(UtilText.parse(npc, "[npc.name] bluntly states, before shuffling away from you and letting out a frustrated sigh."));
-								endGreetings.add(UtilText.parse(npc, "[npc.name] says, before turning [npc.her] back to you."));
-								
-							} else {
-								speechGreetings.add(UtilText.parse(npc, "[npc.speech(I'm just going to keep to my part of the bed,)]"));
-								speechGreetings.add(UtilText.parse(npc, "[npc.speech(I'll just stay over here on my side,)]"));
-								speechGreetings.add(UtilText.parse(npc, "[npc.speech(I'll leave you plenty of room, don't worry,)]"));
-								
-								endGreetings.add(UtilText.parse(npc, "[npc.name] says, letting out a weary sigh as [npc.she] shuffles away from you."));
-								endGreetings.add(UtilText.parse(npc, "[npc.name] sighs, shuffling away a little before rolling over and turning [npc.her] back on you."));
-								endGreetings.add(UtilText.parse(npc, "[npc.name] sighs, before turning [npc.her] back to you and shuffling over to the edge of the bed."));
-							}
-							sb.append(UtilText.parse(npc,Util.randomItemFrom(speechGreetings)));
-							sb.append(" ");
-							sb.append(UtilText.parse(npc,Util.randomItemFrom(endGreetings)));
-						sb.append("</p>");
-					}
-				}
-				
-				int hour = (Main.game.getHourOfDay()+(sleepTimeInMinutes/60))%24;
-				String morningString = "evening";
-				if(hour<4) {
-					morningString = "evening";
-				} else if(hour<12) {
-					morningString = "morning";
-				}else if(hour<17) {
-					morningString = "afternoon";
-				}
-
-				List<GameCharacter> hornySlaves = slavesWantingToSexPlayer(getHourPlusSleep());
-				
-				if(!slavesToWakePlayer.isEmpty()) {
-					GameCharacter slaveWaking = Util.randomItemFrom(slavesToWakePlayer);
-					sb.append("<p>"
-							+ (soloSlave
-								?UtilText.parse(slaveWaking,
-									"With you and [npc.name] now in your respective positions, you ask [npc.herHim] to wake you at the time that you'd like to be getting up."
-										+ " After [npc.sheHas] reassured you that [npc.she] won't let you sleep in too late, you let out a contented sigh, close your eyes, and start to drift off to sleep...")
-								:UtilText.parse(slaveWaking,
-									"With your slaves now being settled into their respective positions, you ask [npc.name] to wake you at the time that you'd like to be getting up."
-										+ " After [npc.sheHas] reassured you that [npc.she] won't let you sleep in too late, you let out a contented sigh, close your eyes, and start to drift off to sleep..."))
-						+ "</p>"
-						+ "<p>"
-							+ "[style.italics(...)]"
-						+ "</p>");
-					
-					if(hornySlaves.isEmpty()) {
-						sb.append("<p>");
-						if(slaveWaking.hasSlavePermissionSetting(SlavePermissionSetting.BEHAVIOUR_PROFESSIONAL)) {
-							sb.append(UtilText.parse(slaveWaking,
-									"[npc.speech([pc.Name]? It's the appointed hour for you to be waking up,)] you hear a voice calling out to you, and as you slowly open your [pc.eyes], you see [npc.name] smiling down at you."
-									+ " Seeing that you're awake, [npc.she] withdraws to open the curtains, calling over [npc.her] shoulder as [npc.she] does so, [npc.speech(Good "+morningString+", [pc.name]!)]"));
-						} else if(slaveWaking.hasSlavePermissionSetting(SlavePermissionSetting.BEHAVIOUR_SEDUCTIVE)) {
-							sb.append(UtilText.parse(slaveWaking, 
-									"[npc.speech(Come on, [pc.name], it's time to wake up,)] you hear a voice seductively whispering into your [pc.ear], and as you slowly open your [pc.eyes], you see [npc.name] smiling down at you and biting [npc.her] lip."
-									+ " Seeing that you're awake, [npc.she] runs a hand over your [pc.chest], before withdrawing to open the curtains. Calling over [npc.her] shoulder as [npc.she] does so, [npc.she] teases,"
-									+ " [npc.speech(Good "+morningString+", [pc.name]... So, is there anything <i>special</i> that you wanted to do today?)]"));
-						} else if(slaveWaking.hasSlavePermissionSetting(SlavePermissionSetting.BEHAVIOUR_SLUTTY)) {
-							sb.append(UtilText.parse(slaveWaking,
-									"[npc.speech(If you get up now, you can make time for a quick fuck, can't you?)] you hear a voice asking, and as you slowly open your [pc.eyes], you see [npc.name] hungrily gazing down at you."
-									+ " Seeing that you're awake, [npc.she] leans down to kiss you fully on the [pc.lips], before withdrawing to open the curtains. Calling over [npc.her] shoulder as [npc.she] does so, [npc.she] teases,"
-									+ " [npc.speech(Good "+morningString+", [pc.name]! So, you want to fuck me now, right?)]"));
-						} else if(slaveWaking.hasSlavePermissionSetting(SlavePermissionSetting.BEHAVIOUR_STANDARD)) {
-							if(slaveWaking.isShy()) {
-								sb.append(UtilText.parse(slaveWaking,
-										"[npc.speech([pc.Name]? Erm, excuse me, [pc.name]? It's time to wake up,)] you hear a voice nervously calling out to you, and as you slowly open your [pc.eyes], you see [npc.name] worriedly looking down at you."
-											+ " Seeing that you're awake, [npc.she] breaths a little sigh of relief and hurries off to open the curtains, calling out as [npc.she] does so, [npc.speech(Good "+morningString+", [pc.name]!)]"));
-							} else {
-								sb.append(UtilText.parse(slaveWaking, 
-										"[npc.speech([pc.Name]? Come on, [pc.name], it's time to wake up,)] you hear a voice calling out to you, and as you slowly open your [pc.eyes], you see [npc.name] smiling down at you."
-												+ " Seeing that you're awake, [npc.she] withdraws to open the curtains, calling over [npc.her] shoulder as [npc.she] does so, [npc.speech(Good "+morningString+", [pc.name]!)]"));
-							}
-						} else if(slaveWaking.hasSlavePermissionSetting(SlavePermissionSetting.BEHAVIOUR_WHOLESOME)) {
-							if(slaveWaking.isShy()) {
-								sb.append(UtilText.parse(slaveWaking,
-										"[npc.speech([pc.Name]? Um... Come on, sleepy... It's time to wake up,)] you hear a voice shyly calling out to you, and as you slowly open your [pc.eyes], you see [npc.name] looking down at you."
-												+ " Seeing that you're awake, [npc.she] breaths a little sigh of relief and hurries off to open the curtains, quietly calling out as [npc.she] does so,"
-												+ " [npc.speech(Good "+morningString+", [pc.name]... I hope you have a wonderful day today...)]"));
-							} else if(slaveWaking.isKind()) {
-								sb.append(UtilText.parse(slaveWaking,
-										"[npc.speech([pc.Name]? Come on, sleepy-head! You don't want to stay in bed forever do you?)] you hear a voice calling out to you, and as you slowly open your [pc.eyes], you see [npc.name] smiling down at you."
-												+ " Seeing that you're awake, [npc.she] gives your face a gentle, loving stroke, before hurrying off to open the curtains, calling out over [npc.her] shoulder as [npc.she] does so,"
-												+ " [npc.speech(Good "+morningString+", [pc.name]! I hope you have a wonderful day today!)]"));
-							} else {
-								sb.append(UtilText.parse(slaveWaking,
-										"[npc.speech([pc.Name]? Come on, sleepy-head! You don't want to stay in bed forever do you?)] you hear a voice calling out to you, and as you slowly open your [pc.eyes], you see [npc.name] smiling down at you."
-												+ " Seeing that you're awake, [npc.she] stands up and hurries off to open the curtains, calling out over [npc.her] shoulder as [npc.she] does so,"
-												+ " [npc.speech(Good "+morningString+", [pc.name]! I hope you have a wonderful day today!)]"));
-							}
-						}
-						sb.append("</p>");
-
-						sb.append(UtilText.parse(slaveWaking,
-								"<p>"
-									+ "As comfortable as you are, you decide that you'd better do as [npc.name] says and get out of bed, and so, after a minute of lying beneath the covers, you do just that."
-									+ " With a satisfied yawn and stretch of your [pc.arms], you allow "+ Util.stringsToStringList(names, false)+" to assist you as you gather your things, and with one final stretch, you get ready to set out once more..."
-								+ "</p>"));
-					}
-					
-				} else {
-					sb.append("<p>"
-								+ (soloSlave
-									?UtilText.parse(charactersPresent.get(0),
-											"With you and [npc.name] now in your respective positions, you set your phone's alarm and place it on the bedside cabinet beside you."
-											+ " Letting out a contented sigh, you close your eyes and start to drift off to sleep...")
-									:"With your slaves now being settled into their respective positions, you set your phone's alarm and place it on the bedside cabinet beside you."
-										+ " Letting out a contented sigh, you close your eyes and start to drift off to sleep...")
-							+ "</p>"
-							+ "<p>"
-								+ "[style.italics(...)]"
-							+ "</p>");
-
-					if(hornySlaves.isEmpty()) {
-						sb.append(
-								"<p>"
-									+ "<i>Beep-beep... beep-beep... bee-</i>"
-								+ "</p>"
-								+ "<p>"
-									+ "Rolling over, you fumble for your phone, turning off the alarm before sinking back onto your bed with a sigh."
-									+ " As comfortable as you are, you decide that you'd better get out of bed, and so, after a minute of lying beneath the covers, you do just that."
-									+ " With a satisfied yawn and stretch of your [pc.arms], you allow "+ Util.stringsToStringList(names, false)+" to assist you as you gather your things, and with one final stretch, you get ready to set out once more..."
-								+ "</p>");
-					}
-				}
-
-				if(!hornySlaves.isEmpty()) {
-					Collections.shuffle(hornySlaves);
-					boolean soloHornySex = hornySlaves.size()==1;
-					List<String> hornyNames = new ArrayList<>();
-					hornySlaves.stream().forEach((npc) -> hornyNames.add(npc.getName()));
-					sb.append(UtilText.parse(hornySlaves,
-							"<p>"
-								+ "[npc.speech(~Mmm!~ That's right... I've got you now...)]"
-							+ "</p>"
-							+ "<p>"
-								+ "For a moment, you aren't quite sure if you're dreaming or not, but then you suddenly feel a strange weight shifting on top of you, which instantly jolts you awake."
-								+ (soloHornySex
-										?" Opening your eyes, you see [npc.name] sitting on your chest, grinning hungrily down at you."
-										:" Opening your eyes, you see "+Util.stringsToStringList(hornyNames, false)+" leaning over you, each of them with a hungry grin on their faces.")
-								+ " With a horny [npc.moan], [npc.name] is the first to speak again, and says,"
-								+ " [npc.speech(Good "+morningString+", [pc.name]! I hope you're ready to fuck!)]"
-							+ "</p>"));
-					return sb.toString();
-				}
-				
-			} else {
-				sb.append("<p>"
-						+ "You set your phone's alarm before drawing the curtains, lying on your bed and closing your eyes."
-						+ " You feel extremely safe and comfortable here in Lilaya's home, and soon drift off to sleep, thinking about all the things that have happened to you recently..."
-					+ "</p>"
-					+ "<p>"
-						+ "<i>Beep-beep... beep-beep... bee-</i>"
-					+ "</p>"
-					+ "<p>"
-						+ "Rolling over, you fumble for your phone, turning off the alarm before sinking back onto your bed with a sigh."
-						+ " As comfortable as you are, you decide that you'd better get out of bed, and so, after a minute of lying beneath the covers, you do just that."
-						+ " Opening the curtains, you set about gathering your things, and then with one final stretch, you get ready to set out once more..."
-					+ "</p>");
-			}
-			
-			if(!slavesWantingToSexPlayer(getHourPlusSleep()).isEmpty()) {
-				sb.append("<p style='text-align:center;'>"
-							+ "[style.italicsGood(You feel completely refreshed!)]"
-						+ "</p>");
-			}
-			
-			return sb.toString();
-		}
-
-		@Override
-		public String getResponseTabTitle(int index) {
-			if(!slavesWantingToSexPlayer(Main.game.getHourOfDay()).isEmpty()) {
-				return null;
-			}
-			return LilayaHomeGeneric.getLilayasHouseStandardResponseTabs(index);
-		}
-		
-		@Override
-		public Response getResponse(int responseTab, int index) {
-			List<GameCharacter> hornySlaves = slavesWantingToSexPlayer(Main.game.getHourOfDay());
-			if(!hornySlaves.isEmpty()) {
-				if(index==1) {
-					boolean soloSex = hornySlaves.size()==1;
-					List<String> names = new ArrayList<>();
-					hornySlaves.stream().forEach((npc) -> names.add(npc.getName()));
-					
-					List<GameCharacter> spectators = new ArrayList<>(slavesInRoom(Main.game.getHourOfDay()));
-					spectators.removeAll(hornySlaves);
-					
-					return new ResponseSex("Sex",
-							(soloSex
-								?UtilText.parse(hornySlaves.get(0), "[npc.Name] forces [npc.herself] on you...")
-								:Util.stringsToStringList(names, false)+" force themselves on you..."),
-							false,
-							false,
-							new SMGeneric(
-									hornySlaves,
-									Util.newArrayListOfValues(Main.game.getPlayer()),
-									spectators,
-									null,
-									ResponseTag.PREFER_MISSIONARY),
-							POST_WAKE_UP_SEX,
-							"<p>"
-								+ UtilText.parse(hornySlaves,
-									(soloSex
-										?"Before you can react, [npc.name] lowers [npc.herself] down over the top of you, pressing [npc.her] [npc.lips+] against yours and pulling you into a passionate kiss."
-											+ " Breaking it off a moment later, [npc.her] [npc.hands] start to roam down and grope your body as your horny slave [npc.moans],"
-											+ " [npc.speech(Don't worry, [pc.name], I'll make this good for you as well...)]"
-										:Util.stringsToStringList(names, false)+" had obviously conspired to wait until you'd gone to sleep before pinning you down and having their way with you."
-												+ " Before you can react to the situation, [npc.name] lowers [npc.herself] down over the top of you, pressing [npc.her] [npc.lips+] against yours and pulling you into a passionate kiss."
-												+ " Leaning in on one side of you, [npc2.name] [npc2.moans], [npc2.speech(Don't worry, [pc.name], we'll make this good for you as well...)]"))
-							+ "</p>");
-				}
-				return null;
-			}
-			return getResponseRoom(responseTab, index);
-		}
-
-		@Override
-		public boolean isInventoryDisabled() {
-			return false;
-		}
-	};
-	
-	public static final DialogueNode POST_WAKE_UP_SEX = new DialogueNode("Finished", "You collapse back onto your bed...", false) {
-
-		@Override
-		public String getContent() {
-			UtilText.nodeContentSB.setLength(0);
-			
-			List<GameCharacter> hornySlaves = new ArrayList<>(Main.sex.getDominantParticipants(false).keySet());
-			boolean soloSex = hornySlaves.size()==1;
-			List<String> names = new ArrayList<>();
-			hornySlaves.stream().forEach((npc) -> names.add(npc.getName()));
-			
-			
-			if(soloSex) {
-				UtilText.nodeContentSB.append(
-						UtilText.parse(hornySlaves,
-						"<p>"
-							+ "Having had [npc.her] fun with you, [npc.name] allows you to collapse back onto your bed."
-							+ " Letting out a very satisfied sigh, [npc.she] [npc.moans],"
-							+ " [npc.speech(See, that was fun for both of us, wasn't it?)]"
-						+ "</p>"
-						+ "<p>"
-							+ "Interpreting your heavy breathing as a positive sign, [npc.name] smiles and asks,"
-							+ " [npc.speech(Weren't you meant to be waking up at this time anyway?)]"
-						+ "</p>"
-						+ "<p>"
-							+ "Realising that [npc.sheIs] right, you decide that you'd better get out of bed, and so, after a minute of lying back and catching your breath, you do just that."
-							+ " With a sigh and stretch of your [pc.arms], you allow "+ Util.stringsToStringList(names, false)+" to assist you as you gather your things, and with one final stretch, you get ready to set out once more..."
-						+ "</p>"));
-				
-			} else {
-				UtilText.nodeContentSB.append(
-						UtilText.parse(hornySlaves,
-						"<p>"
-							+ "Having had their fun with you, "+ Util.stringsToStringList(names, false)+" allow you to collapse back onto your bed."
-							+ " Letting out a very satisfied sigh, [npc.name] [npc.moans],"
-							+ " [npc.speech(See, that was fun for all of us, wasn't it?)]"
-						+ "</p>"
-						+ "<p>"
-							+ "Interpreting your heavy breathing as a positive sign, [npc2.name] smiles and asks,"
-							+ " [npc2.speech(Weren't you meant to be waking up at this time anyway?)]"
-						+ "</p>"
-						+ "<p>"
-							+ "Realising that [npc2.sheIs] right, you decide that you'd better get out of bed, and so, after a minute of lying back and catching your breath, you do just that."
-							+ " With a sigh and stretch of your [pc.arms], you allow "+ Util.stringsToStringList(names, false)+" to assist you as you gather your things, and with one final stretch, you get ready to set out once more..."
-						+ "</p>"));
-			}
-			
-			return UtilText.nodeContentSB.toString();
-		}
-
-		@Override
-		public String getResponseTabTitle(int index) {
-			return LilayaHomeGeneric.getLilayasHouseStandardResponseTabs(index);
-		}
-		
-		@Override
-		public Response getResponse(int responseTab, int index) {
-			return getResponseRoom(responseTab, index);
-		}
-
-		@Override
-		public boolean isInventoryDisabled() {
-			return false;
-		}
-	};
 	
 	private static String getShowerSlavesDescription(List<GameCharacter> slavesWashing) {
 		StringBuilder sb = new StringBuilder();
@@ -1124,12 +362,12 @@ public class RoomPlayer {
 				sb.append(UtilText.parse(slavesWashing,
 						"Having been instructed to assist you in washing yourself, your slave, "+Util.stringsToStringList(names, false)+", similarly leaves [npc.her] clothes by the door before following you into the bathroom."));
 					sb.append(UtilText.parse(slavesWashing,
-							" Thankfully, your luxurious shower is spacious enough that [npc.name] has no trouble at all fitting in alongside you."));
+							" Thankfully, your luxurious shower is spacious enough that [npc.name] can quite comfortably fit in alongside you."));
 				
 			} else {
 				sb.append("Having been instructed to assist you in washing yourself, your slaves, "+Util.stringsToStringList(names, false)+", similarly leave their clothes by the door before following you into the bathroom.");
 					sb.append(UtilText.parse(slavesWashing,
-							" Thankfully, your luxurious shower is spacious enough that your slaves have no trouble fitting in alongside you."));
+							" Thankfully, your luxurious shower is spacious enough that your slaves can quite comfortably fit in alongside you."));
 			}
 		sb.append("</p>");
 		
@@ -1346,110 +584,6 @@ public class RoomPlayer {
 		return sb.toString();
 	}
 	
-	public static final DialogueNode AUNT_HOME_PLAYERS_ROOM_QUICK_SHOWER = new DialogueNode("Your Room", "", false) {
-		
-		@Override
-		public String getContent() {
-			List<NPC> charactersPresent = LilayaHomeGeneric.getSlavesAndOccupantsPresent();
-			List<GameCharacter> slavesWashing = charactersPresent.stream().filter((npc) -> npc.hasSlaveJobSetting(SlaveJob.BEDROOM, SlaveJobSetting.BEDROOM_HELP_WASH)).collect(Collectors.toList());
-			UtilText.nodeContentSB.setLength(0);
-			
-			UtilText.nodeContentSB.append("<p>");
-				UtilText.nodeContentSB.append(
-						"Wanting to clean yourself, but not spend too much time doing so, you step into your large ensuite bathroom and decide upon taking a quick shower."
-								+ " Disrobing, you leave your clothing by the door, before stepping over to your luxurious marble-and-glass walk-in shower.");
-			UtilText.nodeContentSB.append("</p>");
-			
-			if(!slavesWashing.isEmpty()) {
-				boolean soloSlave = slavesWashing.size()==1;
-				UtilText.nodeContentSB.append(getShowerSlavesDescription(slavesWashing));
-				
-				UtilText.nodeContentSB.append("<p>");
-				if(soloSlave) {
-					UtilText.nodeContentSB.append(UtilText.parse(slavesWashing,
-							"Not wanting to spend too much time in the shower, you soon tell [npc.name] to turn off the tap and help you to dry off."
-									+ " After doing this, the two of you get dressed and step back into your room..."));
-				} else {
-					UtilText.nodeContentSB.append("Not wanting to spend too much time in the shower, you soon tell your slaves to turn off the tap and help you to dry off."
-									+ " After doing this, you all get dressed and step back into your room...");
-				}
-				UtilText.nodeContentSB.append("</p>");
-				
-			} else {
-				UtilText.nodeContentSB.append(
-						"<p>"
-							+ "Turning on the tap, you let out a relaxed sigh as you feel the warm water flowing down over your naked body."
-							+ " Wanting to get this over with as quickly as possible, you focus simply on cleaning yourself, and once you're done, turn off the tap and dry yourself off."
-							+ " Getting dressed, you then step back into your room..."
-						+ "</p>");
-			}
-			
-			return UtilText.nodeContentSB.toString();
-		}
-
-		@Override
-		public String getResponseTabTitle(int index) {
-			return ROOM.getResponseTabTitle(index);
-		}
-		
-		@Override
-		public Response getResponse(int responseTab, int index) {
-			return ROOM.getResponse(responseTab, index);
-		}
-	};
-	
-	public static final DialogueNode AUNT_HOME_PLAYERS_ROOM_THOROUGH_SHOWER = new DialogueNode("Your Room", "", false) {
-		
-		@Override
-		public String getContent() {
-			List<NPC> charactersPresent = LilayaHomeGeneric.getSlavesAndOccupantsPresent();
-			List<GameCharacter> slavesWashing = charactersPresent.stream().filter((npc) -> npc.hasSlaveJobSetting(SlaveJob.BEDROOM, SlaveJobSetting.BEDROOM_HELP_WASH)).collect(Collectors.toList());
-			UtilText.nodeContentSB.setLength(0);
-			
-			UtilText.nodeContentSB.append("<p>");
-				UtilText.nodeContentSB.append(
-						"Wanting to spend some time thoroughly cleaning yourself, you step into your large ensuite bathroom and decide upon taking a long shower."
-						+ " Disrobing, you leave your clothing by the door, before stepping over to your luxurious marble-and-glass walk-in shower.");
-			UtilText.nodeContentSB.append("</p>");
-			
-			if(!slavesWashing.isEmpty()) {
-				boolean soloSlave = slavesWashing.size()==1;
-				UtilText.nodeContentSB.append(getShowerSlavesDescription(slavesWashing));
-				
-				UtilText.nodeContentSB.append("<p>");
-				if(soloSlave) {
-					UtilText.nodeContentSB.append(UtilText.parse(slavesWashing,
-							"After making sure that every last inch of your body is sparkling clean, you tell [npc.name] to turn off the tap and help you to dry off."
-									+ " After doing this, the two of you get dressed and step back into your room..."));
-				} else {
-					UtilText.nodeContentSB.append(
-							"After making sure that every last inch of your body is sparkling clean, you tell your slaves to turn off the tap and help you to dry off."
-									+ " After doing this, you all get dressed and step back into your room...");
-				}
-				UtilText.nodeContentSB.append("</p>");
-				
-			} else {
-				UtilText.nodeContentSB.append(
-						"<p>"
-							+ "Turning on the tap, you let out a contented sigh as you feel the warm water flowing down over your naked body."
-							+ " Deciding that it wouldn't be so bad to take some time out in order to relax, you don't rush as you set about thoroughly cleaning yourself."
-							+ " Eventually, however, you feel as though you've spent enough time in the shower, and, after turning off the tap and drying yourself off, you get dressed and step back into your room..."
-						+ "</p>");
-			}
-			
-			return UtilText.nodeContentSB.toString();
-		}
-
-		@Override
-		public String getResponseTabTitle(int index) {
-			return ROOM.getResponseTabTitle(index);
-		}
-		
-		@Override
-		public Response getResponse(int responseTab, int index) {
-			return ROOM.getResponse(responseTab, index);
-		}
-	};
 	private static String getBathSlavesDescription(List<GameCharacter> slavesWashing) {
 		StringBuilder sb = new StringBuilder();
 		
@@ -1686,186 +820,6 @@ public class RoomPlayer {
 		return sb.toString();
 	}
 	
-	public static final DialogueNode AUNT_HOME_PLAYERS_ROOM_BATH = new DialogueNode("Your Room", "", true) {
-		
-		@Override
-		public String getContent() { //TODO this needs to describe cleaning companions
-			List<NPC> charactersPresent = LilayaHomeGeneric.getSlavesAndOccupantsPresent();
-			List<GameCharacter> slavesWashing = charactersPresent.stream().filter((npc) -> npc.hasSlaveJobSetting(SlaveJob.BEDROOM, SlaveJobSetting.BEDROOM_HELP_WASH)).collect(Collectors.toList());
-			UtilText.nodeContentSB.setLength(0);
-			
-			UtilText.nodeContentSB.append("<p>");
-				UtilText.nodeContentSB.append(
-						"Wanting to spend some time relaxing and getting cleaned, you step into your large ensuite bathroom and decide upon taking a long bath."
-						+ " Disrobing, you leave your clothing by the door, before stepping over to your luxurious marble bathtub.");
-			UtilText.nodeContentSB.append("</p>");
-			
-			if(!slavesWashing.isEmpty()) {
-				boolean soloSlave = slavesWashing.size()==1;
-				UtilText.nodeContentSB.append(getBathSlavesDescription(slavesWashing));
-				
-				UtilText.nodeContentSB.append("<p>");
-				if(soloSlave) {
-					UtilText.nodeContentSB.append(UtilText.parse(slavesWashing,
-							"After making sure that every last inch of your body is sparkling clean, you pull the plug, [pc.step] out of the bath, and tell [npc.name] to help you to dry off."
-									+ " After doing this, the two of you get dressed and step back into your room..."));
-				} else {
-					UtilText.nodeContentSB.append(
-							"After making sure that every last inch of your body is sparkling clean, you pull the plug, you [pc.step] out of the bath, and tell your slaves to help you to dry off."
-									+ " After doing this, you all get dressed and step back into your room...");
-				}
-				UtilText.nodeContentSB.append("</p>");
-				
-			} else {
-				UtilText.nodeContentSB.append(
-						"<p>"
-							+ "Turning on the taps and running yourself a bath, you slip down into the hot water and let out a contented sigh."
-							+ " Deciding that it wouldn't be so bad to take some time out in order to relax, you don't rush as you set about thoroughly cleaning yourself."
-							+ " Eventually, however, you feel as though you've spent enough time in the bath, and, after turning pulling the plug and drying yourself off, you get dressed and step back into your room..."
-						+ "</p>");
-			}
-			
-			return UtilText.nodeContentSB.toString();
-		}
-
-		@Override
-		public Response getResponse(int responseTab, int index) {
-			List<GameCharacter> slaves = new ArrayList<>(slavesInRoom(Main.game.getHourOfDay()));
-			slaves.removeIf(s -> !s.getSlaveJobSettings(SlaveJob.BEDROOM).contains(SlaveJobSetting.BEDROOM_HELP_WASH));
-			if(index==1) {
-				return new Response("Continue", "Return to your room.", ROOM);
-				
-			}
-//			else if(index==2) { //TODO sex with slaves assigned to help wash
-//				return new Response("Sex", "TODO", null); //TODO
-//			}
-			
-			return null;
-		}
-	};
-	
-	public static final DialogueNode AUNT_HOME_PLAYERS_ROOM_MAKEUP = new DialogueNode("Hairstyle & Makeup", "", true) {
-		@Override
-		public void applyPreParsingEffects() {
-			BodyChanging.setTarget(getMakeupTarget());
-		}
-		@Override
-		public String getHeaderContent() {
-			return MiscDialogue.getMakeupDialogue(true,
-					BodyChanging.getTarget().isPlayer()
-						?"You sit down in front of the mirror and prepare to get started on improving your appearance..."
-						:UtilText.parse(BodyChanging.getTarget(), "You get [npc.name] to sit down in front of the mirror and prepare to get started on improving [npc.her] appearance...")).getHeaderContent();
-		}
-		@Override
-		public String getContent() {
-			return "";
-		}
-		@Override
-		public Response getResponse(int responseTab, int index) {
-			if(index==1) {
-				return new Response("Finish", "Finish doing your makeup in the mirror and return to your bedroom.", ROOM);
-			}
-			return null;
-		}
-	};
-	
-
-	public static final DialogueNode AUNT_HOME_PLAYERS_ROOM_CALENDAR = new DialogueNode("Your Room", "", false) {
-
-		@Override
-		public String getContent() {
-			UtilText.nodeContentSB.setLength(0);
-			
-			UtilText.nodeContentSB.append("<p>"
-						+ "You step over to one side of your room, where a calendar has been pinned to the wall."
-						+ " It's quite obviously enchanted, for as you flick through the pages, you discover that each month's picture changes based on your current train of thought.");
-						
-			if(Main.game.getPlayer().getSexualOrientation()==SexualOrientation.ANDROPHILIC) {
-				UtilText.nodeContentSB.append(" As you think about each month, a thematically-dressed man, incubus, or some kind of animal-boy appears on the page.");
-			} else {
-				UtilText.nodeContentSB.append(" As you think about each month, a thematically-dressed woman, succubus, or some kind of animal-girl appears on the page.");
-			}
-			
-			if(Main.game.getPlayer().getCorruptionLevel()==CorruptionLevel.ZERO_PURE) {
-				UtilText.nodeContentSB.append(" The more you flick back and forth through the calendar, the more scantily-dressed the subject of each picture becomes, until you suddenly realise what you're doing and step back, shocked.");
-			} else {
-				UtilText.nodeContentSB.append(" The more you flick back and forth through the calendar, the more scantily-dressed the subject of each picture becomes, and you find yourself getting a little turned on...");
-			}
-			UtilText.nodeContentSB.append("</p>");
-			
-			if(Main.game.getDialogueFlags().values.contains(DialogueFlagValue.knowsDate)) {
-				UtilText.nodeContentSB.append("<p>"
-						+ "Suddenly remembering what it was that you wanted to look at, you scan through the calendar to find the current date,");
-			} else {
-				UtilText.nodeContentSB.append("<p>"
-						+ "You were so distracted by the changing pictures that you momentarily forgot what it was that you wanted to check."
-						+ " Shaking your head, you flip back through the calendar to find out what the current date is,");
-			}
-			
-			UtilText.nodeContentSB.append(" and see that it's the <b style='color:"+PresetColour.BASE_BLUE_LIGHT.toWebHexString()+";'>"
-						+ Units.date(Main.game.getDateNow(), Units.DateType.LONG)
-					+"</b>. From a quick calculation "+(Main.game.getPlayer().getAttributeValue(Attribute.MAJOR_ARCANE)<IntelligenceLevel.ONE_AVERAGE.getMaximumValue()?"(with some help from your phone's calculator)":"")
-					+ ", you figure out that it's been <b style='color:"+PresetColour.GENERIC_EXCELLENT.toWebHexString()+";'>"+Main.game.getDayNumber()+" day"+(Main.game.getDayNumber()>1?"s":"")+"</b> since you appeared in this world."
-					+ "</p>");
-			
-			if(!Main.game.getDialogueFlags().values.contains(DialogueFlagValue.knowsDate)) {
-				UtilText.nodeContentSB.append("<p>"
-						+ "[pc.thought(Wait... "+Main.game.getDateNow().format(DateTimeFormatter.ofPattern("yyyy", Locale.ENGLISH))+"?! I need to check in with Lilaya about that...)]"
-						+ "</p>");
-			}
-			
-			UtilText.nodeContentSB.append("<p>"
-					+ "You notice that on each page of the calendar, there's a few paragraphs detailing the events that occur during that month."
-					+ "</p>");
-			
-			// TODO probably not the best place to put it?
-			Main.game.getDialogueFlags().values.add(DialogueFlagValue.knowsDate);
-			
-			return UtilText.nodeContentSB.toString();
-		}
-
-		@Override
-		public String getResponseTabTitle(int index) {
-			return LilayaHomeGeneric.getLilayasHouseStandardResponseTabs(index);
-		}
-		
-		@Override
-		public Response getResponse(int responseTab, int index) {
-			if(responseTab==1) {
-				return LilayaHomeGeneric.getLilayasHouseFastTravelResponses(index);
-			}
-			if (index == 0) {
-				return new Response("Back", "Step away from the calendar.", ROOM);
-			} else if(index==1) {
-				return new Response("January", "Read the information on January's page. [style.italicsMinorBad(There are currently no special events during January.)]", null);
-			} else if(index==2) {
-				return new Response("February", "Read the information on February page. [style.italicsMinorBad(There are currently no special events during February.)]", null);
-			} else if(index==3) {
-				return new Response("March", "Read the information on March's page. [style.italicsMinorBad(There are currently no special events during March.)]", null);
-			} else if(index==4) {
-				return new Response("April", "Read the information on April's page. [style.italicsMinorBad(There are currently no special events during April.)]", null);
-			} else if(index==5) {
-				return new Response("May", "Read the information on May's page.", AUNT_HOME_PLAYERS_ROOM_CALENDAR_MAY);
-			} else if(index==6) {
-				return new Response("June", "Read the information on June's page.", AUNT_HOME_PLAYERS_ROOM_CALENDAR_JUNE);
-			} else if(index==7) {
-				return new Response("July", "Read the information on July's page. [style.italicsMinorBad(There are currently no special events during July.)]", null);
-			} else if(index==8) {
-				return new Response("August", "Read the information on August's page. [style.italicsMinorBad(There are currently no special events during August.)]", null);
-			} else if(index==9) {
-				return new Response("September", "Read the information on September's page. [style.italicsMinorBad(There are currently no special events during September.)]", null);
-			} else if(index==10) {
-				return new Response("October", "Read the information on October's page.", AUNT_HOME_PLAYERS_ROOM_CALENDAR_OCTOBER);
-			} else if(index==11) {
-				return new Response("November", "Read the information on November's page. [style.italicsMinorBad(There are currently no special events during November.)]", null);
-			} else if(index==12) {
-				return new Response("December", "Read the information on December's page.", AUNT_HOME_PLAYERS_ROOM_CALENDAR_DECEMBER);
-			} else {
-				return null;
-			}
-		}
-	};
-	
 	/** Calendar's associated animal-morphs are based on the twelve animals of the Chinese zodiac, with the Monkey being replaced with a demon, the Rooster with a harpy, and the Snake with a lamia.
 	 *  The ordering of the demon and harpy have also been switched, so that October has demons.<br/>
 	 *  There is also a 20% chance of giving a different, random animal-morph for each month.<br/>
@@ -1994,6 +948,1260 @@ public class RoomPlayer {
 		
 		return sb.toString();
 	}
+
+	public static final DialogueNode ROOM = new DialogueNode("Your Room", "", false) {
+		@Override
+		public void applyPreParsingEffects() {
+			makeupTarget = Main.game.getPlayer();
+		}
+		@Override
+		public String getContent() {
+			StringBuilder sb = new StringBuilder();
+
+			GenericPlace place = Main.game.getPlayerCell().getPlace();
+			
+			sb.append("<p>"
+					+ "Your bedroom is positioned close to the main staircase linking the entrance hall to the first-floor corridor, and is one of the largest chambers in the entire mansion."
+					+ " Opposite the room's main doorway, a set of four large, sach windows provide an excellent view of the courtyard garden below, while off to the left, another door leads through into your private ensuite bathroom."
+				+ "</p>");
+			
+			if(place.getPlaceUpgrades().contains(PlaceUpgrade.LILAYA_PLAYER_ROOM_BED)) {
+				sb.append("<p>"
+							+ "Your room is well furnished, and contains both two sets of drawers and a full-height wardrobe, which provide you with all the storage space you'd ever need."
+							+ " Other than those items of furniture, you also have a sofa, a writing desk complete with matching chair, and a full-height free-standing mirror."
+						+ "</p>");
+			} else {
+				sb.append("<p>"
+						+ "A king-sized bed sits against the right-hand wall, while two sets of drawers and a full-height wardrobe provide you with all the storage space you'd ever need."
+						+ " Other than those items of furniture, you also have a sofa, a writing desk complete with matching chair, and a full-height free-standing mirror."
+					+ "</p>");
+			}
+			
+			sb.append(
+					"<p>"
+						+ "Like everything else that normally would have run on electricity in your world, the lighting, radiators, and plumbing all appear to be powered by the arcane."
+					+ "</p>");
+			
+			sb.append(LilayaHomeGeneric.getRoomModificationsDescription(false));
+
+			List<NPC> charactersPresent = LilayaHomeGeneric.getSlavesAndOccupantsPresent();
+			if(!charactersPresent.isEmpty()) {
+				List<String> names = new ArrayList<>();
+				boolean soloSlave = charactersPresent.size()==1;
+				for(NPC npc : charactersPresent) {
+					names.add("<span style='color:"+npc.getFemininity().getColour().toWebHexString()+";'>"+npc.getName()+"</span>");
+				}
+				sb.append("<p>"
+							+ "Assigned to your room "+(soloSlave?"is your slave":"are your slaves")+"; "+Util.stringsToStringList(names, false)+".");
+				
+				List<NPC> greetings = charactersPresent.stream().filter(npc -> npc.hasSlaveJobSetting(SlaveJob.BEDROOM, SlaveJobSetting.BEDROOM_GREETING)).collect(Collectors.toList());
+				names = new ArrayList<>();
+				for(NPC npc : greetings) {
+					names.add(npc.getName());
+				}
+				soloSlave = greetings.size()==1;
+				if(!greetings.isEmpty()) {
+					sb.append(" Having been instructed to greet you upon your arrival, "
+								+(soloSlave
+										?UtilText.parse(charactersPresent.get(0), "[npc.she] steps forwards and welcomes you back.")
+										:Util.stringsToStringList(names, false)+" step forwards and welcome you back.")
+							+ "</p>");
+
+					List<NPC> greetingsNice = greetings.stream().filter(npc -> npc.getObedienceBasic()==ObedienceLevelBasic.OBEDIENT || npc.getAffectionLevelBasic(Main.game.getPlayer())==AffectionLevelBasic.LIKE).collect(Collectors.toList());
+					for(NPC npc : greetingsNice) {
+						sb.append("<p>");
+						List<String> speechGreetings = new ArrayList<>();
+						List<String> endGreetings = new ArrayList<>();
+						List<String> endSpeechGreetings = new ArrayList<>();
+						
+						if(npc.hasSlavePermissionSetting(SlavePermissionSetting.BEHAVIOUR_PROFESSIONAL)) {
+							speechGreetings.add("[npc.speech(Welcome back, [pc.name],)]");
+							speechGreetings.add("[npc.speech(Good [style.morning], [pc.name],)]");
+							speechGreetings.add("[npc.speech(Welcome home, [pc.name],)]");
+							
+							if(npc.isFeminine()) {
+								endGreetings.add("[npc.name] says, curtsying respectfully towards you.");
+								endGreetings.add("[npc.name] greets you, curtsying respectfully as [npc.she] does so.");
+								endGreetings.add("[npc.name] addresses you, curtsying in the process.");
+							} else {
+								endGreetings.add("[npc.name] says, bowing respectfully towards you.");
+								endGreetings.add("[npc.name] greets you, bowing respectfully as [npc.she] does so.");
+								endGreetings.add("[npc.name] addresses you, bowing in the process.");
+							}
+							
+						} else if(npc.hasSlavePermissionSetting(SlavePermissionSetting.BEHAVIOUR_SEDUCTIVE)) {
+							speechGreetings.add("[npc.speech(Back so soon, [pc.name]?)]");
+							speechGreetings.add("[npc.speech(Back already, [pc.name]?)]");
+							speechGreetings.add("[npc.speech(You're back to see me so soon, [pc.name]?)]");
+							
+							if(npc.isFeminine()) {
+								endGreetings.add("[npc.name] coyly asks, before biting [npc.her] lip and winking at you.");
+								endGreetings.add("[npc.name] coyly asks, before turning slightly to one side and flashing you a seductive smile.");
+								endGreetings.add("[npc.name] coyly asks, winking at you before blowing you a little kiss.");
+							} else {
+								endGreetings.add("[npc.name] flirtatiously asks, before flashing you a charming smile.");
+								endGreetings.add("[npc.name] flirtatiously asks, before puffing his chest up and flashing you a winning smile.");
+								endGreetings.add("[npc.name] flirtatiously asks, smiling at you in a charming manner.");
+							}
+							
+						} else if(npc.hasSlavePermissionSetting(SlavePermissionSetting.BEHAVIOUR_SLUTTY)) {
+							speechGreetings.add("[npc.speech(You're back to fuck, right, [pc.name]?)]");
+							speechGreetings.add("[npc.speech(Oh, [pc.name], you're here for a good fuck, aren't you?)]");
+							speechGreetings.add("[npc.speech(Hey, [pc.name], you wanna fuck, right?)]");
+
+							endGreetings.add("[npc.name] bluntly asks,");
+							endGreetings.add("[npc.name] tactlessly asks,");
+							endGreetings.add("[npc.name] gracelessly asks,");
+							
+							if(npc.isFeminine()) {
+								endSpeechGreetings.add("[npc.speech(You know I'm always horny for you...)]");
+								endSpeechGreetings.add("[npc.speech(I can't stop fantasising about you...)]");
+								endSpeechGreetings.add("[npc.speech(I get so horny just thinking about you...)]");
+							} else {
+								endSpeechGreetings.add("[npc.speech(I want you so badly right now.)]");
+								endSpeechGreetings.add("[npc.speech(I can't stop fantasising about you.)]");
+								endSpeechGreetings.add("[npc.speech(You know I'm always ready whenever you are.)]");
+							}
+							
+						} else if(npc.hasSlavePermissionSetting(SlavePermissionSetting.BEHAVIOUR_STANDARD)) {
+							speechGreetings.add("[npc.speech(Hello, [pc.name],)]");
+							speechGreetings.add("[npc.speech(Good [style.morning], [pc.name],)]");
+							speechGreetings.add("[npc.speech(Welcome back, [pc.name],)]");
+							
+							if(npc.isShy()) {
+								endGreetings.add("[npc.name] says, looking at the floor and shyly shuffling [npc.her] [npc.feet].");
+								endGreetings.add("[npc.name] says in a quiet voice, before blushing and looking down at the floor.");
+								endGreetings.add("[npc.name] quietly greets you while shyly shuffling [npc.her] [npc.feet].");
+								
+							} else if(npc.isKind()) {
+								endGreetings.add("[npc.name] says, smiling kindly at you,");
+								endGreetings.add("[npc.name] says in a kind voice, before gently smiling at you and continuing,");
+								endGreetings.add("[npc.name] happily greets you in a loving tone,");
+								
+								endSpeechGreetings.add("[npc.speech(Is there anything I can do for you?)]");
+								endSpeechGreetings.add("[npc.speech(How are you this [style.morning]?)]");
+								endSpeechGreetings.add("[npc.speech(Please let me know if there's anything I can do for you!)]");
+								
+							} else {
+								endGreetings.add("[npc.name] calls out, before smiling happily at you.");
+								endGreetings.add("[npc.name] happily greets you, before smiling and waiting for your orders.");
+								endGreetings.add("[npc.name] says, smiling at you.");
+								endGreetings.add("[npc.name] happily says, before smiling at you.");
+								endGreetings.add("[npc.name] addresses you, before smiling and waiting to see what it is you'll do next.");
+								endGreetings.add("[npc.name] greets you with a smile.");
+							}
+							
+						} else if(npc.hasSlavePermissionSetting(SlavePermissionSetting.BEHAVIOUR_WHOLESOME)) {
+							speechGreetings.add("[npc.speech(Hello, [pc.name],)]");
+							speechGreetings.add("[npc.speech(Good [style.morning], [pc.name],)]");
+							speechGreetings.add("[npc.speech(Welcome home, [pc.name],)]");
+							
+							if(npc.isShy()) {
+								endGreetings.add("[npc.name] says, looking at the floor and shyly shuffling [npc.her] [npc.feet], before continuing,");
+								endGreetings.add("[npc.name] says in a quiet voice, before blushing and shyly continuing,");
+								endGreetings.add("[npc.name] quietly greets you while shyly shuffling [npc.her] [npc.feet], before blushing and continuing,");
+								
+								endSpeechGreetings.add("[npc.speech(I'm so happy that you're back; I really missed you...)]");
+								endSpeechGreetings.add("[npc.speech(It really makes me happy to see you again...)]");
+								endSpeechGreetings.add("[npc.speech(I really missed you while you were gone...)]");
+								
+							} else if(npc.isKind()) {
+								endGreetings.add("[npc.name] says, smiling happily at you for a moment, before continuing,");
+								endGreetings.add("[npc.name] says in a kind voice, before smiling at you in a loving manner and continuing,");
+								endGreetings.add("[npc.name] greets you in a kind tone, before throwing you a loving smile and continuing,");
+
+								endSpeechGreetings.add("[npc.speech(It's so good to see you again; it felt like you were gone forever!)]");
+								endSpeechGreetings.add("[npc.speech(I'm so happy to see you again; I hope that you won't be gone for so long next time!)]");
+								endSpeechGreetings.add("[npc.speech(I really missed you, you know; thank goodness you're back now!)]");
+								
+							} else {
+								endGreetings.add("[npc.name] cheerfully says, before continuing,");
+								endGreetings.add("[npc.name] happily says, before smiling at you and continuing,");
+								endGreetings.add("[npc.name] greets you in an exited tone, before flashing you a happy smile and continuing,");
+
+								endSpeechGreetings.add("[npc.speech(I'm so happy to see you again!)]");
+								endSpeechGreetings.add("[npc.speech(It really makes me happy to see you again!)]");
+								endSpeechGreetings.add("[npc.speech(I hope you aren't gone for so long next time! I miss you, you know?)]");
+							}
+						}
+						sb.append(UtilText.parse(npc,Util.randomItemFrom(speechGreetings)));
+						sb.append(" ");
+						sb.append(UtilText.parse(npc,Util.randomItemFrom(endGreetings)));
+						if(!endSpeechGreetings.isEmpty()) {
+							sb.append(" ");
+							sb.append(UtilText.parse(npc,Util.randomItemFrom(endSpeechGreetings)));
+						}
+						sb.append("</p>");
+					}
+					
+					List<NPC> greetingsRude = new ArrayList<>(greetings);
+					greetingsRude.removeAll(greetingsNice);
+					for(NPC npc : greetingsRude) {
+						sb.append("<p>");
+						List<String> speechGreetings = new ArrayList<>();
+						List<String> endGreetings = new ArrayList<>();
+						
+							if(npc.isShy()) {
+								speechGreetings.add("[npc.speech(Oh, it's just you,)]");
+								speechGreetings.add("[npc.speech(Damn, I was hoping it was someone else,)]");
+								speechGreetings.add("[npc.speech(Oh no, not you,)]");
+								speechGreetings.add("[npc.speech(Why did [pc.she] have to come back,)]");
+								
+								endGreetings.add("[npc.name] mutters under [npc.her] breath, before looking at the floor and shuffling [npc.her] [npc.feet].");
+								endGreetings.add("[npc.name] mumbles, before casting [npc.her] gaze to the floor and refusing to look up at you.");
+								endGreetings.add("[npc.name] mutters in annoyance, before shuffling [npc.her] [npc.feet] and letting out another quiet curse.");
+								
+							} else if(npc.isSelfish()) {
+								speechGreetings.add("[npc.speech(Eugh, what do you want now, [pc.name]?)]");
+								speechGreetings.add("[npc.speech(And what exactly do you want <i>this</i> time, [pc.name]?)]");
+								speechGreetings.add("[npc.speech(So, why are you back?)]");
+								speechGreetings.add("[npc.speech(Why did you have to come back?)]");
+								
+								endGreetings.add("[npc.name] angrily asks, not even trying to conceal [npc.her] animosity towards you.");
+								endGreetings.add("[npc.name] questions, before narrowing [npc.her] [npc.eyes] and glaring angrily at you.");
+								endGreetings.add("[npc.name] snaps, before glaring at you with resentment in [npc.her] [npc.eyes].");
+								
+							} else {
+								speechGreetings.add("[npc.speech(Just do whatever it is you're here to do, [pc.name],)]");
+								speechGreetings.add("[npc.speech(Go on then, [pc.name], do whatever it is you're here to do,)]");
+								speechGreetings.add("[npc.speech(Let's just get this over with,)]");
+								speechGreetings.add("[npc.speech(Go on then, tell me what it is you want this time,)]");
+								
+								endGreetings.add("[npc.name] sighs, before rolling [npc.her] [npc.eyes] in annoyance.");
+								endGreetings.add("[npc.name] sighs in annoyance, crossing [npc.her] [npc.arms] and waiting for you to make the next move.");
+								endGreetings.add("[npc.name] sighs, clearly not at all happy with being assigned to your room.");
+								endGreetings.add("[npc.name] says, before letting out a weary sigh and tapping [npc.her] [npc.foot] on the floor.");
+								endGreetings.add("[npc.name] says, before sighing and rolling [npc.her] [npc.eyes] in a clear sign of displeasure.");
+								endGreetings.add("[npc.name] says, crossing [npc.her] [npc.arms] and letting out an annoyed sigh.");
+							}
+
+						sb.append(UtilText.parse(npc,Util.randomItemFrom(speechGreetings)));
+						sb.append(" ");
+						sb.append(UtilText.parse(npc,Util.randomItemFrom(endGreetings)));
+						sb.append("</p>");
+					}
+				}
+			}
+			
+			return sb.toString();
+		}
+
+		@Override
+		public String getResponseTabTitle(int index) {
+			return LilayaHomeGeneric.getLilayasHouseStandardResponseTabs(index);
+		}
+		
+		@Override
+		public Response getResponse(int responseTab, int index) {
+			return getResponseRoom(responseTab, index);
+		}
+	};
+
+	private static List<GameCharacter> slavesInRoom(int hour) {
+		List<GameCharacter> charactersPresent = new ArrayList<>();
+		
+		for(String slaveId : Main.game.getPlayer().getSlavesOwned()) {
+			try {
+				GameCharacter slave = Main.game.getNPCById(slaveId);
+				if(slave.getSlaveJob(hour)==SlaveJob.BEDROOM) {
+					charactersPresent.add(slave);
+				}
+				
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
+		}
+		return charactersPresent;
+	}
+	
+	private static List<GameCharacter> slavesWantingToSexPlayer(int hour) {
+		List<GameCharacter> charactersPresent = new ArrayList<>();
+		
+		for(String slaveId : Main.game.getPlayer().getSlavesOwned()) {
+			try {
+				GameCharacter slave = Main.game.getNPCById(slaveId);
+				if(slave.getSlaveJob(hour)==SlaveJob.BEDROOM
+						&& slave.hasSlavePermissionSetting(SlavePermissionSetting.SEX_INITIATE_PLAYER)
+						&& slave.isAttractedTo(Main.game.getPlayer())
+						&& slave.hasStatusEffect(StatusEffect.PENT_UP_SLAVE)) {
+					charactersPresent.add(slave);
+				}
+				
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
+		}
+		return charactersPresent;
+	}
+	
+//	private static int getHourPlusSleep() {
+//		return (Main.game.getHourOfDay() + (sleepTimeInMinutes/60))%24;
+//	}
+	
+	public static final DialogueNode AUNT_HOME_PLAYERS_ROOM_SLEEP = new DialogueNode("Your Room", "", false) {
+
+		@Override
+		public boolean isTravelDisabled() {
+			return !slavesWantingToSexPlayer(Main.game.getHourOfDay()).isEmpty();
+		}
+		
+		@Override
+		public String getContent() {
+			StringBuilder sb = new StringBuilder();
+			
+			List<GameCharacter> charactersPresent = slavesInRoom(Main.game.getHourOfDay());
+			
+			if(!charactersPresent.isEmpty()) {
+				boolean soloSlave = charactersPresent.size()==1;
+				List<GameCharacter> slavesToWakePlayer = charactersPresent.stream().filter((npc) -> npc.hasSlaveJobSetting(SlaveJob.BEDROOM, SlaveJobSetting.BEDROOM_WAKE_UP)).collect(Collectors.toList());
+				List<String> names = new ArrayList<>();
+				charactersPresent.stream().forEach((npc) -> names.add(npc.getName()));
+
+				sb.append("<p>"
+						+ "Feeling tired and in need of some rest, you head over to your bed and collapse down onto the mattress, before pulling back the covers and slipping beneath them."
+						+ " Realising that you want to go to sleep, "+Util.stringsToStringList(names, false)+(soloSlave?" quickly draws the curtains":" quickly draw the curtains")+", before stepping back over towards you."
+					+ "</p>");
+
+				// Sleeping arrangements:
+				List<GameCharacter> floorSlaves = charactersPresent.stream().filter((npc) -> npc.hasSlaveJobSetting(SlaveJob.BEDROOM, SlaveJobSetting.BEDROOM_SLEEP_FLOOR)).collect(Collectors.toList());
+				List<GameCharacter> onBedSlaves = charactersPresent.stream().filter((npc) -> npc.hasSlaveJobSetting(SlaveJob.BEDROOM, SlaveJobSetting.BEDROOM_SLEEP_ON_BED)).collect(Collectors.toList());
+				if(!floorSlaves.isEmpty() || !onBedSlaves.isEmpty()) {
+					sb.append("<p>");
+					boolean soloFloor = floorSlaves.size()==1;
+					List<String> floorNames = new ArrayList<>();
+					floorSlaves.stream().forEach((npc) -> floorNames.add(npc.getName()));
+					if(!floorSlaves.isEmpty()) {
+						sb.append(soloFloor
+								?UtilText.parse(floorSlaves.get(0), "Knowing that [npc.sheIs] not allowed to sleep on your bed, [npc.name] lies down on the floor and prepares to try to get some sleep.")
+								:"Knowing that they aren't allowed to sleep on your bed, "+Util.stringsToStringList(floorNames, false)+" lie down on the floor and prepare to try to get some sleep.");
+					}
+					if(!onBedSlaves.isEmpty()) {
+						boolean soloOnBed = onBedSlaves.size()==1;
+						List<String> onBedNames = new ArrayList<>();
+						onBedSlaves.stream().forEach((npc) -> onBedNames.add(npc.getName()));
+						if(!floorSlaves.isEmpty()) {
+							sb.append(soloOnBed
+									?UtilText.parse(onBedSlaves.get(0),  "Stepping past "+Util.stringsToStringList(floorNames, false)+", [npc.name] climbs up onto your bed, before letting out a relaxed sigh and curling up on your covers.")
+									:"Stepping past "+(soloFloor?UtilText.parse(floorSlaves.get(0), "[npc.name]"):"your slaves on the floor")
+										+", "+Util.stringsToStringList(onBedNames, false)+" climb up onto your bed, before each letting out relaxed sighs and curling up on your covers.");
+						} else {
+							sb.append(soloOnBed
+									?UtilText.parse(onBedSlaves.get(0), "Knowing that [npc.sheIs] allowed to sleep on the covers, [npc.name] climbs up onto your bed, before letting out a relaxed sigh and curling up, ready to sleep.")
+									:"Knowing that they're allowed to sleep on the covers, "+Util.stringsToStringList(onBedNames, false)+" climb up onto your bed, before each letting out relaxed sighs and curling up, ready to sleep.");
+						}
+					}
+					sb.append("</p>");
+				}
+
+				List<GameCharacter> inBedSlaves = charactersPresent.stream().filter((npc) -> npc.hasSlaveJobSetting(SlaveJob.BEDROOM, SlaveJobSetting.BEDROOM_SLEEP_IN_BED)).collect(Collectors.toList());
+				if(!inBedSlaves.isEmpty()) {
+					sb.append("<p>");
+					boolean soloInBed = inBedSlaves.size()==1;
+					List<String> inBedNames = new ArrayList<>();
+					inBedSlaves.stream().forEach((npc) -> inBedNames.add(npc.getName()));
+					sb.append(soloInBed
+							?UtilText.parse(inBedSlaves.get(0), "Having been given your explicit permission to do so, [npc.name] pulls back a corner of the duvet, and then quickly slips in under the covers.")
+							:"Having been given your explicit permission to do so, "+Util.stringsToStringList(inBedNames, false)
+								+" pull back the top two corners of the duvet, and then "+(inBedSlaves.size()==2?"both":"each")+" of them quickly slip in under the covers.");
+					sb.append("</p>");
+					
+					List<GameCharacter> niceSlaves = inBedSlaves.stream().filter(npc -> npc.getObedienceBasic()==ObedienceLevelBasic.OBEDIENT || npc.getAffectionLevelBasic(Main.game.getPlayer())==AffectionLevelBasic.LIKE).collect(Collectors.toList());
+					for(GameCharacter npc : niceSlaves) {
+						sb.append("<p>");
+						List<String> speechGreetings = new ArrayList<>();
+						List<String> endGreetings = new ArrayList<>();
+						List<String> endSpeechGreetings = new ArrayList<>();
+						
+						if(npc.hasSlavePermissionSetting(SlavePermissionSetting.BEHAVIOUR_PROFESSIONAL)) {
+							speechGreetings.add(UtilText.parse(npc, "[npc.speech(Allow me to keep you warm, [pc.name],)]"));
+							speechGreetings.add(UtilText.parse(npc, "[npc.speech(Please let me provide you with some extra comfort, [pc.name],)]"));
+							speechGreetings.add(UtilText.parse(npc, "[npc.speech(Please allow me to keep you warm, [pc.name],)]"));
+							
+							endGreetings.add(UtilText.parse(npc, "[npc.name] offers, before snuggling up against you."));
+							endGreetings.add(UtilText.parse(npc, "[npc.name] offers, moving up beneath the sheets to snuggle in alongside you."));
+							endGreetings.add(UtilText.parse(npc, "[npc.name] says, before shuffling up against you and pressing [npc.her] body against yours."));
+							
+						} else if(npc.hasSlavePermissionSetting(SlavePermissionSetting.BEHAVIOUR_SEDUCTIVE)) {
+							speechGreetings.add(UtilText.parse(npc, "[npc.speech(Perhaps we could do something else in this bed after you wake up?)]"));
+							speechGreetings.add(UtilText.parse(npc, "[npc.speech(After you've got some rest, perhaps the two of us could spend some energy together?)]"));
+							speechGreetings.add(UtilText.parse(npc, "[npc.speech(Would you like to have some fun with me after you've woken up, [pc.name]?)]"));
+							
+							endGreetings.add(UtilText.parse(npc, "[npc.name] teases, pressing [npc.herself] against you."));
+							endGreetings.add(UtilText.parse(npc, "[npc.name] seductively suggests, before moving up beneath the sheets to press [npc.herself] against you."));
+							endGreetings.add(UtilText.parse(npc, "[npc.name] teases, before sliding up beneath the sheets to press [npc.her] body against you."));
+							
+						} else if(npc.hasSlavePermissionSetting(SlavePermissionSetting.BEHAVIOUR_SLUTTY)) {
+							if(npc.hasBreasts()) {
+								speechGreetings.add(UtilText.parse(npc, "[npc.speech(You can use my tits as a pillow if you want,)]"));
+								speechGreetings.add(UtilText.parse(npc, "[npc.speech(Give my tits a good grope; it'll help you sleep better,)]"));
+								speechGreetings.add(UtilText.parse(npc, "[npc.speech(Come on, play with my tits a bit before you sleep,)]"));
+								
+								endGreetings.add(UtilText.parse(npc, "[npc.name] offers, pressing [npc.her] [npc.breastSize] breasts in against you."));
+								endGreetings.add(UtilText.parse(npc, "[npc.name] cheekily suggests, before sliding up under the covers and pressing [npc.her] [npc.breastSize] breasts into you."));
+								endGreetings.add(UtilText.parse(npc, "[npc.name] suggests, before shuffling up and pressing [npc.her] [npc.breastSize] breasts against you."));
+								
+							} else {
+								speechGreetings.add(UtilText.parse(npc, "[npc.speech(We can have a good fuck after you've slept, right?)]"));
+								speechGreetings.add(UtilText.parse(npc, "[npc.speech(After you've got some rest, you'll be up for having a good fuck, won't you?)]"));
+								speechGreetings.add(UtilText.parse(npc, "[npc.speech(When you get up, we can have a good fuck, right?)]"));
+								
+								endGreetings.add(UtilText.parse(npc, "[npc.name] bluntly asks, reaching down under the covers to stroke your [pc.leg]."));
+								endGreetings.add(UtilText.parse(npc, "[npc.name] cheekily suggests, before sliding up under the covers and pressing [npc.herself] against you."));
+								endGreetings.add(UtilText.parse(npc, "[npc.name] suggests, before shuffling up and pressing [npc.herself] against you."));
+							}
+							
+						} else if(npc.hasSlavePermissionSetting(SlavePermissionSetting.BEHAVIOUR_STANDARD)) {
+							if(npc.isShy()) {
+								speechGreetings.add(UtilText.parse(npc, "[npc.speech(Erm, [pc.name], just let me know if I'm taking up too much room,)]"));
+								speechGreetings.add(UtilText.parse(npc, "[npc.speech(Just let me know if I'm getting in your way,)]"));
+								speechGreetings.add(UtilText.parse(npc, "[npc.speech(If I'm getting too close, just let me know,)]"));
+								
+								endGreetings.add(UtilText.parse(npc, "[npc.name] shyly says, using the top edge of the sheets to hide [npc.her] blushing [npc.face]."));
+								endGreetings.add(UtilText.parse(npc, "[npc.name] says, nervously clutching the sheets as [npc.she] shuffles up alongside you."));
+								endGreetings.add(UtilText.parse(npc, "[npc.name] mutters, furiously blushing as [npc.she] moves up alongside you beneath the sheets."));
+								
+							} else {
+								speechGreetings.add(UtilText.parse(npc, "[npc.speech(Let me get a little closer,)]"));
+								speechGreetings.add(UtilText.parse(npc, "[npc.speech(I just need to get comfortable,)]"));
+								speechGreetings.add(UtilText.parse(npc, "[npc.speech(There we go, that's better,)]"));
+								
+								endGreetings.add(UtilText.parse(npc, "[npc.name] says, shuffling up alongside you before nestling in against your [pc.breasts]."));
+								endGreetings.add(UtilText.parse(npc, "[npc.name] says, before sliding up under the covers and pressing [npc.herself] against you."));
+								endGreetings.add(UtilText.parse(npc, "[npc.name] says, smiling as [npc.she] presses [npc.herself] against you."));
+							}
+							
+						} else if(npc.hasSlavePermissionSetting(SlavePermissionSetting.BEHAVIOUR_WHOLESOME)) {
+							speechGreetings.add(UtilText.parse(npc, "[npc.speech(I love getting to sleep with you, [pc.name],)]"));
+							speechGreetings.add(UtilText.parse(npc, "[npc.speech(This is the best; getting to sleep with you like this,)]"));
+							speechGreetings.add(UtilText.parse(npc, "[npc.speech(Getting to sleep with you is the best part of the day,)]"));
+							
+							if(npc.isShy()) {
+								endGreetings.add(UtilText.parse(npc, "[npc.name] shyly says, using the top edge of the sheets to hide [npc.her] blushing [npc.face] as [npc.she] shuffles up to press [npc.herself] against you."));
+								endGreetings.add(UtilText.parse(npc, "[npc.name] says, nervously clutching the sheets as [npc.she] shuffles up alongside you."));
+								endGreetings.add(UtilText.parse(npc, "[npc.name] nervously mutters, furiously blushing as [npc.she] moves up alongside you beneath the sheets."));
+								
+							} else {
+								endGreetings.add(UtilText.parse(npc, "[npc.name] says, smiling happily as [npc.she] snuggles up against you."));
+								endGreetings.add(UtilText.parse(npc, "[npc.name] says, before sliding up under the covers and lovingly pressing [npc.herself] against you."));
+								endGreetings.add(UtilText.parse(npc, "[npc.name] lovingly says, before shuffling up and pressing [npc.herself] against you."));
+							}
+						}
+						if(npc.getTailType().isSuitableForSleepHugging()) {
+							endSpeechGreetings.add(UtilText.parse(npc, "With a satisfied sigh, the [npc.race] moves [npc.her] [npc.tail+] around beneath the covers, before laying it over your body and using it to give you a loving tail-hug."));
+							endSpeechGreetings.add(UtilText.parse(npc, "Moving [npc.her] [npc.tail+] around beneath the covers, the [npc.race] wraps it around your [pc.leg], before moving in even closer against you."));
+							endSpeechGreetings.add(
+									UtilText.parse(npc, "Displaying an impressive level of control over [npc.her] [npc.tail+], the [npc.race] swiftly moves it up and wraps it around your lower body, before snuggling in even closer against you."));
+						}
+						
+						sb.append(UtilText.parse(npc,Util.randomItemFrom(speechGreetings)));
+						sb.append(" ");
+						sb.append(UtilText.parse(npc,Util.randomItemFrom(endGreetings)));
+						if(!endSpeechGreetings.isEmpty()) {
+							sb.append(" ");
+							sb.append(UtilText.parse(npc,Util.randomItemFrom(endSpeechGreetings)));
+						}
+						sb.append("</p>");
+					}
+					
+					List<GameCharacter> rudeSlaves = new ArrayList<>(inBedSlaves);
+					rudeSlaves.removeAll(niceSlaves);
+					for(GameCharacter npc : rudeSlaves) {
+						sb.append("<p>");
+							List<String> speechGreetings = new ArrayList<>();
+							List<String> endGreetings = new ArrayList<>();
+							if(npc.isShy()) {
+								speechGreetings.add(UtilText.parse(npc, "[npc.speech(Please respect my side of the bed,)]"));
+								speechGreetings.add(UtilText.parse(npc, "[npc.speech(I really would prefer it if you didn't get too close,)]"));
+								speechGreetings.add(UtilText.parse(npc, "[npc.speech(I'd really like it if you didn't touch me,)]"));
+								
+								endGreetings.add(UtilText.parse(npc, "[npc.name] nervously requests, before rolling over and turning [npc.her] back to you."));
+								endGreetings.add(UtilText.parse(npc, "[npc.name] mutters, before shuffling away from you."));
+								endGreetings.add(UtilText.parse(npc, "[npc.name] shyly requests, before shuffling away under the covers and turning [npc.her] back to you."));
+								
+							} else if(npc.isSelfish()) {
+								speechGreetings.add(UtilText.parse(npc, "[npc.speech(Don't roll over into my personal space in your sleep,)]"));
+								speechGreetings.add(UtilText.parse(npc, "[npc.speech(Keep to your side of the bed,)]"));
+								speechGreetings.add(UtilText.parse(npc, "[npc.speech(There's plenty of room on your side of the bed; don't come into mine,)]"));
+								
+								endGreetings.add(UtilText.parse(npc, "[npc.name] warns, letting out an annoyed huff as [npc.she] shuffles away from you."));
+								endGreetings.add(UtilText.parse(npc, "[npc.name] bluntly states, before shuffling away from you and letting out a frustrated sigh."));
+								endGreetings.add(UtilText.parse(npc, "[npc.name] says, before turning [npc.her] back to you."));
+								
+							} else {
+								speechGreetings.add(UtilText.parse(npc, "[npc.speech(I'm just going to keep to my part of the bed,)]"));
+								speechGreetings.add(UtilText.parse(npc, "[npc.speech(I'll just stay over here on my side,)]"));
+								speechGreetings.add(UtilText.parse(npc, "[npc.speech(I'll leave you plenty of room, don't worry,)]"));
+								
+								endGreetings.add(UtilText.parse(npc, "[npc.name] says, letting out a weary sigh as [npc.she] shuffles away from you."));
+								endGreetings.add(UtilText.parse(npc, "[npc.name] sighs, shuffling away a little before rolling over and turning [npc.her] back on you."));
+								endGreetings.add(UtilText.parse(npc, "[npc.name] sighs, before turning [npc.her] back to you and shuffling over to the edge of the bed."));
+							}
+							sb.append(UtilText.parse(npc,Util.randomItemFrom(speechGreetings)));
+							sb.append(" ");
+							sb.append(UtilText.parse(npc,Util.randomItemFrom(endGreetings)));
+						sb.append("</p>");
+					}
+				}
+				
+				int hour = Main.game.getHourOfDay();
+				String morningString = "evening";
+				if(hour<4) {
+					morningString = "evening";
+				} else if(hour<12) {
+					morningString = "morning";
+				}else if(hour<17) {
+					morningString = "afternoon";
+				}
+
+				List<GameCharacter> hornySlaves = slavesWantingToSexPlayer(Main.game.getHourOfDay());
+				
+				if(!slavesToWakePlayer.isEmpty()) {
+					GameCharacter slaveWaking = Util.randomItemFrom(slavesToWakePlayer);
+					sb.append("<p>"
+							+ (soloSlave
+								?UtilText.parse(slaveWaking,
+									"With you and [npc.name] now in your respective positions, you ask [npc.herHim] to wake you at the time that you'd like to be getting up."
+										+ " After [npc.sheHas] reassured you that [npc.she] won't let you sleep in too late, you let out a contented sigh, close your eyes, and start to drift off to sleep...")
+								:UtilText.parse(slaveWaking,
+									"With your slaves now being settled into their respective positions, you ask [npc.name] to wake you at the time that you'd like to be getting up."
+										+ " After [npc.sheHas] reassured you that [npc.she] won't let you sleep in too late, you let out a contented sigh, close your eyes, and start to drift off to sleep..."))
+						+ "</p>"
+						+ "<p>"
+							+ "[style.italics(...)]"
+						+ "</p>");
+					
+					if(hornySlaves.isEmpty()) {
+						sb.append("<p>");
+						if(slaveWaking.hasSlavePermissionSetting(SlavePermissionSetting.BEHAVIOUR_PROFESSIONAL)) {
+							sb.append(UtilText.parse(slaveWaking,
+									"[npc.speech([pc.Name]? It's the appointed hour for you to be waking up,)] you hear a voice calling out to you, and as you slowly open your [pc.eyes], you see [npc.name] smiling down at you."
+									+ " Seeing that you're awake, [npc.she] withdraws to open the curtains, calling over [npc.her] shoulder as [npc.she] does so, [npc.speech(Good "+morningString+", [pc.name]!)]"));
+						} else if(slaveWaking.hasSlavePermissionSetting(SlavePermissionSetting.BEHAVIOUR_SEDUCTIVE)) {
+							sb.append(UtilText.parse(slaveWaking, 
+									"[npc.speech(Come on, [pc.name], it's time to wake up,)] you hear a voice seductively whispering into your [pc.ear], and as you slowly open your [pc.eyes], you see [npc.name] smiling down at you and biting [npc.her] lip."
+									+ " Seeing that you're awake, [npc.she] runs a hand over your [pc.chest], before withdrawing to open the curtains. Calling over [npc.her] shoulder as [npc.she] does so, [npc.she] teases,"
+									+ " [npc.speech(Good "+morningString+", [pc.name]... So, is there anything <i>special</i> that you wanted to do today?)]"));
+						} else if(slaveWaking.hasSlavePermissionSetting(SlavePermissionSetting.BEHAVIOUR_SLUTTY)) {
+							sb.append(UtilText.parse(slaveWaking,
+									"[npc.speech(If you get up now, you can make time for a quick fuck, can't you?)] you hear a voice asking, and as you slowly open your [pc.eyes], you see [npc.name] hungrily gazing down at you."
+									+ " Seeing that you're awake, [npc.she] leans down to kiss you fully on the [pc.lips], before withdrawing to open the curtains. Calling over [npc.her] shoulder as [npc.she] does so, [npc.she] teases,"
+									+ " [npc.speech(Good "+morningString+", [pc.name]! So, you want to fuck me now, right?)]"));
+						} else if(slaveWaking.hasSlavePermissionSetting(SlavePermissionSetting.BEHAVIOUR_STANDARD)) {
+							if(slaveWaking.isShy()) {
+								sb.append(UtilText.parse(slaveWaking,
+										"[npc.speech([pc.Name]? Erm, excuse me, [pc.name]? It's time to wake up,)] you hear a voice nervously calling out to you, and as you slowly open your [pc.eyes], you see [npc.name] worriedly looking down at you."
+											+ " Seeing that you're awake, [npc.she] breaths a little sigh of relief and hurries off to open the curtains, calling out as [npc.she] does so, [npc.speech(Good "+morningString+", [pc.name]!)]"));
+							} else {
+								sb.append(UtilText.parse(slaveWaking, 
+										"[npc.speech([pc.Name]? Come on, [pc.name], it's time to wake up,)] you hear a voice calling out to you, and as you slowly open your [pc.eyes], you see [npc.name] smiling down at you."
+												+ " Seeing that you're awake, [npc.she] withdraws to open the curtains, calling over [npc.her] shoulder as [npc.she] does so, [npc.speech(Good "+morningString+", [pc.name]!)]"));
+							}
+						} else if(slaveWaking.hasSlavePermissionSetting(SlavePermissionSetting.BEHAVIOUR_WHOLESOME)) {
+							if(slaveWaking.isShy()) {
+								sb.append(UtilText.parse(slaveWaking,
+										"[npc.speech([pc.Name]? Um... Come on, sleepy... It's time to wake up,)] you hear a voice shyly calling out to you, and as you slowly open your [pc.eyes], you see [npc.name] looking down at you."
+												+ " Seeing that you're awake, [npc.she] breaths a little sigh of relief and hurries off to open the curtains, quietly calling out as [npc.she] does so,"
+												+ " [npc.speech(Good "+morningString+", [pc.name]... I hope you have a wonderful day today...)]"));
+							} else if(slaveWaking.isKind()) {
+								sb.append(UtilText.parse(slaveWaking,
+										"[npc.speech([pc.Name]? Come on, sleepy-head! You don't want to stay in bed forever do you?)] you hear a voice calling out to you, and as you slowly open your [pc.eyes], you see [npc.name] smiling down at you."
+												+ " Seeing that you're awake, [npc.she] gives your face a gentle, loving stroke, before hurrying off to open the curtains, calling out over [npc.her] shoulder as [npc.she] does so,"
+												+ " [npc.speech(Good "+morningString+", [pc.name]! I hope you have a wonderful day today!)]"));
+							} else {
+								sb.append(UtilText.parse(slaveWaking,
+										"[npc.speech([pc.Name]? Come on, sleepy-head! You don't want to stay in bed forever do you?)] you hear a voice calling out to you, and as you slowly open your [pc.eyes], you see [npc.name] smiling down at you."
+												+ " Seeing that you're awake, [npc.she] stands up and hurries off to open the curtains, calling out over [npc.her] shoulder as [npc.she] does so,"
+												+ " [npc.speech(Good "+morningString+", [pc.name]! I hope you have a wonderful day today!)]"));
+							}
+						}
+						sb.append("</p>");
+
+						sb.append(UtilText.parse(slaveWaking,
+								"<p>"
+									+ "As comfortable as you are, you decide that you'd better do as [npc.name] says and get out of bed, and so, after a minute of lying beneath the covers, you do just that."
+									+ " With a satisfied yawn and stretch of your [pc.arms], you allow "+ Util.stringsToStringList(names, false)+" to assist you as you gather your things, and with one final stretch, you get ready to set out once more..."
+								+ "</p>"));
+					}
+					
+				} else {
+					sb.append("<p>"
+								+ (soloSlave
+									?UtilText.parse(charactersPresent.get(0),
+											"With you and [npc.name] now in your respective positions, you set your phone's alarm and place it on the bedside cabinet beside you."
+											+ " Letting out a contented sigh, you close your eyes and start to drift off to sleep...")
+									:"With your slaves now being settled into their respective positions, you set your phone's alarm and place it on the bedside cabinet beside you."
+										+ " Letting out a contented sigh, you close your eyes and start to drift off to sleep...")
+							+ "</p>"
+							+ "<p>"
+								+ "[style.italics(...)]"
+							+ "</p>");
+
+					if(hornySlaves.isEmpty()) {
+						sb.append(
+								"<p>"
+									+ "<i>Beep-beep... beep-beep... bee-</i>"
+								+ "</p>"
+								+ "<p>"
+									+ "Rolling over, you fumble for your phone, turning off the alarm before sinking back onto your bed with a sigh."
+									+ " As comfortable as you are, you decide that you'd better get out of bed, and so, after a minute of lying beneath the covers, you do just that."
+									+ " With a satisfied yawn and stretch of your [pc.arms], you allow "+ Util.stringsToStringList(names, false)+" to assist you as you gather your things, and with one final stretch, you get ready to set out once more..."
+								+ "</p>");
+					}
+				}
+
+				if(!hornySlaves.isEmpty()) {
+					Collections.shuffle(hornySlaves);
+					boolean soloHornySex = hornySlaves.size()==1;
+					List<String> hornyNames = new ArrayList<>();
+					hornySlaves.stream().forEach((npc) -> hornyNames.add(npc.getName()));
+					sb.append(UtilText.parse(hornySlaves,
+							"<p>"
+								+ "[npc.speech(~Mmm!~ That's right... I've got you now...)]"
+							+ "</p>"
+							+ "<p>"
+								+ "For a moment, you aren't quite sure if you're dreaming or not, but then you suddenly feel a strange weight shifting on top of you, which instantly jolts you awake."
+								+ (soloHornySex
+										?" Opening your eyes, you see [npc.name] sitting on your chest, grinning hungrily down at you."
+										:" Opening your eyes, you see "+Util.stringsToStringList(hornyNames, false)+" leaning over you, each of them with a hungry grin on their faces.")
+								+ " With a horny [npc.moan], [npc.name] is the first to speak again, and says,"
+								+ " [npc.speech(Good "+morningString+", [pc.name]! I hope you're ready to fuck!)]"
+							+ "</p>"));
+					return sb.toString();
+				}
+				
+			} else {
+				sb.append("<p>"
+						+ "You set your phone's alarm before drawing the curtains, lying on your bed and closing your eyes."
+						+ " You feel extremely safe and comfortable here in Lilaya's home, and soon drift off to sleep, thinking about all the things that have happened to you recently..."
+					+ "</p>"
+					+ "<p>"
+						+ "<i>Beep-beep... beep-beep... bee-</i>"
+					+ "</p>"
+					+ "<p>"
+						+ "Rolling over, you fumble for your phone, turning off the alarm before sinking back onto your bed with a sigh."
+						+ " As comfortable as you are, you decide that you'd better get out of bed, and so, after a minute of lying beneath the covers, you do just that."
+						+ " Opening the curtains, you set about gathering your things, and then with one final stretch, you get ready to set out once more..."
+					+ "</p>");
+			}
+			
+			if(!slavesWantingToSexPlayer(Main.game.getHourOfDay()).isEmpty()) {
+				sb.append("<p style='text-align:center;'>"
+							+ "[style.italicsGood(You feel completely refreshed!)]"
+						+ "</p>");
+			}
+			
+			return sb.toString();
+		}
+
+		@Override
+		public String getResponseTabTitle(int index) {
+			if(!slavesWantingToSexPlayer(Main.game.getHourOfDay()).isEmpty()) {
+				return null;
+			}
+			return LilayaHomeGeneric.getLilayasHouseStandardResponseTabs(index);
+		}
+		
+		@Override
+		public Response getResponse(int responseTab, int index) {
+			List<GameCharacter> hornySlaves = slavesWantingToSexPlayer(Main.game.getHourOfDay());
+			if(!hornySlaves.isEmpty()) {
+				if(index==1) {
+					boolean soloSex = hornySlaves.size()==1;
+					List<String> names = new ArrayList<>();
+					hornySlaves.stream().forEach((npc) -> names.add(npc.getName()));
+					
+					List<GameCharacter> spectators = new ArrayList<>(slavesInRoom(Main.game.getHourOfDay()));
+					spectators.removeAll(hornySlaves);
+					
+					return new ResponseSex("Sex",
+							(soloSex
+								?UtilText.parse(hornySlaves.get(0), "[npc.Name] forces [npc.herself] on you...")
+								:Util.stringsToStringList(names, false)+" force themselves on you..."),
+							false,
+							false,
+							new SMGeneric(
+									hornySlaves,
+									Util.newArrayListOfValues(Main.game.getPlayer()),
+									spectators,
+									null,
+									ResponseTag.PREFER_MISSIONARY),
+							POST_WAKE_UP_SEX,
+							"<p>"
+								+ UtilText.parse(hornySlaves,
+									(soloSex
+										?"Before you can react, [npc.name] lowers [npc.herself] down over the top of you, pressing [npc.her] [npc.lips+] against yours and pulling you into a passionate kiss."
+											+ " Breaking it off a moment later, [npc.her] [npc.hands] start to roam down and grope your body as your horny slave [npc.moans],"
+											+ " [npc.speech(Don't worry, [pc.name], I'll make this good for you as well...)]"
+										:Util.stringsToStringList(names, false)+" had obviously conspired to wait until you'd gone to sleep before pinning you down and having their way with you."
+												+ " Before you can react to the situation, [npc.name] lowers [npc.herself] down over the top of you, pressing [npc.her] [npc.lips+] against yours and pulling you into a passionate kiss."
+												+ " Leaning in on one side of you, [npc2.name] [npc2.moans], [npc2.speech(Don't worry, [pc.name], we'll make this good for you as well...)]"))
+							+ "</p>");
+				}
+				return null;
+			}
+			return getResponseRoom(responseTab, index);
+		}
+
+		@Override
+		public boolean isInventoryDisabled() {
+			return false;
+		}
+	};
+	
+	public static final DialogueNode POST_WAKE_UP_SEX = new DialogueNode("Finished", "You collapse back onto your bed...", false) {
+
+		@Override
+		public String getContent() {
+			UtilText.nodeContentSB.setLength(0);
+			
+			List<GameCharacter> hornySlaves = new ArrayList<>(Main.sex.getDominantParticipants(false).keySet());
+			boolean soloSex = hornySlaves.size()==1;
+			List<String> names = new ArrayList<>();
+			hornySlaves.stream().forEach((npc) -> names.add(npc.getName()));
+			
+			
+			if(soloSex) {
+				UtilText.nodeContentSB.append(
+						UtilText.parse(hornySlaves,
+						"<p>"
+							+ "Having had [npc.her] fun with you, [npc.name] allows you to collapse back onto your bed."
+							+ " Letting out a very satisfied sigh, [npc.she] [npc.moans],"
+							+ " [npc.speech(See, that was fun for both of us, wasn't it?)]"
+						+ "</p>"
+						+ "<p>"
+							+ "Interpreting your heavy breathing as a positive sign, [npc.name] smiles and asks,"
+							+ " [npc.speech(Weren't you meant to be waking up at this time anyway?)]"
+						+ "</p>"
+						+ "<p>"
+							+ "Realising that [npc.sheIs] right, you decide that you'd better get out of bed, and so, after a minute of lying back and catching your breath, you do just that."
+							+ " With a sigh and stretch of your [pc.arms], you allow "+ Util.stringsToStringList(names, false)+" to assist you as you gather your things, and with one final stretch, you get ready to set out once more..."
+						+ "</p>"));
+				
+			} else {
+				UtilText.nodeContentSB.append(
+						UtilText.parse(hornySlaves,
+						"<p>"
+							+ "Having had their fun with you, "+ Util.stringsToStringList(names, false)+" allow you to collapse back onto your bed."
+							+ " Letting out a very satisfied sigh, [npc.name] [npc.moans],"
+							+ " [npc.speech(See, that was fun for all of us, wasn't it?)]"
+						+ "</p>"
+						+ "<p>"
+							+ "Interpreting your heavy breathing as a positive sign, [npc2.name] smiles and asks,"
+							+ " [npc2.speech(Weren't you meant to be waking up at this time anyway?)]"
+						+ "</p>"
+						+ "<p>"
+							+ "Realising that [npc2.sheIs] right, you decide that you'd better get out of bed, and so, after a minute of lying back and catching your breath, you do just that."
+							+ " With a sigh and stretch of your [pc.arms], you allow "+ Util.stringsToStringList(names, false)+" to assist you as you gather your things, and with one final stretch, you get ready to set out once more..."
+						+ "</p>"));
+			}
+			
+			return UtilText.nodeContentSB.toString();
+		}
+
+		@Override
+		public String getResponseTabTitle(int index) {
+			return LilayaHomeGeneric.getLilayasHouseStandardResponseTabs(index);
+		}
+		
+		@Override
+		public Response getResponse(int responseTab, int index) {
+			return getResponseRoom(responseTab, index);
+		}
+
+		@Override
+		public boolean isInventoryDisabled() {
+			return false;
+		}
+	};
+	
+	public static final DialogueNode AUNT_HOME_PLAYERS_ROOM_QUICK_SHOWER = new DialogueNode("Your Room", "", true) {
+		@Override
+		public void applyPreParsingEffects() {
+			// Make sure that the washing slaves don't disappear during this scene:
+			for(GameCharacter slave : slavesWashing) {
+				slave.setLocation(Main.game.getPlayer(), false);
+			}
+		}
+		@Override
+		public String getContent() {
+			List<NPC> charactersPresent = LilayaHomeGeneric.getSlavesAndOccupantsPresent();
+			List<GameCharacter> slavesWashing = charactersPresent.stream().filter((npc) -> npc.hasSlaveJobSetting(SlaveJob.BEDROOM, SlaveJobSetting.BEDROOM_HELP_WASH)).collect(Collectors.toList());
+			UtilText.nodeContentSB.setLength(0);
+			
+			UtilText.nodeContentSB.append("<p>");
+				UtilText.nodeContentSB.append(
+						"Wanting to clean yourself, but not spend too much time doing so, you step into your large ensuite bathroom and decide upon taking a quick shower."
+								+ " Disrobing, you leave your clothing by the door, before stepping over to your luxurious marble-and-glass walk-in shower.");
+			UtilText.nodeContentSB.append("</p>");
+			
+			if(!slavesWashing.isEmpty()) {
+				UtilText.nodeContentSB.append(getShowerSlavesDescription(slavesWashing));
+				
+			} else {
+				UtilText.nodeContentSB.append(
+						"<p>"
+							+ "Turning on the tap, you let out a relaxed sigh as you feel the warm water flowing down over your naked body."
+							+ " Not wanting to spend too much time in the shower, you focus on quickly cleaning yourself..."
+						+ "</p>");
+			}
+			
+			return UtilText.nodeContentSB.toString();
+		}
+		@Override
+		public Response getResponse(int responseTab, int index) {
+			SexSlot[] showerSlots = new SexSlot[] {
+					SexSlotStanding.STANDING_SUBMISSIVE,
+					SexSlotStanding.STANDING_SUBMISSIVE_BEHIND,
+					SexSlotStanding.STANDING_SUBMISSIVE_TWO,
+					SexSlotStanding.STANDING_SUBMISSIVE_BEHIND_TWO};
+			
+			if(index==1) {
+				return new Response("Finish", "Finish having a shower and return to your room.", ROOM) {
+					@Override
+					public void effects() {
+						Main.game.getTextStartStringBuilder().append("<p>");
+							if(!slavesWashing.isEmpty()) {
+									if(slavesWashing.size()==1) {
+										Main.game.getTextStartStringBuilder().append(UtilText.parse(slavesWashing,
+												"Not wanting to spend too much time in the shower, you soon tell [npc.name] to turn off the tap and help you to dry off."
+													+ " After doing this, the two of you get dressed and step back into your room..."));
+									} else {
+										Main.game.getTextStartStringBuilder().append(
+												"Not wanting to spend too much time in the shower, you soon tell your slaves to turn off the tap and help you to dry off."
+													+ " After doing this, you all get dressed and step back into your room...");
+									}
+								
+							} else {
+								Main.game.getTextStartStringBuilder().append(
+										"After a while, you feel as though you've spent enough time in the shower, and after turning off the tap and drying yourself with a fluffy towel, you get dressed and step back into your room...");
+							}
+						Main.game.getTextStartStringBuilder().append("</p>");
+					}
+				};
+				
+			} else if(index==2) { // If you change this, be aware that it is called in AUNT_HOME_PLAYERS_ROOM_THOROUGH_SHOWER
+				if(slavesWashing.isEmpty()) {
+					return new Response("Sex", "You do not have any slaves assigned to your bedroom with the washing permission, so there's nobody for you to have sex with...", null);
+				}
+				
+				Map<GameCharacter, SexSlot> slaveSlots = new HashMap<>();
+				for(int i=0 ; i<slavesWashing.size() && i<4; i++) {
+					slaveSlots.put(slavesWashing.get(i), showerSlots[i]);
+				}
+				UtilText.addSpecialParsingString(String.valueOf(slavesWashing.size()), true);
+				return new ResponseSex("Sex",
+						slavesWashing.size()==1
+							?UtilText.parse(slavesWashing, "Have dominant sex with [npc.name] in the shower.")
+							:"Have dominant sex with your slaves in the shower.",
+						true, false,
+						new SMShower(SexPosition.STANDING,
+								Util.newHashMapOfValues(new Value<>(Main.game.getPlayer(), SexSlotStanding.STANDING_DOMINANT)),
+								slaveSlots),
+						null,
+						null,
+						AFTER_SHOWER_SEX,
+						UtilText.parseFromXMLFile("places/dominion/lilayasHome/playersRoom", "START_SHOWER_SEX_AS_DOM", slavesWashing));
+				
+			} else if(index==3) {  // If you change this, be aware that it is called in AUNT_HOME_PLAYERS_ROOM_THOROUGH_SHOWER
+				if(slavesWashing.isEmpty()) {
+					return new Response("Submissive sex", "You do not have any slaves assigned to your bedroom with the washing permission, so there's nobody for you to have submissive sex with...", null);
+				}
+				if(!slavesWashing.stream().anyMatch(s->s.isAttractedTo(Main.game.getPlayer()))) {
+					return new Response("Submissive sex",
+							slavesWashing.size()==1
+								?UtilText.parse(slavesWashing, "As [npc.name] isn't attracted to you, [npc.she] is unwilling to be the dominant partner in sex...")
+								:"Have dominant sex with your slaves in the shower.",
+							null);
+				}
+				Map<GameCharacter, SexSlot> slaveSlots = new HashMap<>();
+				List<GameCharacter> attractedSlaves = slavesWashing.stream().filter(s->s.isAttractedTo(Main.game.getPlayer())).collect(Collectors.toList());
+				for(int i=0 ; i<attractedSlaves.size(); i++) {
+					slaveSlots.put(attractedSlaves.get(i), showerSlots[i]);
+				}
+				UtilText.addSpecialParsingString(String.valueOf(slavesWashing.size()), true);
+				return new ResponseSex("Submissive sex",
+						attractedSlaves.size()==1
+								?UtilText.parse(attractedSlaves, "Let [npc.name] dominantly fuck you in the shower.")
+										:"Let your slaves dominantly fuck you in the shower.",
+						true, true,
+						new SMShower(SexPosition.STANDING,
+								slaveSlots,
+								Util.newHashMapOfValues(new Value<>(Main.game.getPlayer(), SexSlotStanding.STANDING_DOMINANT))),
+						null,
+						null,
+						AFTER_SHOWER_SEX,
+						UtilText.parseFromXMLFile("places/dominion/lilayasHome/playersRoom", "START_SHOWER_SEX_AS_SUB", attractedSlaves));
+			}
+			
+			return null;
+		
+		}
+	};
+	
+	public static final DialogueNode AUNT_HOME_PLAYERS_ROOM_THOROUGH_SHOWER = new DialogueNode("Your Room", "", true) {
+		@Override
+		public void applyPreParsingEffects() {
+			// Make sure that the washing slaves don't disappear during this scene:
+			for(GameCharacter slave : slavesWashing) {
+				slave.setLocation(Main.game.getPlayer(), false);
+			}
+		}
+		@Override
+		public String getContent() {
+			List<NPC> charactersPresent = LilayaHomeGeneric.getSlavesAndOccupantsPresent();
+			List<GameCharacter> slavesWashing = charactersPresent.stream().filter((npc) -> npc.hasSlaveJobSetting(SlaveJob.BEDROOM, SlaveJobSetting.BEDROOM_HELP_WASH)).collect(Collectors.toList());
+			UtilText.nodeContentSB.setLength(0);
+			
+			UtilText.nodeContentSB.append("<p>");
+				UtilText.nodeContentSB.append(
+						"Wanting to spend some time thoroughly cleaning yourself, you step into your large ensuite bathroom and decide upon taking a long shower."
+						+ " Disrobing, you leave your clothing by the door, before stepping over to your luxurious marble-and-glass walk-in shower.");
+			UtilText.nodeContentSB.append("</p>");
+			
+			if(!slavesWashing.isEmpty()) {
+				UtilText.nodeContentSB.append(getShowerSlavesDescription(slavesWashing));
+				
+			} else {
+				UtilText.nodeContentSB.append(
+						"<p>"
+							+ "Turning on the tap, you let out a contented sigh as you feel the warm water flowing down over your naked body."
+							+ " Deciding that it wouldn't be so bad to take some time out in order to relax, you don't rush as you set about thoroughly cleaning yourself."
+						+ "</p>");
+			}
+			
+			return UtilText.nodeContentSB.toString();
+		}
+		@Override
+		public Response getResponse(int responseTab, int index) {
+			if(index==1) {
+				return new Response("Finish", "Finish having a shower and return to your room.", ROOM) {
+					@Override
+					public void effects() {
+						Main.game.getTextStartStringBuilder().append("<p>");
+							if(!slavesWashing.isEmpty()) {
+									if(slavesWashing.size()==1) {
+										Main.game.getTextStartStringBuilder().append(UtilText.parse(slavesWashing,
+												"After making sure that every last inch of your body is sparkling clean, you tell [npc.name] to turn off the tap and help you to dry off."
+													+ " After doing this, the two of you get dressed and step back into your room..."));
+									} else {
+										Main.game.getTextStartStringBuilder().append(
+												"After making sure that every last inch of your body is sparkling clean, you tell your slaves to turn off the tap and help you to dry off."
+													+ " After doing this, you all get dressed and step back into your room...");
+									}
+								
+							} else {
+								Main.game.getTextStartStringBuilder().append(
+										"After a while, you feel as though you've spent enough time in the shower, and after turning off the tap and drying yourself with a fluffy towel, you get dressed and step back into your room...");
+							}
+						Main.game.getTextStartStringBuilder().append("</p>");
+					}
+				};
+				
+			} if(index==2) {
+				return AUNT_HOME_PLAYERS_ROOM_QUICK_SHOWER.getResponse(responseTab, index);
+				
+			} else if(index==3) {
+				return AUNT_HOME_PLAYERS_ROOM_QUICK_SHOWER.getResponse(responseTab, index);
+			}
+			
+			return null;
+		}
+	};
+	
+	public static final DialogueNode AFTER_SHOWER_SEX = new DialogueNode("Finished", "", true) {
+		@Override
+		public void applyPreParsingEffects() {
+			for(GameCharacter npc : slavesWashing) {
+				npc.applyWash(true, true, StatusEffect.getStatusEffectFromId("innoxia_cleaned_bath"), 240+30);
+			}
+			Main.game.getPlayer().applyWash(true, true, StatusEffect.getStatusEffectFromId("innoxia_cleaned_bath"), 240+30);
+		}
+		@Override
+		public String getDescription() {
+			return "Having had their fun, your slaves remind you that you have other things you need to be getting on with...";
+		}
+		@Override
+		public String getContent() {
+			return UtilText.parseFromXMLFile("places/dominion/lilayasHome/playersRoom", "AFTER_SHOWER_SEX", slavesWashing);
+		}
+		@Override
+		public Response getResponse(int responseTab, int index) {
+			if(index==1) {
+				return new Response("Continue", "Now that you've had your fun, it's time to return to your room.", ROOM);
+			}
+			return null;
+		}
+	};
+	
+	public static final DialogueNode AUNT_HOME_PLAYERS_ROOM_BATH = new DialogueNode("Your Room", "", true) {
+		@Override
+		public void applyPreParsingEffects() {
+			// Make sure that the washing slaves don't disappear during this scene:
+			for(GameCharacter slave : slavesWashing) {
+				slave.setLocation(Main.game.getPlayer(), false);
+			}
+		}
+		@Override
+		public String getContent() {
+			UtilText.nodeContentSB.setLength(0);
+			
+			UtilText.nodeContentSB.append("<p>");
+				UtilText.nodeContentSB.append(
+						"Wanting to spend some time relaxing and getting cleaned, you step into your large ensuite bathroom and decide upon taking a long bath."
+						+ " Disrobing, you leave your clothing by the door, before stepping over to your luxurious marble bathtub.");
+			UtilText.nodeContentSB.append("</p>");
+			
+			if(!slavesWashing.isEmpty()) {
+				UtilText.nodeContentSB.append(getBathSlavesDescription(slavesWashing));
+				
+			} else {
+				UtilText.nodeContentSB.append(
+						"<p>"
+							+ "Turning on the taps and running yourself a bath, you slip down into the hot water and let out a contented sigh."
+							+ " Deciding that it wouldn't be so bad to take some time out in order to relax, you don't rush as you set about thoroughly cleaning yourself..."
+						+"</p>");
+			}
+			
+			return UtilText.nodeContentSB.toString();
+		}
+		@Override
+		public Response getResponse(int responseTab, int index) {
+			SexSlot[] bathSlots = new SexSlot[] {
+					SexSlotLyingDown.MISSIONARY,
+					SexSlotLyingDown.BESIDE,
+					SexSlotLyingDown.BESIDE_TWO,
+					SexSlotLyingDown.BESIDE_THREE};
+			
+			if(index==1) {
+				return new Response("Finish", "Finish having a bath and return to your room.", ROOM) {
+					@Override
+					public void effects() {
+						Main.game.getTextStartStringBuilder().append("<p>");
+							if(!slavesWashing.isEmpty()) {
+									if(slavesWashing.size()==1) {
+										Main.game.getTextStartStringBuilder().append(UtilText.parse(slavesWashing,
+												"After making sure that every last inch of your body is sparkling clean, you pull the plug, [pc.step] out of the bath, and tell [npc.name] to help you to dry off."
+														+ " After doing this, the two of you get dressed and step back into your room..."));
+									} else {
+										Main.game.getTextStartStringBuilder().append(
+												"After making sure that every last inch of your body is sparkling clean, you pull the plug, you [pc.step] out of the bath, and tell your slaves to help you to dry off."
+														+ " After doing this, you all get dressed and step back into your room...");
+									}
+								
+							} else {
+								Main.game.getTextStartStringBuilder().append(
+										"After having a nice relaxing soak, you feel as though you've spent enough time in the bath."
+										+ " Pulling the plug and drying yourself off, you quickly get dressed and step back into your room...");
+							}
+						Main.game.getTextStartStringBuilder().append("</p>");
+					}
+				};
+				
+			} else if(index==2) {
+				if(slavesWashing.isEmpty()) {
+					return new Response("Sex", "You do not have any slaves assigned to your bedroom with the washing permission, so there's nobody for you to have sex with...", null);
+				}
+				
+				Map<GameCharacter, SexSlot> slaveSlots = new HashMap<>();
+				for(int i=0 ; i<slavesWashing.size() && i<4; i++) {
+					slaveSlots.put(slavesWashing.get(i), i==0?SexSlotLyingDown.LYING_DOWN:bathSlots[i]);
+				}
+				UtilText.addSpecialParsingString(String.valueOf(slavesWashing.size()), true);
+				return new ResponseSex("Sex",
+						slavesWashing.size()==1
+							?UtilText.parse(slavesWashing, "Have dominant sex with [npc.name] in the bath.")
+							:"Have dominant sex with your slaves in the bath.",
+						true, false,
+						new SMBath(SexPosition.LYING_DOWN,
+								Util.newHashMapOfValues(new Value<>(Main.game.getPlayer(), SexSlotLyingDown.MISSIONARY)),
+								slaveSlots),
+						null,
+						null,
+						AFTER_BATH_SEX,
+						UtilText.parseFromXMLFile("places/dominion/lilayasHome/playersRoom", "START_BATH_SEX_AS_DOM", slavesWashing));
+				
+			} else if(index==3) {
+				if(slavesWashing.isEmpty()) {
+					return new Response("Submissive sex", "You do not have any slaves assigned to your bedroom with the washing permission, so there's nobody for you to have submissive sex with...", null);
+				}
+				if(!slavesWashing.stream().anyMatch(s->s.isAttractedTo(Main.game.getPlayer()))) {
+					return new Response("Submissive sex",
+							slavesWashing.size()==1
+								?UtilText.parse(slavesWashing, "As [npc.name] isn't attracted to you, [npc.she] is unwilling to be the dominant partner in sex...")
+								:"Have dominant sex with your slaves in the bath.",
+							null);
+				}
+				Map<GameCharacter, SexSlot> slaveSlots = new HashMap<>();
+				List<GameCharacter> attractedSlaves = slavesWashing.stream().filter(s->s.isAttractedTo(Main.game.getPlayer())).collect(Collectors.toList());
+				for(int i=0 ; i<attractedSlaves.size(); i++) {
+					slaveSlots.put(attractedSlaves.get(i), bathSlots[i]);
+				}
+				UtilText.addSpecialParsingString(String.valueOf(slavesWashing.size()), true);
+				return new ResponseSex("Submissive sex",
+						attractedSlaves.size()==1
+								?UtilText.parse(attractedSlaves, "Let [npc.name] dominantly fuck you in the bath.")
+										:"Let your slaves dominantly fuck you in the bath.",
+						true, true,
+						new SMBath(SexPosition.LYING_DOWN,
+								slaveSlots,
+								Util.newHashMapOfValues(new Value<>(Main.game.getPlayer(), SexSlotLyingDown.LYING_DOWN))),
+						null,
+						null,
+						AFTER_BATH_SEX,
+						UtilText.parseFromXMLFile("places/dominion/lilayasHome/playersRoom", "START_BATH_SEX_AS_SUB", attractedSlaves));
+			}
+			
+			return null;
+		}
+	};
+
+	public static final DialogueNode AFTER_BATH_SEX = new DialogueNode("Finished", "", true) {
+		@Override
+		public void applyPreParsingEffects() {
+			for(GameCharacter npc : slavesWashing) {
+				npc.applyWash(true, true, StatusEffect.getStatusEffectFromId("innoxia_cleaned_bath"), 240+30);
+			}
+			Main.game.getPlayer().applyWash(true, true, StatusEffect.getStatusEffectFromId("innoxia_cleaned_bath"), 240+30);
+		}
+		@Override
+		public String getDescription() {
+			return "Having had their fun, your slaves remind you that you have other things you need to be getting on with...";
+		}
+		@Override
+		public String getContent() {
+			return UtilText.parseFromXMLFile("places/dominion/lilayasHome/playersRoom", "AFTER_BATH_SEX", slavesWashing);
+		}
+		@Override
+		public Response getResponse(int responseTab, int index) {
+			if(index==1) {
+				return new Response("Continue", "Now that you've had your fun, it's time to return to your room.", ROOM);
+			}
+			return null;
+		}
+	};
+	
+	public static final DialogueNode AUNT_HOME_PLAYERS_ROOM_MAKEUP = new DialogueNode("Hairstyle & Makeup", "", true) {
+		@Override
+		public void applyPreParsingEffects() {
+			BodyChanging.setTarget(getMakeupTarget());
+		}
+		@Override
+		public String getHeaderContent() {
+			return MiscDialogue.getMakeupDialogue(true,
+					BodyChanging.getTarget().isPlayer()
+						?"You sit down in front of the mirror and prepare to get started on improving your appearance..."
+						:UtilText.parse(BodyChanging.getTarget(), "You get [npc.name] to sit down in front of the mirror and prepare to get started on improving [npc.her] appearance...")).getHeaderContent();
+		}
+		@Override
+		public String getContent() {
+			return "";
+		}
+		@Override
+		public Response getResponse(int responseTab, int index) {
+			if(index==1) {
+				return new Response("Finish", "Finish doing your makeup in the mirror and return to your bedroom.", ROOM);
+			}
+			return null;
+		}
+	};
+	
+	public static final DialogueNode AUNT_HOME_PLAYERS_ROOM_CALENDAR = new DialogueNode("Your Room", "", false) {
+		@Override
+		public void applyPreParsingEffects() {
+			StringBuilder sb = new StringBuilder();
+			
+			sb.append("<p>"
+					+ "You step over to one side of your room, where a calendar has been pinned to the wall."
+					+ " It's quite obviously enchanted, for as you flick through the pages, you discover that each month's picture changes based on your current train of thought.");
+						
+			if(Main.game.getPlayer().getSexualOrientation()==SexualOrientation.ANDROPHILIC) {
+				sb.append(" As you think about each month, a thematically-dressed man, incubus, or some kind of animal-boy appears on the page.");
+			} else {
+				sb.append(" As you think about each month, a thematically-dressed woman, succubus, or some kind of animal-girl appears on the page.");
+			}
+			
+			if(Main.game.getPlayer().getCorruptionLevel()==CorruptionLevel.ZERO_PURE) {
+				sb.append(" The more you flick back and forth through the calendar, the more scantily-dressed the subject of each picture becomes, until you suddenly realise what you're doing and step back, shocked.");
+			} else {
+				sb.append(" The more you flick back and forth through the calendar, the more scantily-dressed the subject of each picture becomes, and you find yourself getting a little turned on...");
+			}
+			sb.append("</p>");
+			
+			if(Main.game.getDialogueFlags().values.contains(DialogueFlagValue.knowsDate)) {
+				sb.append("<p>"
+						+ "Suddenly remembering what it was that you wanted to look at, you scan through the calendar to find the current date,");
+			} else {
+				sb.append("<p>"
+						+ "You were so distracted by the changing pictures that you momentarily forgot what it was that you wanted to check."
+						+ " Shaking your head, you flip back through the calendar to find out what the current date is,");
+			}
+			
+			sb.append(" and see that it's the <b style='color:"+PresetColour.BASE_BLUE_LIGHT.toWebHexString()+";'>"
+						+ Units.date(Main.game.getDateNow(), Units.DateType.LONG)
+					+"</b>. From a quick calculation "+(Main.game.getPlayer().getAttributeValue(Attribute.MAJOR_ARCANE)<IntelligenceLevel.ONE_AVERAGE.getMaximumValue()?"(with some help from your phone's calculator)":"")
+					+ ", you figure out that it's been <b style='color:"+PresetColour.GENERIC_EXCELLENT.toWebHexString()+";'>"+Main.game.getDayNumber()+" day"+(Main.game.getDayNumber()>1?"s":"")+"</b> since you appeared in this world."
+					+ "</p>");
+			
+			if(!Main.game.getDialogueFlags().values.contains(DialogueFlagValue.knowsDate)) {
+				sb.append("<p>"
+						+ "[pc.thought(Wait... "+Main.game.getDateNow().format(DateTimeFormatter.ofPattern("yyyy", Locale.ENGLISH))+"?! I need to check in with Lilaya about that...)]"
+						+ "</p>");
+			}
+			
+			sb.append("<p>"
+					+ "You notice that on each page of the calendar, there's a few paragraphs detailing the events that occur during that month."
+					+ "</p>");
+			
+			Main.game.getTextStartStringBuilder().append(sb.toString());
+			
+			Main.game.getDialogueFlags().values.add(DialogueFlagValue.knowsDate);
+		}
+		@Override
+		public String getContent() {
+			return "";
+		}
+
+		@Override
+		public String getResponseTabTitle(int index) {
+			return LilayaHomeGeneric.getLilayasHouseStandardResponseTabs(index);
+		}
+		
+		@Override
+		public Response getResponse(int responseTab, int index) {
+			if(responseTab==1) {
+				return LilayaHomeGeneric.getLilayasHouseFastTravelResponses(index);
+			}
+			if (index == 0) {
+				return new Response("Back", "Step away from the calendar.", ROOM);
+			} else if(index==1) {
+				return new Response("January", "Read the information on January's page. [style.italicsMinorBad(There are currently no special events during January.)]", null);
+			} else if(index==2) {
+				return new Response("February", "Read the information on February page. [style.italicsMinorBad(There are currently no special events during February.)]", null);
+			} else if(index==3) {
+				return new Response("March", "Read the information on March's page. [style.italicsMinorBad(There are currently no special events during March.)]", null);
+			} else if(index==4) {
+				return new Response("April", "Read the information on April's page. [style.italicsMinorBad(There are currently no special events during April.)]", null);
+			} else if(index==5) {
+				return new Response("May", "Read the information on May's page.", AUNT_HOME_PLAYERS_ROOM_CALENDAR_MAY);
+			} else if(index==6) {
+				return new Response("June", "Read the information on June's page.", AUNT_HOME_PLAYERS_ROOM_CALENDAR_JUNE);
+			} else if(index==7) {
+				return new Response("July", "Read the information on July's page. [style.italicsMinorBad(There are currently no special events during July.)]", null);
+			} else if(index==8) {
+				return new Response("August", "Read the information on August's page. [style.italicsMinorBad(There are currently no special events during August.)]", null);
+			} else if(index==9) {
+				return new Response("September", "Read the information on September's page. [style.italicsMinorBad(There are currently no special events during September.)]", null);
+			} else if(index==10) {
+				return new Response("October", "Read the information on October's page.", AUNT_HOME_PLAYERS_ROOM_CALENDAR_OCTOBER);
+			} else if(index==11) {
+				return new Response("November", "Read the information on November's page. [style.italicsMinorBad(There are currently no special events during November.)]", null);
+			} else if(index==12) {
+				return new Response("December", "Read the information on December's page.", AUNT_HOME_PLAYERS_ROOM_CALENDAR_DECEMBER);
+			} else {
+				return null;
+			}
+		}
+	};
 	
 	
 	public static final DialogueNode AUNT_HOME_PLAYERS_ROOM_CALENDAR_MAY = new DialogueNode("Your Room", "", false) {

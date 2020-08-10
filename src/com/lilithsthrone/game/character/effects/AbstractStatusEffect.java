@@ -37,6 +37,7 @@ import com.lilithsthrone.rendering.SVGImages;
 import com.lilithsthrone.utils.SvgUtil;
 import com.lilithsthrone.utils.Units;
 import com.lilithsthrone.utils.Util;
+import com.lilithsthrone.utils.Util.Value;
 import com.lilithsthrone.utils.colours.Colour;
 import com.lilithsthrone.utils.colours.PresetColour;
 
@@ -61,6 +62,7 @@ public abstract class AbstractStatusEffect {
 	private String pathName;
 	private List<Colour> colourShades;
 
+	private boolean requiresApplicationCheck;
 	private int effectInterval;
 	private String applicationCondition;
 	private String applyEffectString;
@@ -124,6 +126,7 @@ public abstract class AbstractStatusEffect {
 			this.beneficial = EffectBenefit.DETRIMENTAL;
 		}
 		
+		this.requiresApplicationCheck = true;
 		this.renderInEffectsPanel = true;
 		this.combatEffect = false;
 		this.sexEffect = false;
@@ -217,6 +220,11 @@ public abstract class AbstractStatusEffect {
 				// Logic:
 				
 				this.applicationCondition = coreElement.getMandatoryFirstOf("applicationCondition").getTextContent();
+				if(this.applicationCondition.trim().equals("false")) {
+					requiresApplicationCheck = false;
+				} else {
+					requiresApplicationCheck = true;
+				}
 				
 				if(!coreElement.getMandatoryFirstOf("applyEffect").getAttribute("interval").isEmpty()) {
 					this.effectInterval = Integer.valueOf(coreElement.getMandatoryFirstOf("applyEffect").getAttribute("interval"));
@@ -233,15 +241,6 @@ public abstract class AbstractStatusEffect {
 			}
 		}
 	}
-	
-//	/**
-//	 * Called when units are changed, so that metric is converted to imperial and vice versa.
-//	 */
-//	public static void updateAttributeModifiers() {
-//		for(AbstractStatusEffect s : StatusEffect.getAllStatusEffects()) {
-//			s.modifiersList = s.attributeModifiersToStringList(s.attributeModifiers);
-//		}
-//	}
 
 	public String getId() {
 		return StatusEffect.getIdFromStatusEffect(this);
@@ -252,11 +251,15 @@ public abstract class AbstractStatusEffect {
 		
 		if (attributeMap != null) {
 			for (Entry<Attribute, Float> e : attributeMap.entrySet()) {
-				attributeModifiersList.add("<b>" + (e.getValue() > 0 ? "+" : "") + Units.number(e.getValue(), 1, 1) + "</b>" + " <b style='color: " + e.getKey().getColour().toWebHexString() + ";'>" + Util.capitaliseSentence(e.getKey().getAbbreviatedName()) + "</b>");
+				attributeModifiersList.add(e.getKey().getFormattedValue(e.getValue()));
 			}
 		}
 		
 		return attributeModifiersList;
+	}
+
+	public boolean isRequiresApplicationCheck() {
+		return requiresApplicationCheck;
 	}
 
 	/**
@@ -269,6 +272,9 @@ public abstract class AbstractStatusEffect {
 			String parsedResult = UtilText.parse(target, applicationCondition);
 			parsedResult = parsedResult.replaceAll("\\s", "");
 			return Boolean.valueOf(parsedResult);
+		}
+		if(!this.isFromExternalFile()) { // Easiest way to make sure that this status effect doens't need to be checked on every update is to see whether or not isConditionsMet has been overridden (in which case requiresApplicationCheck remains true)
+			requiresApplicationCheck = false;
 		}
 		return false;
 	}
@@ -351,13 +357,20 @@ public abstract class AbstractStatusEffect {
 		return "";
 	}
 
-	// For any extra effects, such as ongoing sex descriptions.
-	protected String getAdditionalDescription(GameCharacter target) {
+	/**
+	 * Used to display extra effects in its own description box, such as ongoing sex descriptions.
+	 * @return A Value whose key is the line height and whose value is the String to be displayed.
+	 */
+	protected Value<Integer, String> getAdditionalDescription(GameCharacter target) {
 		return null;
 	}
 	
-	public List<String> getAdditionalDescriptions(GameCharacter target) {
-		String additional = getAdditionalDescription(target);
+	/**
+	 * Used to display multiple extra effects in their own description boxes, such as ongoing sex descriptions.
+	 * @return A List of Values whose key is the line height and whose value is the String to be displayed.
+	 */
+	public List<Value<Integer, String>> getAdditionalDescriptions(GameCharacter target) {
+		Value<Integer, String> additional = getAdditionalDescription(target);
 		if(additional!=null) {
 			return Util.newArrayListOfValues(additional);
 		}
@@ -634,7 +647,7 @@ public abstract class AbstractStatusEffect {
 		return modifiersList;
 	}
 	
-	protected static List<String> getInternalOrificeExtraDescriptions(GameCharacter target, SexAreaOrifice orifice) {
+	protected static List<Value<Integer, String>> getInternalOrificeExtraDescriptions(GameCharacter target, SexAreaOrifice orifice) {
 		if(Main.sex.getCharactersHavingOngoingActionWith(target, orifice).isEmpty()) {
 			return null;
 		}
@@ -642,14 +655,16 @@ public abstract class AbstractStatusEffect {
 		List<GameCharacter> ongoingCharacters = Main.sex.getCharactersHavingOngoingActionWith(target, orifice);
 		GameCharacter partner = ongoingCharacters.get(Util.random.nextInt(ongoingCharacters.size()));
 		
-		List<String> additionalDescriptions = new ArrayList<>();
+		List<Value<Integer, String>> additionalDescriptions = new ArrayList<>();
 		
-		additionalDescriptions.add(Main.sex.formatPenetration(
-				target.getPenetrationDescription(false,
-						partner,
-						(SexAreaPenetration)Main.sex.getOngoingActionsMap(target).get(orifice).get(partner).iterator().next(),
-						target,
-						orifice)));
+		additionalDescriptions.add(
+				new Value<>(3,
+						Main.sex.formatPenetration(
+						target.getPenetrationDescription(false,
+								partner,
+								(SexAreaPenetration)Main.sex.getOngoingActionsMap(target).get(orifice).get(partner).iterator().next(),
+								target,
+								orifice))));
 		
 		StringBuilder sb = new StringBuilder();
 		sb.append(UtilText.parse(target,
@@ -660,7 +675,7 @@ public abstract class AbstractStatusEffect {
 						?"<br/>Depth Comfortable / Uncomfortable: "+Units.size(Units.round(orifice.getMaximumPenetrationDepthComfortable(target), 1))+" / "+Units.size(Units.round(orifice.getMaximumPenetrationDepthUncomfortable(target), 1))
 						:"")
 				+ "</p>"));
-		additionalDescriptions.add(sb.toString());
+		additionalDescriptions.add(new Value<>(3, sb.toString()));
 		
 		for(GameCharacter character : ongoingCharacters) {
 			SexAreaPenetration penetration = (SexAreaPenetration)Main.sex.getOngoingActionsMap(target).get(orifice).get(partner).iterator().next();
@@ -677,7 +692,7 @@ public abstract class AbstractStatusEffect {
 									?"<br/>Inserted / Total length: "+Units.size(length)+" / "+Units.size(penetration.getLength(character, true))
 									:"")
 						+ "</p>"));
-				additionalDescriptions.add(sb.toString());
+				additionalDescriptions.add(new Value<>(3, sb.toString()));
 			}
 		}
 		
@@ -722,19 +737,21 @@ public abstract class AbstractStatusEffect {
 	}
 	
 	public void appendOrificeAdditionGenericDescriptions(GameCharacter owner, SexAreaOrifice orificeType, String orificeName, StringBuilder stringBuilderToAppendTo) {
+		boolean orificePlural = orificeType.isPlural();
+		
 		if(Main.sex.getAreasCurrentlyStretching(owner).contains(orificeType)) {
 			if(Main.sex.getFirstOngoingSexAreaPenetration(owner, orificeType)==null) {
-				stringBuilderToAppendTo.append("<br/>"+orificeName+" has been <b style='color:"+PresetColour.BASE_PINK_DEEP.toWebHexString()+";'>stretched</b>!");
+				stringBuilderToAppendTo.append("<br/>"+orificeName+" "+(orificePlural?"have":"has")+" been <b style='color:"+PresetColour.BASE_PINK_DEEP.toWebHexString()+";'>stretched</b>!");
 				
 			} else {
-				stringBuilderToAppendTo.append("<br/>"+orificeName+" "+(orificeType.isPlural()?"are":"is")+" being <b style='color:"+PresetColour.BASE_PINK_DEEP.toWebHexString()+";'>stretched</b>!");
+				stringBuilderToAppendTo.append("<br/>"+orificeName+" "+(orificePlural?"are":"is")+" being <b style='color:"+PresetColour.BASE_PINK_DEEP.toWebHexString()+";'>stretched</b>!");
 			}
 			
 		} else if(Main.sex.getAreasTooLoose(owner).contains(orificeType)) {
-			stringBuilderToAppendTo.append("<br/>"+orificeName+" "+(orificeType.isPlural()?"are":"is")+" <b style='color:"+PresetColour.BASE_RED.toWebHexString()+";'>too loose</b>!");
+			stringBuilderToAppendTo.append("<br/>"+orificeName+" "+(orificePlural?"are":"is")+" <b style='color:"+PresetColour.BASE_RED.toWebHexString()+";'>too loose</b>!");
 			
 		} else if(Main.sex.getAreasStretched(owner).contains(orificeType)) {
-			stringBuilderToAppendTo.append("<br/>"+orificeName+" has been <b style='color:"+PresetColour.BASE_PINK_DEEP.toWebHexString()+";'>stretched</b>!");
+			stringBuilderToAppendTo.append("<br/>"+orificeName+" "+(orificePlural?"have":"has")+" been <b style='color:"+PresetColour.BASE_PINK_DEEP.toWebHexString()+";'>stretched</b>!");
 			
 		} else {
 			stringBuilderToAppendTo.append("<br/><b style='color:"+PresetColour.TEXT_GREY.toWebHexString()+";'>No stretch effect.</b>");
@@ -743,21 +760,21 @@ public abstract class AbstractStatusEffect {
 		if(Main.game.isPenetrationLimitationsEnabled() && orificeType.isInternalOrifice()) {
 			if(!Main.sex.getCharactersPenetratingTooDeep(owner, orificeType).isEmpty()) {
 				if(owner.hasFetish(Fetish.FETISH_MASOCHIST) || owner.hasFetish(Fetish.FETISH_SIZE_QUEEN)) {
-					stringBuilderToAppendTo.append("<br/>"+orificeName+" is being penetrated [style.boldSex(too deeply)]!");
+					stringBuilderToAppendTo.append("<br/>"+orificeName+" "+(orificePlural?"are":"is")+" being penetrated [style.boldSex(too deeply)]!");
 				} else {
-					stringBuilderToAppendTo.append("<br/>"+orificeName+" is being penetrated [style.boldTerrible(too deeply)]!");
+					stringBuilderToAppendTo.append("<br/>"+orificeName+" "+(orificePlural?"are":"is")+" being penetrated [style.boldTerrible(too deeply)]!");
 				}
 				
 			} else if(!Main.sex.getCharactersPenetratingFarTooShallow(owner, orificeType).isEmpty()) {
-				stringBuilderToAppendTo.append("<br/>"+orificeName+" is [style.boldPinkLight(not being penetrated deep enough)]!");
+				stringBuilderToAppendTo.append("<br/>"+orificeName+" "+(orificePlural?"are":"is")+" [style.boldPinkLight(not being penetrated deep enough)]!");
 			}
 		}
 		
 		if(!Main.sex.hasLubricationTypeFromAnyone(owner, orificeType)) {
-			stringBuilderToAppendTo.append("<br/>"+orificeName+" "+(orificeType.isPlural()?"are":"is")+" [style.boldBad(dry)]!");
+			stringBuilderToAppendTo.append("<br/>"+orificeName+" "+(orificePlural?"are":"is")+" [style.boldBad(dry)]!");
 			
 		} else {
-			stringBuilderToAppendTo.append("<br/>"+orificeName+" "+(orificeType.isPlural()?"have":"has")+" been [style.boldSex(lubricated)] by:<br/>");
+			stringBuilderToAppendTo.append("<br/>"+orificeName+" "+(orificePlural?"have":"has")+" been [style.boldSex(lubricated)] by:<br/>");
 			int i=0;
 			List<String> lubricants = new ArrayList<>();
 			for(GameCharacter lubricantProvider : Main.sex.getAllParticipants()) {

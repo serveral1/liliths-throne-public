@@ -11,7 +11,7 @@ import com.lilithsthrone.game.character.attributes.CorruptionLevel;
 import com.lilithsthrone.game.character.body.valueEnums.Femininity;
 import com.lilithsthrone.game.character.effects.AbstractPerk;
 import com.lilithsthrone.game.character.fetishes.Fetish;
-import com.lilithsthrone.game.character.race.Race;
+import com.lilithsthrone.game.character.race.AbstractRace;
 import com.lilithsthrone.game.dialogue.DialogueNode;
 import com.lilithsthrone.game.sex.InitialSexActionInformation;
 import com.lilithsthrone.game.sex.SexPace;
@@ -34,7 +34,7 @@ import com.lilithsthrone.utils.colours.PresetColour;
 
 /**
  * @since 0.1.69
- * @version 0.3.4
+ * @version 0.3.9.1
  * @author Innoxia
  */
 public class ResponseSex extends Response {
@@ -46,6 +46,7 @@ public class ResponseSex extends Response {
 	private List<GameCharacter> submissiveSpectators;
 	private DialogueNode postSexDialogue;
 	private String sexStartDescription;
+	private ResponseTag[] tags;
 	
 	public ResponseSex(String title,
 			String tooltipText,
@@ -103,7 +104,7 @@ public class ResponseSex extends Response {
 			CorruptionLevel corruptionBypass,
 			List<AbstractPerk> perksRequired,
 			Femininity femininityRequired,
-			Race raceRequired,
+			AbstractRace raceRequired,
 			boolean consensual,
 			boolean subHasEqualControl,
 			List<GameCharacter> dominants,
@@ -129,6 +130,8 @@ public class ResponseSex extends Response {
 				postSexDialogue,
 				sexStartDescription);
 
+		this.tags = tags;
+		
 		// If size difference with just two participants, return relevant standing position: 
 		if(submissives.size()==1 && dominants.size()==1) {
 			boolean sexManagerSet = false;
@@ -276,7 +279,7 @@ public class ResponseSex extends Response {
 			CorruptionLevel corruptionBypass,
 			List<AbstractPerk> perksRequired,
 			Femininity femininityRequired,
-			Race raceRequired,
+			AbstractRace raceRequired,
 			boolean consensual,
 			boolean subHasEqualControl,
 			SMGeneric sexManager,
@@ -320,7 +323,7 @@ public class ResponseSex extends Response {
 			CorruptionLevel corruptionBypass,
 			List<AbstractPerk> perksRequired,
 			Femininity femininityRequired,
-			Race raceRequired,
+			AbstractRace raceRequired,
 			boolean consensual,
 			boolean subHasEqualControl,
 			SexManagerInterface sexManager,
@@ -357,6 +360,34 @@ public class ResponseSex extends Response {
 		
 		this.postSexDialogue = postSexDialogue;
 		this.sexStartDescription = sexStartDescription;
+	}
+	
+	@Override
+	public String getTooltipText() {
+		if(sexManager.getStartingSexPaceModifier(Main.game.getPlayer())!=null) {
+			StringBuilder sb = new StringBuilder(tooltipText);
+			SexPace pace = sexManager.getStartingSexPaceModifier(Main.game.getPlayer());
+			sb.append("<br/><i>Starts sex in the '<span style='color:"+pace.getColour().toWebHexString()+";'>"+pace.getName()+"</span>' pace.</i>");
+			return sb.toString();
+			
+		} else if(tags!=null) {
+			StringBuilder sb = new StringBuilder(tooltipText);
+			SexPace pace = null;
+			if(Arrays.asList(tags).contains(ResponseTag.START_PACE_PLAYER_DOM_GENTLE)) {
+				pace = SexPace.DOM_GENTLE;
+			} else if(Arrays.asList(tags).contains(ResponseTag.START_PACE_PLAYER_DOM_ROUGH)) {
+				pace = SexPace.DOM_ROUGH;
+			} else if(Arrays.asList(tags).contains(ResponseTag.START_PACE_PLAYER_SUB_EAGER)) {
+				pace = SexPace.SUB_EAGER;
+			} else if(Arrays.asList(tags).contains(ResponseTag.START_PACE_PLAYER_SUB_RESISTING)) {
+				pace = SexPace.SUB_RESISTING;
+			}
+			if(pace!=null) {
+				sb.append("<br/><i>Starts sex in the '<span style='color:"+pace.getColour().toWebHexString()+";'>"+pace.getName()+"</span>' pace.</i>");
+			}
+			return sb.toString();
+		}
+		return tooltipText;
 	}
 	
 	@Override

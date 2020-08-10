@@ -17,11 +17,12 @@ import com.lilithsthrone.game.character.body.Arm;
 import com.lilithsthrone.game.character.body.BodyPartInterface;
 import com.lilithsthrone.game.character.body.CoverableArea;
 import com.lilithsthrone.game.character.body.Leg;
-import com.lilithsthrone.game.character.body.Skin;
+import com.lilithsthrone.game.character.body.Torso;
 import com.lilithsthrone.game.character.body.Tail;
 import com.lilithsthrone.game.character.body.Tentacle;
 import com.lilithsthrone.game.character.body.Wing;
 import com.lilithsthrone.game.character.body.valueEnums.CumProduction;
+import com.lilithsthrone.game.character.body.valueEnums.FluidModifier;
 import com.lilithsthrone.game.character.body.valueEnums.GenitalArrangement;
 import com.lilithsthrone.game.character.body.valueEnums.PenetrationModifier;
 import com.lilithsthrone.game.character.body.valueEnums.WingSize;
@@ -50,6 +51,7 @@ import com.lilithsthrone.game.sex.sexActions.SexAction;
 import com.lilithsthrone.game.sex.sexActions.SexActionInterface;
 import com.lilithsthrone.game.sex.sexActions.SexActionPriority;
 import com.lilithsthrone.game.sex.sexActions.SexActionType;
+import com.lilithsthrone.game.sex.sexActions.baseActions.PenisAnus;
 import com.lilithsthrone.game.sex.sexActions.baseActions.PenisMouth;
 import com.lilithsthrone.game.sex.sexActions.baseActions.PenisVagina;
 import com.lilithsthrone.main.Main;
@@ -122,7 +124,7 @@ public class GenericOrgasms {
 			if(Main.sex.getCreampieLockedBy()!=null) {
 				GameCharacter lockingCharacter = Main.sex.getCreampieLockedBy().getKey();
 				Class<? extends BodyPartInterface> bodypart = Main.sex.getCreampieLockedBy().getValue();
-				if(bodypart == Skin.class) {
+				if(bodypart == Torso.class) {
 					genericOrgasmSB.append(UtilText.parse(characterOrgasming, lockingCharacter,
 							"With [npc2.name] pressing [npc2.herself] tightly against [npc.herHim], [npc.nameIsFull] unable to pull out, and [npc.verb(let)] out [npc.a_moan+] as [npc.she] [npc.verb(start)] to orgasm."));
 					
@@ -1626,6 +1628,36 @@ public class GenericOrgasms {
 							case CHERRY:
 								cumTargetSB.append(" The sweet taste of [npc.namePos] cherry-flavoured");
 								break;
+							case COFFEE:
+								cumTargetSB.append(" The strong, bitter taste of [npc.namePos] coffee-flavoured");
+								break;
+							case TEA:
+								cumTargetSB.append(" The taste of [npc.namePos] tea-flavoured");
+								break;
+							case MAPLE:
+								cumTargetSB.append(" The sweet taste of [npc.namePos] maple-flavoured");
+								break;
+							case CINNAMON:
+								cumTargetSB.append(" The taste of [npc.namePos] cinnamon-flavoured");
+								break;
+							case LEMON:
+								cumTargetSB.append(" The sour taste of [npc.namePos] lemon-flavoured");
+								break;
+							case ORANGE:
+								cumTargetSB.append(" The citrus taste of [npc.namePos] orange-flavoured");
+								break;
+							case GRAPE:
+								cumTargetSB.append(" The taste of [npc.namePos] grape-flavoured");
+								break;
+							case MELON:
+								cumTargetSB.append(" The taste of [npc.namePos] melon-flavoured");
+								break;
+							case COCONUT:
+								cumTargetSB.append(" The taste of [npc.namePos] coconut-flavoured");
+								break;
+							case BLUEBERRY:
+								cumTargetSB.append(" The taste of [npc.namePos] blueberry-flavoured");
+								break;
 						}
 						cumTargetSB.append(" cum rises up to hit your [npc2.tongue], and you");
 						if(target.hasFetish(Fetish.FETISH_CUM_ADDICT) || Main.sex.getCharactersRequestingCreampie().contains(target)) {
@@ -2131,7 +2163,14 @@ public class GenericOrgasms {
 		}
 		
 		if(characterOrgasming.isVaginaSquirter()) {
-			genericOrgasmSB.append("<br/>As [npc.namePos] inner muscles spasm and quiver with delight, a huge spurt of female ejaculate squirts out from [npc.her] [npc.pussy+].");
+			List<String> ejaculateDescriptors = new ArrayList<>();
+			for(FluidModifier mod : FluidModifier.values()) {
+				if(characterOrgasming.hasGirlcumModifier(mod)) {
+					ejaculateDescriptors.add(mod.getName());
+				}
+			}
+			ejaculateDescriptors.add("wet");
+			genericOrgasmSB.append("<br/>As [npc.namePos] [npc.pussy+] uncontrollably spasms and quivers with delight, it suddenly squirts out a huge amount of hot, "+Util.randomItemFrom(ejaculateDescriptors)+" female ejaculate.");
 			
 			if(targetArea == OrgasmCumTarget.LILAYA_PANTIES) {
 				genericOrgasmSB.append("<br/>You quickly drop Lilaya's panties down between your legs, squirting directly into her underwear as you let out [pc.a_moan+].");
@@ -2283,7 +2322,6 @@ public class GenericOrgasms {
 			CorruptionLevel.ZERO_PURE,
 			null,
 			SexParticipantType.NORMAL) {
-
 		private GameCharacter getCharacterToBeCreampied() {
 			GameCharacter characterPenetrated = Main.sex.getCharactersHavingOngoingActionWith(Main.sex.getCharacterPerformingAction(), SexAreaPenetration.PENIS).get(0);
 			
@@ -2302,7 +2340,6 @@ public class GenericOrgasms {
 		private SexAreaInterface getAreaToBeCreampied() {
 			return Main.sex.getOngoingSexAreas(Main.sex.getCharacterPerformingAction(), SexAreaPenetration.PENIS, getCharacterToBeCreampied()).get(0);
 		}
-		
 		@Override
 		public boolean isBaseRequirementsMet() {
 			if(!Main.sex.getCharacterPerformingAction().hasPenisIgnoreDildo()) {
@@ -2362,10 +2399,8 @@ public class GenericOrgasms {
 				return false;
 			}
 			
-			
 			return true;
 		}
-		
 		@Override
 		public SexActionPriority getPriority() {
 			if(Main.sex.getSexManager().getCharacterOrgasmBehaviour(Main.sex.getCharacterPerformingAction())==OrgasmBehaviour.CREAMPIE) {
@@ -2373,6 +2408,11 @@ public class GenericOrgasms {
 			}
 			if(Main.sex.getCreampieLockedBy()!=null) {
 				return SexActionPriority.UNIQUE_MAX;
+			}
+			if(getAreaToBeCreampied()==SexAreaOrifice.VAGINA
+					&& Main.sex.getCharacterPerformingAction().getFetishDesire(Fetish.FETISH_IMPREGNATION).isNegative()
+					&& !Main.sex.getCharacterTargetedForSexAction(this).isVisiblyPregnant()) {
+				return SexActionPriority.LOW;
 			}
 			if(Math.random()<0.66f
 					|| Main.sex.getCharacterPerformingAction().getFetishDesire(Fetish.FETISH_CUM_STUD).isPositive()
@@ -2382,12 +2422,11 @@ public class GenericOrgasms {
 			}
 			return SexActionPriority.NORMAL;
 		}
-		
 		@Override
 		public String getActionTitle() {
 			if(Main.sex.getCreampieLockedBy()!=null) {
 				Class<? extends BodyPartInterface> bodypart = Main.sex.getCreampieLockedBy().getValue();
-				if(bodypart == Skin.class) {
+				if(bodypart == Torso.class) {
 					return "Forced creampie!";
 					
 				} else if(bodypart == Arm.class) {
@@ -2456,13 +2495,12 @@ public class GenericOrgasms {
 			}
 			return "Creampie";
 		}
-
 		@Override
 		public String getActionDescription() {
 			if(Main.sex.getCreampieLockedBy()!=null) {
 				GameCharacter character = Main.sex.getCreampieLockedBy().getKey();
 				Class<? extends BodyPartInterface> bodypart = Main.sex.getCreampieLockedBy().getValue();
-				if(bodypart == Skin.class) {
+				if(bodypart == Torso.class) {
 					return UtilText.parse(character,
 							"[npc.NameIsFull] using [npc.her] advantageous position to force you to cum inside of [npc.herHim]! As you're on the very brink of orgasm, you have no time to try and push [npc.herHim] away!");
 					
@@ -2614,7 +2652,7 @@ public class GenericOrgasms {
 		public List<CoverableArea> getAreasCummedOn(GameCharacter cumProvider, GameCharacter cumTarget) {
 			if(cumProvider.equals(Main.sex.getCharacterPerformingAction()) && cumTarget.equals(Main.sex.getTargetedPartner(cumProvider))) {
 				SexAreaInterface areaContacted = getAreaToBeCreampied();
-	
+				
 				if(!areaContacted.isOrifice()) {
 					switch((SexAreaPenetration)areaContacted) {
 						case CLIT:
@@ -2761,6 +2799,11 @@ public class GenericOrgasms {
 			if(Main.sex.getCreampieLockedBy()!=null) {
 				return SexActionPriority.UNIQUE_MAX;
 			}
+			if(getAreaToBeKnotted()==SexAreaOrifice.VAGINA
+					&& Main.sex.getCharacterPerformingAction().getFetishDesire(Fetish.FETISH_IMPREGNATION).isNegative()
+					&& !Main.sex.getCharacterTargetedForSexAction(this).isVisiblyPregnant()) {
+				return SexActionPriority.LOW;
+			}
 			if(Math.random()<0.66f
 					|| Main.sex.getCharacterPerformingAction().getFetishDesire(Fetish.FETISH_CUM_STUD).isPositive()
 					|| Main.sex.getRequestedPulloutWeighting(Main.sex.getCharacterPerformingAction())<0
@@ -2774,7 +2817,7 @@ public class GenericOrgasms {
 		public String getActionTitle() {
 			if(Main.sex.getCreampieLockedBy()!=null) {
 				Class<? extends BodyPartInterface> bodypart = Main.sex.getCreampieLockedBy().getValue();
-				if(bodypart == Skin.class) {
+				if(bodypart == Torso.class) {
 					return "Forced creampie (Knot!)";
 					
 				} else if(bodypart == Arm.class) {
@@ -2802,7 +2845,7 @@ public class GenericOrgasms {
 			if(Main.sex.getCreampieLockedBy()!=null) {
 				GameCharacter character = Main.sex.getCreampieLockedBy().getKey();
 				Class<? extends BodyPartInterface> bodypart = Main.sex.getCreampieLockedBy().getValue();
-				if(bodypart == Skin.class) {
+				if(bodypart == Torso.class) {
 					return UtilText.parse(character,
 							"[npc.NameIsFull] using [npc.her] advantageous position to force you to cum inside of [npc.herHim]!"
 							+ " Give [npc.herHim] what [npc.she] wants and knot [npc.herHim]!");
@@ -3034,6 +3077,11 @@ public class GenericOrgasms {
 			if(Main.sex.getSexManager().getCharacterOrgasmBehaviour(Main.sex.getCharacterPerformingAction())==OrgasmBehaviour.CREAMPIE) {
 				return SexActionPriority.UNIQUE_MAX;
 			}
+			if(Main.sex.getAllOngoingSexAreas(Main.sex.getCharacterPerformingAction(), SexAreaPenetration.PENIS).get(0)==SexAreaOrifice.VAGINA
+					&& Main.sex.getCharacterPerformingAction().getFetishDesire(Fetish.FETISH_IMPREGNATION).isNegative()
+					&& (!Main.sex.getCharacterTargetedForSexAction(this).isVisiblyPregnant() || !getSecondaryCreampieTarget(Main.sex.getCharacterTargetedForSexAction(this), SexAreaOrifice.VAGINA).isVisiblyPregnant())) {
+				return SexActionPriority.LOW;
+			}
 			if(Math.random()<0.5f
 					|| Main.sex.getCharacterPerformingAction().getFetishDesire(Fetish.FETISH_CUM_STUD).isPositive()
 					|| Main.sex.getRequestedPulloutWeighting(Main.sex.getCharacterPerformingAction())<0
@@ -3150,7 +3198,11 @@ public class GenericOrgasms {
 			Main.sex.stopOngoingAction(Main.sex.getCharacterPerformingAction(), SexAreaPenetration.PENIS, Main.sex.getCharacterTargetedForSexAction(this), areaContacted);
 			Main.sex.applyOngoingAction(Main.sex.getCharacterPerformingAction(), SexAreaPenetration.PENIS, secondaryTarget, areaContacted, true);
 			
-			return Main.sex.applyPenetrationEffects(PenisVagina.PENIS_FUCKING_START, Main.sex.getCharacterPerformingAction(), SexAreaPenetration.PENIS, secondaryTarget, SexAreaOrifice.VAGINA);
+			if(areaContacted==SexAreaOrifice.VAGINA) {
+				return Main.sex.applyPenetrationEffects(PenisVagina.PENIS_FUCKING_START, Main.sex.getCharacterPerformingAction(), SexAreaPenetration.PENIS, secondaryTarget, SexAreaOrifice.VAGINA);
+			} else {
+				return Main.sex.applyPenetrationEffects(PenisAnus.PENIS_FUCKING_START, Main.sex.getCharacterPerformingAction(), SexAreaPenetration.PENIS, secondaryTarget, SexAreaOrifice.ANUS);
+			}
 		}
 		
 		@Override
@@ -3329,6 +3381,11 @@ public class GenericOrgasms {
 		public SexActionPriority getPriority() {
 			if(Main.sex.getSexManager().getCharacterOrgasmBehaviour(Main.sex.getCharacterPerformingAction())==OrgasmBehaviour.CREAMPIE) {
 				return SexActionPriority.UNIQUE_MAX;
+			}
+			if(Main.sex.getAllOngoingSexAreas(Main.sex.getCharacterPerformingAction(), SexAreaPenetration.PENIS).get(0)==SexAreaOrifice.VAGINA
+					&& Main.sex.getCharacterPerformingAction().getFetishDesire(Fetish.FETISH_IMPREGNATION).isNegative()
+					&& (!Main.sex.getCharacterTargetedForSexAction(this).isVisiblyPregnant() || !getSecondaryCreampieTarget(Main.sex.getCharacterTargetedForSexAction(this), SexAreaOrifice.VAGINA).isVisiblyPregnant())) {
+				return SexActionPriority.LOW;
 			}
 			if(Math.random()<0.5f
 					|| Main.sex.getCharacterPerformingAction().getFetishDesire(Fetish.FETISH_CUM_STUD).isPositive()
@@ -3573,9 +3630,10 @@ public class GenericOrgasms {
 
 		@Override
 		public SexActionPriority getPriority() {
-			if(!Main.sex.getCharacterPerformingAction().getFetishDesire(Fetish.FETISH_CUM_STUD).isNegative()) {
-				return SexActionPriority.LOW; // Prefer cumming on someone if they don't dislike cumming.
-			}
+			// Seemed a little random to have this behaviour...
+//			if(!Main.sex.getCharacterPerformingAction().getFetishDesire(Fetish.FETISH_CUM_STUD).isNegative()) {
+//				return SexActionPriority.LOW; // Prefer cumming on someone if they don't dislike cumming.
+//			}
 			return super.getPriority();
 		}
 		
@@ -4421,7 +4479,7 @@ public class GenericOrgasms {
 	
 	
 	
-	// PLAYER:
+	// PREPARATIONS:
 	
 	public static final SexAction GENERIC_PREPARATION_PREPARE = new SexAction(
 			SexActionType.PREPARE_FOR_PARTNER_ORGASM,
@@ -4435,7 +4493,6 @@ public class GenericOrgasms {
 		public boolean isBaseRequirementsMet() {
 			return !isTakingCock(Main.game.getPlayer(), Main.sex.getCharacterTargetedForSexAction(this));
 		}
-
 		@Override
 		public SexActionPriority getPriority() {
 			return SexActionPriority.LOW;
@@ -4805,7 +4862,8 @@ public class GenericOrgasms {
 	}
 	
 	private static String getForcedCreampieSpeech(SexAction sexAction) {
-		boolean knowsName = (Main.sex.getCharacterTargetedForSexAction(sexAction).isPlayer() && Main.sex.getCharacterPerformingAction().isPlayerKnowsName()) || Main.sex.getCharacterTargetedForSexAction(sexAction).isPlayerKnowsName();
+		boolean knowsName = (!Main.sex.getCharacterPerformingAction().isPlayer() && Main.sex.getCharacterPerformingAction().isPlayerKnowsName())
+							|| (!Main.sex.getCharacterTargetedForSexAction(sexAction).isPlayer() && Main.sex.getCharacterTargetedForSexAction(sexAction).isPlayerKnowsName());
 		
 		if(isRealPenisFuckingCharacter(Main.sex.getCharacterPerformingAction(), Main.sex.getCharacterTargetedForSexAction(sexAction))) {
 			if(isAreaFuckedByTarget(sexAction, Main.sex.getCharacterPerformingAction(), SexAreaOrifice.VAGINA)) {
@@ -4891,7 +4949,7 @@ public class GenericOrgasms {
 							Main.sex.getCharacterPerformingAction(),
 							Main.sex.getOngoingSexAreas(Main.sex.getCharacterTargetedForSexAction(this), SexAreaPenetration.PENIS, Main.sex.getCharacterPerformingAction()).get(0))
 					&& Main.sex.getPosition().isForcedCreampieEnabled(
-							Skin.class,
+							Torso.class,
 							(SexAreaOrifice) Main.sex.getOngoingSexAreas(Main.sex.getCharacterTargetedForSexAction(this), SexAreaPenetration.PENIS, Main.sex.getCharacterPerformingAction()).get(0),
 							Main.sex.getCharacterPerformingAction(),
 							Main.sex.getCharacterTargetedForSexAction(this))
@@ -4959,7 +5017,7 @@ public class GenericOrgasms {
 		@Override
 		public void applyEffects() {
 			applyBasePenisOrgasmRequestsReset();
-			Main.sex.setCreampieLockedBy(new Value<>(Main.sex.getCharacterPerformingAction(), Skin.class));
+			Main.sex.setCreampieLockedBy(new Value<>(Main.sex.getCharacterPerformingAction(), Torso.class));
 		}
 		
 		@Override

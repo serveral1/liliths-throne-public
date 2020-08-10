@@ -1564,9 +1564,9 @@ public class OptionsDialogue {
 						+ " The 'Human encounters' option determines what the chance is for random NPCs to be fully human."
 						+ " <b>These options only affect random NPCs at the moment, but I'll do my best to add reduced-furry versions of each major NPC as well!</b>"
 						
-						+ "<br/><br/>[style.boldGood(Hover over the buttons to see what each option means!)]"
+						+ "<br/>[style.italicsGood(Hover over the buttons to see what each option means!)]"
 						
-						+ "<br/><br/>Please note that mythological and demonic races, such as harpies and demons, are not affected by furry preferences."
+						+ "<br/>Please note that some races, such as demons and harpies, are limited in their available furry preference options."
 					+ "</div>"
 							
 					+ "<span style='height:16px;width:800px;float:left;'></span>");
@@ -1798,8 +1798,8 @@ public class OptionsDialogue {
 				sb.append("</div>");
 				sb.append("<div class='container-full-width' style='text-align:center; width:30%; background:transparent; margin:2px 0; padding:0;'>");
 				for(SubspeciesPreference preference : SubspeciesPreference.values()) {
-					sb.append("<div id='FEMININE_SPAWN_"+preference+"_"+s+"' class='square-button small"
-								+(Main.getProperties().getSubspeciesFemininePreferencesMap().get(s)==preference
+					sb.append("<div id='FEMININE_SPAWN_"+preference+"_"+s+"' class='square-button small"+(!s.isSpawnPreferencesEnabled()?" disabled":"")
+								+(Main.getProperties().getSubspeciesFemininePreferencesMap().get(s)==preference && s.isSpawnPreferencesEnabled()
 									?" selected' style='"+baseStyle+" border-color:"+PresetColour.FEMININE_PLUS.toWebHexString()+";'><div class='square-button-content'>"+preference.getSVGImage(false)+"</div></div>"
 									:"' style='"+baseStyle+"'><div class='square-button-content'>"+preference.getSVGImage(true)+"</div></div>"));
 				}
@@ -1822,8 +1822,8 @@ public class OptionsDialogue {
 			sb.append("</div>");
 			sb.append("<div class='container-full-width' style='text-align:center; width:30%; background:transparent; margin:2px 0; padding:0;'>");
 				for(SubspeciesPreference preference : SubspeciesPreference.values()) {
-					sb.append("<div id='MASCULINE_SPAWN_"+preference+"_"+s+"' class='square-button small"
-								+(Main.getProperties().getSubspeciesMasculinePreferencesMap().get(s)==preference
+					sb.append("<div id='MASCULINE_SPAWN_"+preference+"_"+s+"' class='square-button small"+(!s.isSpawnPreferencesEnabled()?" disabled":"")
+								+(Main.getProperties().getSubspeciesMasculinePreferencesMap().get(s)==preference && s.isSpawnPreferencesEnabled()
 									?" selected' style='"+baseStyle+" border-color:"+PresetColour.MASCULINE_PLUS.toWebHexString()+";'><div class='square-button-content'>"+preference.getSVGImage(false)+"</div></div>"
 									:"' style='"+baseStyle+"'><div class='square-button-content'>"+preference.getSVGImage(true)+"</div></div>"));
 				}
@@ -1953,7 +1953,14 @@ public class OptionsDialogue {
 								"Enchantment Capacity",
 								"Toggle the 'enchantment capacity' mechanic, which restricts how many enchanted items you can wear. This is on by default, and you will potentially break the balance of the game's combat by turning it off.",
 								Main.getProperties().hasValue(PropertyValue.enchantmentLimits)));
-
+			
+			UtilText.nodeContentSB.append(getContentPreferenceDiv(ContentOptionsPage.GAMEPLAY,
+								"BAD_END",
+								PresetColour.GENERIC_TERRIBLE,
+								"Bad Ends",
+								"Toggle the ability to trigger 'bad ends', which effectively end the game for your character when encountered.",
+								Main.getProperties().hasValue(PropertyValue.badEndContent)));
+			
 			UtilText.nodeContentSB.append(getContentPreferenceDiv(ContentOptionsPage.GAMEPLAY,
 								"LEVEL_DRAIN",
 								PresetColour.GENERIC_TERRIBLE,
@@ -2247,7 +2254,6 @@ public class OptionsDialogue {
 								Main.getProperties().forcedTFPercentage,
 								0,
 								100));
-			}
 			
 			UtilText.nodeContentSB.append(getCustomContentPreferenceDivStart(PresetColour.BASE_GREEN, "Forced TF Racial Limits", "This allows you to set the maximum furry limit of what an NPC will forcibly transform you into."));
 			UtilText.nodeContentSB.append(
@@ -2288,7 +2294,6 @@ public class OptionsDialogue {
 							+ "</div>"));
 			UtilText.nodeContentSB.append("</div></div>");
 			
-			if(contentOptionsPage==ContentOptionsPage.GAMEPLAY) {
 				UtilText.nodeContentSB.append(getCustomContentPreferenceDivStart(PresetColour.BASE_GREEN, "Forced TF Gender Tendency", "This allows you to override NPC tastes when a forced transformation will alter your gender presentation."));
 				UtilText.nodeContentSB.append(
 						(Main.getProperties().getForcedTFTendency()==ForcedTFTendency.NEUTRAL
@@ -2379,6 +2384,14 @@ public class OptionsDialogue {
 									+ "</div>"));
 				UtilText.nodeContentSB.append("</div></div>");
 			}
+			
+			UtilText.nodeContentSB.append(getContentPreferenceDiv(ContentOptionsPage.GAMEPLAY,
+					"COMPANION",
+					PresetColour.BASE_GREEN_LIGHT,
+					"Companions",
+					"Enable the ability to add slaves or friendly occupants as your companion."
+						+ "<br/>[style.boldBad(Warning:)] This is an experimental feature, and support for companions was dropped in v0.3.9, so there will be no special dialogue or actions involving your companions outside of Dominion.",
+					Main.getProperties().hasValue(PropertyValue.companionContent)));
 			
 			UtilText.nodeContentSB.append(getContentPreferenceDiv(ContentOptionsPage.SEX,
 							"FURRY_TAIL_PENETRATION",
@@ -2575,7 +2588,7 @@ public class OptionsDialogue {
 		StringBuilder contentSB = new StringBuilder();
 		
 		contentSB.append(
-				"<div class='container-full-width' style='padding:0; margin-top:2px; margin-bottom:2px;'>"
+				"<div class='container-full-width' style='padding:0; margin:2px 0;'>"
 					+ "<div class='container-half-width' style='width:calc(55% - 16px);'>"
 						+ "<b style='text-align:center; color:"+colour.toWebHexString()+";'>"+title+"</b><b>:</b> "
 						+ description

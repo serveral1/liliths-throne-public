@@ -36,9 +36,11 @@ import com.lilithsthrone.game.character.body.valueEnums.Height;
 import com.lilithsthrone.game.character.body.valueEnums.HornLength;
 import com.lilithsthrone.game.character.body.valueEnums.LegConfiguration;
 import com.lilithsthrone.game.character.body.valueEnums.Muscle;
+import com.lilithsthrone.game.character.body.valueEnums.PenetrationGirth;
 import com.lilithsthrone.game.character.body.valueEnums.WingSize;
 import com.lilithsthrone.game.character.effects.PerkCategory;
 import com.lilithsthrone.game.character.gender.Gender;
+import com.lilithsthrone.game.character.npc.misc.Elemental;
 import com.lilithsthrone.game.dialogue.DialogueFlagValue;
 import com.lilithsthrone.game.dialogue.utils.UtilText;
 import com.lilithsthrone.main.Main;
@@ -60,7 +62,8 @@ import com.lilithsthrone.world.WorldType;
 public enum Subspecies {
 
 	// HUMAN:
-	HUMAN("statusEffects/race/raceHuman",
+	HUMAN(true,
+			"statusEffects/race/raceHuman",
 			"statusEffects/race/raceBackground",
 			"human",
 			"humans",
@@ -94,10 +97,13 @@ public enum Subspecies {
 			"A typical human.",
 			Util.newHashMapOfValues(
 					new Value<>(WorldType.DOMINION, SubspeciesSpawnRarity.FOUR_COMMON),
-					new Value<>(WorldType.NIGHTLIFE_CLUB, SubspeciesSpawnRarity.FOUR_COMMON))),
+					new Value<>(WorldType.NIGHTLIFE_CLUB, SubspeciesSpawnRarity.FOUR_COMMON)), Util.newArrayListOfValues(
+					SubspeciesFlag.HIDDEN_FROM_PREFERENCES)) {
+	},
 
 	// ANGEL:
-	ANGEL("statusEffects/race/raceAngel",
+	ANGEL(true,
+			"statusEffects/race/raceAngel",
 			"statusEffects/race/raceBackground",
 			"angel",
 			"angels",
@@ -132,21 +138,36 @@ public enum Subspecies {
 			PresetColour.RACE_ANGEL,
 			SubspeciesPreference.FOUR_ABUNDANT,
 			"A typical angel.",
-			Util.newHashMapOfValues()) {
+			Util.newHashMapOfValues(), Util.newArrayListOfValues(
+					SubspeciesFlag.HIDDEN_FROM_PREFERENCES)) {
 		@Override
 		public String[] getHalfDemonName(GameCharacter character) {
-			return new String[] {
+			String[] names = new String[] {
 					"fallen angel",
 					"fallen angels",
 					"fallen angel",
 					"fallen angel",
 					"fallen angels",
 					"fallen angels"};
+			
+			if(character!=null && !character.getHalfDemonSubspecies().isNonBiped()) {
+				names = new String[] {
+					applyNonBipedNameChange(character, "fallen angel", false, false),
+					applyNonBipedNameChange(character, "fallen angel", false, true),
+					applyNonBipedNameChange(character, "fallen angel", false, false),
+					applyNonBipedNameChange(character, "fallen angel", true, false),
+					applyNonBipedNameChange(character, "fallen angel", false, true),
+					applyNonBipedNameChange(character, "fallen angel", true, true)
+				};
+			}
+			
+			return names;
 		}
 	},
 
 	// DEMON:
-	ELDER_LILIN("statusEffects/race/raceElderLilin",
+	ELDER_LILIN(false,
+			"statusEffects/race/raceElderLilin",
 			"statusEffects/race/raceBackground",
 			"elder lilin",
 			"elder lilin",
@@ -181,14 +202,16 @@ public enum Subspecies {
 			PresetColour.RACE_LILIN,
 			SubspeciesPreference.ONE_LOW,
 			"One of the seven elder lilin.",
-			Util.newHashMapOfValues()) {
+			Util.newHashMapOfValues(), Util.newArrayListOfValues(
+					SubspeciesFlag.HIDDEN_FROM_PREFERENCES)) {
 		@Override
 		public void applySpeciesChanges(Body body) {
 			body.setSubspeciesOverride(ELDER_LILIN);
 		}
 	},
 	
-	LILIN("statusEffects/race/raceLilin",
+	LILIN(false,
+			"statusEffects/race/raceLilin",
 			"statusEffects/race/raceBackground",
 			"lilin",
 			"lilin",
@@ -223,14 +246,16 @@ public enum Subspecies {
 			PresetColour.RACE_LILIN,
 			SubspeciesPreference.ONE_LOW,
 			"A lilin.",
-			null) {
+			null, Util.newArrayListOfValues(
+					SubspeciesFlag.HIDDEN_FROM_PREFERENCES)) {
 		@Override
 		public void applySpeciesChanges(Body body) {
 			body.setSubspeciesOverride(LILIN);
 		}
 	},
 	
-	DEMON("statusEffects/race/raceDemon",
+	DEMON(true,
+			"statusEffects/race/raceDemon",
 			"statusEffects/race/raceBackground",
 			"demon",
 			"demons",
@@ -268,7 +293,8 @@ public enum Subspecies {
 			"A typical demon.",
 			Util.newHashMapOfValues(
 					new Value<>(WorldType.DOMINION, SubspeciesSpawnRarity.TWO_RARE),
-					new Value<>(WorldType.NIGHTLIFE_CLUB,  SubspeciesSpawnRarity.TWO_RARE))) {
+					new Value<>(WorldType.NIGHTLIFE_CLUB,  SubspeciesSpawnRarity.TWO_RARE)), Util.newArrayListOfValues(
+					SubspeciesFlag.HIDDEN_FROM_PREFERENCES)) {
 
 		private String[] centaurNames = new String[] {
 				"demotaur",
@@ -371,7 +397,8 @@ public enum Subspecies {
 		}
 	},
 	
-	HALF_DEMON("statusEffects/race/raceDemon",
+	HALF_DEMON(false,
+			"statusEffects/race/raceDemon",
 			"statusEffects/race/raceBackground",
 			"half-demon",
 			"half-demons",
@@ -411,7 +438,8 @@ public enum Subspecies {
 					new Value<>(WorldType.DOMINION, SubspeciesSpawnRarity.ONE_VERY_RARE),
 					new Value<>(WorldType.SUBMISSION, SubspeciesSpawnRarity.ONE_VERY_RARE),
 					new Value<>(WorldType.HARPY_NEST, SubspeciesSpawnRarity.ONE_VERY_RARE),
-					new Value<>(WorldType.NIGHTLIFE_CLUB, SubspeciesSpawnRarity.ONE_VERY_RARE))) {
+					new Value<>(WorldType.NIGHTLIFE_CLUB, SubspeciesSpawnRarity.ONE_VERY_RARE)), Util.newArrayListOfValues(
+					SubspeciesFlag.HIDDEN_FROM_PREFERENCES)) {
 		
 		@Override
 		public void applySpeciesChanges(Body body) {
@@ -419,7 +447,7 @@ public enum Subspecies {
 
 		@Override
 		public String getFeralName(GameCharacter character) {
-			Race r = character.getLegType().getRace();
+			AbstractRace r = character.getLegType().getRace();
 			return character.getLegConfiguration()!=LegConfiguration.BIPEDAL
 					?r==Race.HUMAN
 						?"demonic-horse"
@@ -500,7 +528,8 @@ public enum Subspecies {
 		}
 	},
 	
-	IMP("statusEffects/race/raceImp",
+	IMP(false,
+			"statusEffects/race/raceImp",
 			"statusEffects/race/raceBackground",
 			"imp",
 			"imps",
@@ -536,7 +565,8 @@ public enum Subspecies {
 			SubspeciesPreference.FOUR_ABUNDANT,
 			"A typical imp.",
 			Util.newHashMapOfValues(
-					new Value<>(WorldType.SUBMISSION, SubspeciesSpawnRarity.FOUR_COMMON))) {
+					new Value<>(WorldType.SUBMISSION, SubspeciesSpawnRarity.FOUR_COMMON)), Util.newArrayListOfValues(
+					SubspeciesFlag.HIDDEN_FROM_PREFERENCES)) {
 		@Override
 		public void applySpeciesChanges(Body body) {
 			body.setHeight(Height.NEGATIVE_TWO_MIMIMUM.getRandomValue());
@@ -553,7 +583,8 @@ public enum Subspecies {
 		}
 	},
 	
-	IMP_ALPHA("statusEffects/race/raceImpAlpha",
+	IMP_ALPHA(false,
+			"statusEffects/race/raceImpAlpha",
 			"statusEffects/race/raceBackground",
 			"alpha-imp",
 			"alpha-imps",
@@ -589,7 +620,8 @@ public enum Subspecies {
 			SubspeciesPreference.ONE_LOW,
 			"A more powerful form of imp, standing at over 3'6\" tall.",
 			Util.newHashMapOfValues(
-					new Value<>(WorldType.SUBMISSION, SubspeciesSpawnRarity.TWO_RARE))) {
+					new Value<>(WorldType.SUBMISSION, SubspeciesSpawnRarity.TWO_RARE)), Util.newArrayListOfValues(
+					SubspeciesFlag.HIDDEN_FROM_PREFERENCES)) {
 		@Override
 		public void applySpeciesChanges(Body body) {
 			body.setHeight(Height.NEGATIVE_ONE_TINY.getRandomValue());
@@ -607,7 +639,8 @@ public enum Subspecies {
 	},
 	
 	// BOVINES:
-	COW_MORPH("statusEffects/race/raceCowMorph",
+	COW_MORPH(true,
+			"statusEffects/race/raceCowMorph",
 			"statusEffects/race/raceBackground",
 			"cow-morph",
 			"cow-morphs",
@@ -640,10 +673,9 @@ public enum Subspecies {
 					new Value<>(PerkCategory.ARCANE, 0)),
 			PresetColour.RACE_COW_MORPH,
 			SubspeciesPreference.FOUR_ABUNDANT,
-			"An anthropomorphic cow, known as a 'cow-morph' when bipedal, and a 'cowtaur' when the lower body is that of a feral cow.",
-			Util.newHashMapOfValues(
-					new Value<>(WorldType.DOMINION, SubspeciesSpawnRarity.TWO_RARE),
-					new Value<>(WorldType.NIGHTLIFE_CLUB, SubspeciesSpawnRarity.TWO_RARE))) {
+			"An anthropomorphic cow, known as a 'cow-morph' when bipedal, and a 'cowtaur' when the lower body is that of a feral cow.", Util.newHashMapOfValues(
+							new Value<>(WorldType.DOMINION, SubspeciesSpawnRarity.TWO_RARE),
+							new Value<>(WorldType.NIGHTLIFE_CLUB, SubspeciesSpawnRarity.TWO_RARE)), null) {
 		@Override
 		public String[] getHalfDemonName(GameCharacter character) {
 			return new String[] {
@@ -657,7 +689,8 @@ public enum Subspecies {
 	},
 	
 	// CANIDS:
-	DOG_MORPH("statusEffects/race/raceDogMorph",
+	DOG_MORPH(true,
+			"statusEffects/race/raceDogMorph",
 			"statusEffects/race/raceBackground",
 			"dog-morph",
 			"dog-morphs",
@@ -690,23 +723,36 @@ public enum Subspecies {
 					new Value<>(PerkCategory.ARCANE, 0)),
 			PresetColour.RACE_DOG_MORPH,
 			SubspeciesPreference.FOUR_ABUNDANT,
-			"An anthropomorphic dog, known as a 'dog-morph' when bipedal, and a 'dogtaur' when the lower body is that of an oversized feral dog.",
-			Util.newHashMapOfValues(
-					new Value<>(WorldType.DOMINION, SubspeciesSpawnRarity.FOUR_COMMON),
-					new Value<>(WorldType.NIGHTLIFE_CLUB, SubspeciesSpawnRarity.FOUR_COMMON))) {
+			"An anthropomorphic dog, known as a 'dog-morph' when bipedal, and a 'dogtaur' when the lower body is that of an oversized feral dog.", Util.newHashMapOfValues(
+							new Value<>(WorldType.DOMINION, SubspeciesSpawnRarity.FOUR_COMMON),
+							new Value<>(WorldType.NIGHTLIFE_CLUB, SubspeciesSpawnRarity.FOUR_COMMON)), null) {
 				@Override
 				public String[] getHalfDemonName(GameCharacter character) {
-					return new String[] {
+					String[] names = new String[] {
 							"hellhound",
 							"hellhounds",
 							"hellhound",
 							"hellhound",
 							"hellhounds",
 							"hellhounds"};
+					
+					if(character!=null && !character.getHalfDemonSubspecies().isNonBiped()) {
+						names = new String[] {
+							applyNonBipedNameChange(character, "hellhound", false, false),
+							applyNonBipedNameChange(character, "hellhound", false, true),
+							applyNonBipedNameChange(character, "hellhound", false, false),
+							applyNonBipedNameChange(character, "hellhound", true, false),
+							applyNonBipedNameChange(character, "hellhound", false, true),
+							applyNonBipedNameChange(character, "hellhound", true, true)
+						};
+					}
+					
+					return names;
 				}
 			},
 	
-	DOG_MORPH_BORDER_COLLIE("statusEffects/race/raceDogMorph",
+	DOG_MORPH_BORDER_COLLIE(false,
+			"statusEffects/race/raceDogMorph",
 			"statusEffects/race/raceBackground",
 			"border-collie-morph",
 			"border-collie-morphs",
@@ -714,9 +760,9 @@ public enum Subspecies {
 			"border-collie-girl",
 			"border-collie-boys",
 			"border-collie-girls",
-			"border-collie",
+			"border-collie", //TODO sheep-morph damage
 			"[npc.NameIsFull] more intelligent than an average dog-morph, and [npc.has] strong urges to try and herd people around."
-					+ " [npc.She] also [npc.has] an instinctive desire to display [npc.her] dominance over innocent sheep-morphs...", //TODO sheep-morph damage
+					+ " [npc.She] also [npc.has] an instinctive desire to display [npc.her] dominance over innocent sheep-morphs...",
 			Util.newHashMapOfValues(
 					new Value<Attribute, Float>(Attribute.MAJOR_PHYSIQUE, 10f),
 					new Value<Attribute, Float>(Attribute.MAJOR_ARCANE, 5f),
@@ -741,10 +787,9 @@ public enum Subspecies {
 			SubspeciesPreference.TWO_AVERAGE,
 			"A particularly energetic and intelligent dog-morph, which resembles an anthropomorphised border-collie."
 				+ " They are known as 'border-collie-morphs' when bipedal, and 'border-collie-taurs' when the lower body is that of an oversized feral border-collie."
-				+ " To be identified as a border-collie-morph, a character must be a dog-morph that has either upright or folded ears, and fluffy, black fur with white markings.",
-			Util.newHashMapOfValues(
-				new Value<>(WorldType.DOMINION, SubspeciesSpawnRarity.FOUR_COMMON),
-				new Value<>(WorldType.NIGHTLIFE_CLUB, SubspeciesSpawnRarity.FOUR_COMMON))) {
+				+ " To be identified as a border-collie-morph, a character must be a dog-morph that has either upright or folded ears, and fluffy, black fur with white markings.", Util.newHashMapOfValues(
+					new Value<>(WorldType.DOMINION, SubspeciesSpawnRarity.FOUR_COMMON),
+					new Value<>(WorldType.NIGHTLIFE_CLUB, SubspeciesSpawnRarity.FOUR_COMMON)), null) {
 				@Override
 				public void applySpeciesChanges(Body body) {
 					body.getCoverings().put(BodyCoveringType.CANINE_FUR, new Covering(BodyCoveringType.CANINE_FUR, CoveringPattern.MARKED, CoveringModifier.FLUFFY, PresetColour.COVERING_BLACK, false, PresetColour.COVERING_WHITE, false));
@@ -758,17 +803,31 @@ public enum Subspecies {
 				}
 				@Override
 				public String[] getHalfDemonName(GameCharacter character) {
-					return new String[] {
+					String[] names = new String[] {
 							"hellhound",
 							"hellhounds",
 							"hellhound",
 							"hellhound",
 							"hellhounds",
 							"hellhounds"};
+					
+					if(character!=null && !character.getHalfDemonSubspecies().isNonBiped()) {
+						names = new String[] {
+							applyNonBipedNameChange(character, "hellhound", false, false),
+							applyNonBipedNameChange(character, "hellhound", false, true),
+							applyNonBipedNameChange(character, "hellhound", false, false),
+							applyNonBipedNameChange(character, "hellhound", true, false),
+							applyNonBipedNameChange(character, "hellhound", false, true),
+							applyNonBipedNameChange(character, "hellhound", true, true)
+						};
+					}
+					
+					return names;
 				}
 			},
 	
-	DOG_MORPH_DOBERMANN("statusEffects/race/raceDogMorphDobermann",
+	DOG_MORPH_DOBERMANN(false,
+			"statusEffects/race/raceDogMorphDobermann",
 			"statusEffects/race/raceBackground",
 			"dobermann",
 			"dobermanns",
@@ -803,10 +862,9 @@ public enum Subspecies {
 			SubspeciesPreference.TWO_AVERAGE,
 			"A dog-morph which resembles an anthropomorphised dobermann."
 					+ " They are known as 'dobermanns' when bipedal, and 'dobermanntaurs' when the lower body is that of an oversized feral dobermann."
-					+ " To be identified as a dobermann, a character must be a dog-morph that has short, black fur, with either brown, dark-brown, or tan markings.",
-			Util.newHashMapOfValues(
-					new Value<>(WorldType.DOMINION, SubspeciesSpawnRarity.FOUR_COMMON),
-					new Value<>(WorldType.NIGHTLIFE_CLUB, SubspeciesSpawnRarity.FOUR_COMMON))) {
+					+ " To be identified as a dobermann, a character must be a dog-morph that has short, black fur, with either brown, dark-brown, or tan markings.", Util.newHashMapOfValues(
+							new Value<>(WorldType.DOMINION, SubspeciesSpawnRarity.FOUR_COMMON),
+							new Value<>(WorldType.NIGHTLIFE_CLUB, SubspeciesSpawnRarity.FOUR_COMMON)), null) {
 		@Override
 		public void applySpeciesChanges(Body body) {
 			Colour secondaryColour = PresetColour.COVERING_BROWN;
@@ -820,6 +878,9 @@ public enum Subspecies {
 			body.getCoverings().put(BodyCoveringType.HAIR_CANINE_FUR, new Covering(BodyCoveringType.HAIR_CANINE_FUR, CoveringPattern.NONE, PresetColour.COVERING_BLACK, false, secondaryColour, false));
 			body.getCoverings().put(BodyCoveringType.HUMAN, new Covering(BodyCoveringType.HUMAN, CoveringPattern.NONE, PresetColour.SKIN_EBONY, false, PresetColour.SKIN_EBONY, false));
 			body.updateCoverings(true, true, true, true);
+			if(body.getPenis().getType()==PenisType.DOG_MORPH) {
+				body.getCoverings().put(BodyCoveringType.PENIS, new Covering(BodyCoveringType.PENIS, PresetColour.SKIN_RED));
+			}
 			if(body.getEar().getType()==EarType.DOG_MORPH) {
 				body.getEar().setType(null, EarType.DOG_MORPH_POINTED);
 			}
@@ -829,17 +890,31 @@ public enum Subspecies {
 		}
 		@Override
 		public String[] getHalfDemonName(GameCharacter character) {
-			return new String[] {
+			String[] names = new String[] {
 					"hellhound",
 					"hellhounds",
 					"hellhound",
 					"hellhound",
 					"hellhounds",
 					"hellhounds"};
+			
+			if(character!=null && !character.getHalfDemonSubspecies().isNonBiped()) {
+				names = new String[] {
+					applyNonBipedNameChange(character, "hellhound", false, false),
+					applyNonBipedNameChange(character, "hellhound", false, true),
+					applyNonBipedNameChange(character, "hellhound", false, false),
+					applyNonBipedNameChange(character, "hellhound", true, false),
+					applyNonBipedNameChange(character, "hellhound", false, true),
+					applyNonBipedNameChange(character, "hellhound", true, true)
+				};
+			}
+			
+			return names;
 		}
 	},
 	
-	DOG_MORPH_GERMAN_SHEPHERD("statusEffects/race/raceDogMorph",
+	DOG_MORPH_GERMAN_SHEPHERD(false,
+			"statusEffects/race/raceDogMorph",
 			"statusEffects/race/raceBackground",
 			"german-shepherd-morph",
 			"german-shepherd-morphs",
@@ -873,30 +948,45 @@ public enum Subspecies {
 			SubspeciesPreference.TWO_AVERAGE,
 			"A strong, intelligent, and loyal subspecies of dog-morph, which resembles an anthropomorphised German-shepherd."
 				+ " They are known as 'German-shepherd-morphs' when bipedal, and 'German-shepherd-taurs' when the lower body is that of an oversized feral German-shepherd."
-				+ " To be identified as a German-shepherd-morph, a character must be a dog-morph that has upright ears, and fluffy, black fur with tan markings.",
-			Util.newHashMapOfValues(
-				new Value<>(WorldType.DOMINION, SubspeciesSpawnRarity.FOUR_COMMON),
-				new Value<>(WorldType.NIGHTLIFE_CLUB, SubspeciesSpawnRarity.FOUR_COMMON))) {
+				+ " To be identified as a German-shepherd-morph, a character must be a dog-morph that has upright ears, and fluffy, black fur with tan markings.", Util.newHashMapOfValues(
+					new Value<>(WorldType.DOMINION, SubspeciesSpawnRarity.FOUR_COMMON),
+					new Value<>(WorldType.NIGHTLIFE_CLUB, SubspeciesSpawnRarity.FOUR_COMMON)), null) {
 				@Override
 				public void applySpeciesChanges(Body body) {
 					body.getCoverings().put(BodyCoveringType.CANINE_FUR, new Covering(BodyCoveringType.CANINE_FUR, CoveringPattern.MARKED, CoveringModifier.FLUFFY, PresetColour.COVERING_BLACK, false, PresetColour.COVERING_TAN, false));
 					body.getCoverings().put(BodyCoveringType.HAIR_CANINE_FUR, new Covering(BodyCoveringType.HAIR_CANINE_FUR, CoveringPattern.NONE, PresetColour.COVERING_BLACK, false, PresetColour.COVERING_TAN, false));
-					
-					body.getEar().setType(null, EarType.DOG_MORPH_POINTED);
+
+					if(body.getEar().getType()==EarType.DOG_MORPH) {
+						body.getEar().setType(null, EarType.DOG_MORPH_POINTED);
+					}
 				}
 				@Override
 				public String[] getHalfDemonName(GameCharacter character) {
-					return new String[] {
+					String[] names = new String[] {
 							"hellhound",
 							"hellhounds",
 							"hellhound",
 							"hellhound",
 							"hellhounds",
 							"hellhounds"};
+					
+					if(character!=null && !character.getHalfDemonSubspecies().isNonBiped()) {
+						names = new String[] {
+							applyNonBipedNameChange(character, "hellhound", false, false),
+							applyNonBipedNameChange(character, "hellhound", false, true),
+							applyNonBipedNameChange(character, "hellhound", false, false),
+							applyNonBipedNameChange(character, "hellhound", true, false),
+							applyNonBipedNameChange(character, "hellhound", false, true),
+							applyNonBipedNameChange(character, "hellhound", true, true)
+						};
+					}
+					
+					return names;
 				}
 			},
 	
-	WOLF_MORPH("statusEffects/race/raceWolfMorph",
+	WOLF_MORPH(true,
+			"statusEffects/race/raceWolfMorph",
 			"statusEffects/race/raceBackground",
 			"wolf-morph",
 			"wolf-morphs",
@@ -928,10 +1018,9 @@ public enum Subspecies {
 					new Value<>(PerkCategory.ARCANE, 0)),
 			PresetColour.RACE_WOLF_MORPH,
 			SubspeciesPreference.FOUR_ABUNDANT,
-			"An anthropomorphic wolf, known as a 'wolf-morph' when bipedal, and a 'wolftaur' when the lower body is that of a typically-oversized feral wolf.",
-			Util.newHashMapOfValues(
-					new Value<>(WorldType.DOMINION, SubspeciesSpawnRarity.FOUR_COMMON),
-					new Value<>(WorldType.NIGHTLIFE_CLUB, SubspeciesSpawnRarity.FOUR_COMMON))) {
+			"An anthropomorphic wolf, known as a 'wolf-morph' when bipedal, and a 'wolftaur' when the lower body is that of a typically-oversized feral wolf.", Util.newHashMapOfValues(
+							new Value<>(WorldType.DOMINION, SubspeciesSpawnRarity.FOUR_COMMON),
+							new Value<>(WorldType.NIGHTLIFE_CLUB, SubspeciesSpawnRarity.FOUR_COMMON)), null) {
 		@Override
 		public void applySpeciesChanges(Body body) {
 			List<Colour> naturalWolfFurColours = Util.newArrayListOfValues(
@@ -945,19 +1034,32 @@ public enum Subspecies {
 			body.getCoverings().put(BodyCoveringType.HAIR_LYCAN_FUR, new Covering(BodyCoveringType.HAIR_LYCAN_FUR, c));
 			body.getCoverings().put(BodyCoveringType.BODY_HAIR_LYCAN_FUR, new Covering(BodyCoveringType.BODY_HAIR_LYCAN_FUR, c));
 		}
-		@Override
 		public String[] getHalfDemonName(GameCharacter character) {
-			return new String[] {
+			String[] names = new String[] {
 					"vargr",
 					"vargar",
 					"vargr",
 					"vargr",
 					"vargar",
 					"vargar"};
+			
+			if(character!=null && !character.getHalfDemonSubspecies().isNonBiped()) {
+				names = new String[] {
+					applyNonBipedNameChange(character, "vargr", false, false),
+					applyNonBipedNameChange(character, "vargr", false, true),
+					applyNonBipedNameChange(character, "vargr", false, false),
+					applyNonBipedNameChange(character, "vargr", true, false),
+					applyNonBipedNameChange(character, "vargr", false, true),
+					applyNonBipedNameChange(character, "vargr", true, true)
+				};
+			}
+			
+			return names;
 		}
 	},
 	
-	FOX_MORPH("statusEffects/race/raceFoxMorph",
+	FOX_MORPH(true,
+			"statusEffects/race/raceFoxMorph",
 			"statusEffects/race/raceBackground",
 			"fox-morph",
 			"fox-morphs",
@@ -989,17 +1091,17 @@ public enum Subspecies {
 					new Value<>(PerkCategory.ARCANE, 1)),
 			PresetColour.RACE_FOX_MORPH,
 			SubspeciesPreference.FOUR_ABUNDANT,
-			"An anthropomorphic fox, known as a 'fox-morph' when bipedal, and a 'foxtaur' when the lower body is that of a typically-oversized feral fox.",
-			Util.newHashMapOfValues(
-					new Value<>(WorldType.DOMINION, SubspeciesSpawnRarity.FOUR_COMMON),
-					new Value<>(WorldType.NIGHTLIFE_CLUB, SubspeciesSpawnRarity.FOUR_COMMON))) {
+			"An anthropomorphic fox, known as a 'fox-morph' when bipedal, and a 'foxtaur' when the lower body is that of a typically-oversized feral fox.", Util.newHashMapOfValues(
+							new Value<>(WorldType.DOMINION, SubspeciesSpawnRarity.FOUR_COMMON),
+							new Value<>(WorldType.NIGHTLIFE_CLUB, SubspeciesSpawnRarity.FOUR_COMMON)), null) {
 		@Override
 		public void applySpeciesChanges(Body body) {
 			Subspecies.applyFoxColoring(body);
 		}
 	},
 
-	FOX_MORPH_ARCTIC("statusEffects/race/raceFoxMorph",
+	FOX_MORPH_ARCTIC(false,
+			"statusEffects/race/raceFoxMorph",
 			"statusEffects/race/raceBackground",
 			"arctic-fox-morph",
 			"arctic-fox-morphs",
@@ -1033,10 +1135,9 @@ public enum Subspecies {
 					new Value<>(PerkCategory.ARCANE, 1)),
 			PresetColour.RACE_FOX_MORPH_ARCTIC,
 			SubspeciesPreference.ONE_LOW,
-			"An anthropomorphic fox with white fur, known as an 'arctic-fox-morph' when bipedal, and an 'arctic-foxtaur' when the lower body is that of a typically-oversized feral fox.",
-			Util.newHashMapOfValues(
-					new Value<>(WorldType.DOMINION, SubspeciesSpawnRarity.TWO_RARE),
-					new Value<>(WorldType.NIGHTLIFE_CLUB, SubspeciesSpawnRarity.TWO_RARE))) {
+			"An anthropomorphic fox with white fur, known as an 'arctic-fox-morph' when bipedal, and an 'arctic-foxtaur' when the lower body is that of a typically-oversized feral fox.", Util.newHashMapOfValues(
+							new Value<>(WorldType.DOMINION, SubspeciesSpawnRarity.TWO_RARE),
+							new Value<>(WorldType.NIGHTLIFE_CLUB, SubspeciesSpawnRarity.TWO_RARE)), null) {
 		@Override
 		public void applySpeciesChanges(Body body) {
 			body.getCoverings().put(BodyCoveringType.HUMAN, new Covering(BodyCoveringType.HUMAN, CoveringPattern.NONE, PresetColour.SKIN_PALE, false, PresetColour.SKIN_PALE, true));
@@ -1046,7 +1147,8 @@ public enum Subspecies {
 		}
 	},
 	
-	FOX_MORPH_FENNEC("statusEffects/race/raceFoxMorph",
+	FOX_MORPH_FENNEC(false,
+			"statusEffects/race/raceFoxMorph",
 			"statusEffects/race/raceBackground",
 			"fennec-morph",
 			"fennec-morphs",
@@ -1079,10 +1181,9 @@ public enum Subspecies {
 			PresetColour.RACE_FOX_MORPH,
 			SubspeciesPreference.FOUR_ABUNDANT,
 			"An anthropomorphic fox with distinctive large ears, and with either tan, dirty blonde, or bleach-blonde fur."
-			+ " They are known as a 'fennec-morph' when bipedal, and a 'fennectaur' when the lower body is that of a typically-oversized feral fennec fox.",
-			Util.newHashMapOfValues(
-					new Value<>(WorldType.DOMINION, SubspeciesSpawnRarity.FOUR_COMMON),
-					new Value<>(WorldType.NIGHTLIFE_CLUB, SubspeciesSpawnRarity.FOUR_COMMON))) {
+			+ " They are known as a 'fennec-morph' when bipedal, and a 'fennectaur' when the lower body is that of a typically-oversized feral fennec fox.", Util.newHashMapOfValues(
+							new Value<>(WorldType.DOMINION, SubspeciesSpawnRarity.FOUR_COMMON),
+							new Value<>(WorldType.NIGHTLIFE_CLUB, SubspeciesSpawnRarity.FOUR_COMMON)), null) {
 		@Override
 		public void applySpeciesChanges(Body body) {
 			Colour fennecColour = Util.randomItemFrom(Util.newArrayListOfValues(PresetColour.COVERING_DIRTY_BLONDE, PresetColour.COVERING_BLEACH_BLONDE, PresetColour.COVERING_TAN));
@@ -1091,13 +1192,17 @@ public enum Subspecies {
 			body.getCoverings().put(BodyCoveringType.HAIR_FOX_FUR, new Covering(BodyCoveringType.FOX_FUR, CoveringPattern.NONE, fennecColour, false, fennecColour, false));
 			body.getCoverings().put(BodyCoveringType.HUMAN, new Covering(BodyCoveringType.HUMAN, CoveringPattern.NONE, PresetColour.SKIN_OLIVE, false, PresetColour.SKIN_OLIVE, false));
 			body.updateCoverings(true, true, true, true);
+			if(body.getPenis().getType()==PenisType.FOX_MORPH) {
+				body.getCoverings().put(BodyCoveringType.PENIS, new Covering(BodyCoveringType.PENIS, PresetColour.SKIN_RED));
+			}
 			if(body.getEar().getType()==EarType.FOX_MORPH) {
 				body.getEar().setType(null, EarType.FOX_MORPH_BIG);
 			}
 		}
 	},
 	
-	FOX_ASCENDANT("statusEffects/race/raceFoxMorph",
+	FOX_ASCENDANT(false,
+			"statusEffects/race/raceFoxMorph",
 			"statusEffects/race/raceBackground",
 			"youko",
 			"youko",
@@ -1125,7 +1230,8 @@ public enum Subspecies {
 			PresetColour.RACE_FOX_MORPH,
 			SubspeciesPreference.FOUR_ABUNDANT,
 			"A fox-morph, empowered by the gifts of a Lilin.",
-			Util.newHashMapOfValues()) {
+			Util.newHashMapOfValues(), Util.newArrayListOfValues(
+					SubspeciesFlag.DISBALE_SPAWN_PREFERENCE)) {
 		
 		@Override
 		public void applySpeciesChanges(Body body) {
@@ -1189,7 +1295,8 @@ public enum Subspecies {
 		}
 	},
 
-	FOX_ASCENDANT_ARCTIC("statusEffects/race/raceFoxMorph",
+	FOX_ASCENDANT_ARCTIC(false,
+			"statusEffects/race/raceFoxMorph",
 			"statusEffects/race/raceBackground",
 			"arctic-youko",
 			"arctic-youko",
@@ -1202,8 +1309,8 @@ public enum Subspecies {
 			null,
 			null,
 			"Nine-tails",
-			"Nine-tails'",
-			"FOX_MORPH_BASIC", "FOX_MORPH_ADVANCED",
+			"Nine-tails'", "FOX_MORPH_BASIC",
+			"FOX_MORPH_ADVANCED",
 			Race.FOX_MORPH,
 			Util.newHashMapOfValues(
 					new Value<>(PerkCategory.PHYSICAL, 1),
@@ -1216,7 +1323,7 @@ public enum Subspecies {
 			PresetColour.RACE_FOX_MORPH,
 			SubspeciesPreference.FOUR_ABUNDANT,
 			"An arctic-fox-morph, empowered by the gifts of a Lilin.",
-			Util.newHashMapOfValues()) {
+			Util.newHashMapOfValues(), Util.newArrayListOfValues()) {
 		@Override
 		public void applySpeciesChanges(Body body) {
 			body.getCoverings().put(BodyCoveringType.HUMAN, new Covering(BodyCoveringType.HUMAN, CoveringPattern.NONE, PresetColour.SKIN_PALE, false, PresetColour.SKIN_PALE, true));
@@ -1267,7 +1374,8 @@ public enum Subspecies {
 		}
 	},
 	
-	FOX_ASCENDANT_FENNEC("statusEffects/race/raceFoxMorph",
+	FOX_ASCENDANT_FENNEC(false,
+			"statusEffects/race/raceFoxMorph",
 			"statusEffects/race/raceBackground",
 			"fennec-youko",
 			"fennec-youko",
@@ -1280,8 +1388,8 @@ public enum Subspecies {
 			null,
 			null,
 			"Nine-tails",
-			"Nine-tails'",
-			"FOX_MORPH_BASIC", "FOX_MORPH_ADVANCED",
+			"Nine-tails'", "FOX_MORPH_BASIC",
+			"FOX_MORPH_ADVANCED",
 			Race.FOX_MORPH,
 			Util.newHashMapOfValues(
 					new Value<>(PerkCategory.PHYSICAL, 1),
@@ -1294,7 +1402,7 @@ public enum Subspecies {
 			PresetColour.RACE_FOX_MORPH,
 			SubspeciesPreference.FOUR_ABUNDANT,
 			"A fennec-morph, empowered by the gifts of a Lilin.",
-			Util.newHashMapOfValues()) {
+			Util.newHashMapOfValues(), Util.newArrayListOfValues()) {
 		@Override
 		public void applySpeciesChanges(Body body) {
 			Colour fennecColour = PresetColour.COVERING_BLEACH_BLONDE;
@@ -1306,6 +1414,9 @@ public enum Subspecies {
 			body.getCoverings().put(BodyCoveringType.HAIR_FOX_FUR, new Covering(BodyCoveringType.FOX_FUR, CoveringPattern.NONE, fennecColour, false, fennecColour, false));
 			body.getCoverings().put(BodyCoveringType.HUMAN, new Covering(BodyCoveringType.HUMAN, CoveringPattern.NONE, PresetColour.SKIN_OLIVE, false, PresetColour.SKIN_OLIVE, false));
 			body.updateCoverings(true, true, true, true);
+			if(body.getPenis().getType()==PenisType.FOX_MORPH) {
+				body.getCoverings().put(BodyCoveringType.PENIS, new Covering(BodyCoveringType.PENIS, PresetColour.SKIN_RED));
+			}
 			if(body.getEar().getType()==EarType.FOX_MORPH) {
 				body.getEar().setType(null, EarType.FOX_MORPH_BIG);
 			}
@@ -1390,7 +1501,8 @@ public enum Subspecies {
 //	},
 
 	// FELINES:
-	CAT_MORPH("statusEffects/race/raceCatMorph",
+	CAT_MORPH(true,
+			"statusEffects/race/raceCatMorph",
 			"statusEffects/race/raceBackground",
 			"cat-morph",
 			"cat-morphs",
@@ -1425,16 +1537,16 @@ public enum Subspecies {
 					new Value<>(PerkCategory.ARCANE, 0)),
 			PresetColour.RACE_CAT_MORPH,
 			SubspeciesPreference.FOUR_ABUNDANT,
-			"An anthropomorphic cat, known as a 'cat-morph' when bipedal, and a 'cattaur' when the lower body is that of a typically-oversized feral cat.",
-			Util.newHashMapOfValues(
-					new Value<>(WorldType.DOMINION, SubspeciesSpawnRarity.FOUR_COMMON),
-					new Value<>(WorldType.NIGHTLIFE_CLUB, SubspeciesSpawnRarity.FOUR_COMMON))) {
+			"An anthropomorphic cat, known as a 'cat-morph' when bipedal, and a 'cattaur' when the lower body is that of a typically-oversized feral cat.", Util.newHashMapOfValues(
+							new Value<>(WorldType.DOMINION, SubspeciesSpawnRarity.FOUR_COMMON),
+							new Value<>(WorldType.NIGHTLIFE_CLUB, SubspeciesSpawnRarity.FOUR_COMMON)), null) {
 		@Override
 		public void applySpeciesChanges(Body body) {
 		}
 	},
 	
-	CAT_MORPH_LYNX("statusEffects/race/raceCatMorph",
+	CAT_MORPH_LYNX(false,
+			"statusEffects/race/raceCatMorph",
 			"statusEffects/race/raceBackground",
 			"lynx-morph",
 			"lynx-morphs",
@@ -1442,9 +1554,9 @@ public enum Subspecies {
 			"lynx",
 			"lynxes",
 			"lynxes",
-			"lynx",
+			"lynx",//TODO sheep
 			"[npc.NamePos] body is incredibly agile, and [npc.she] [npc.verb(possess)] lightning reflexes."
-					+ " [npc.She] also [npc.has] an instinctive desire to display [npc.her] dominance over innocent harpies and rodent-morphs...",//TODO sheep
+					+ " [npc.She] also [npc.has] an instinctive desire to display [npc.her] dominance over innocent harpies and rodent-morphs...",
 			Util.newHashMapOfValues(
 					new Value<Attribute, Float>(Attribute.MAJOR_PHYSIQUE, 10f),
 					new Value<Attribute, Float>(Attribute.MAJOR_ARCANE, 0f),
@@ -1471,10 +1583,9 @@ public enum Subspecies {
 			PresetColour.RACE_CAT_MORPH_LYNX,
 			SubspeciesPreference.TWO_AVERAGE,
 			"An anthropomorphic lynx, known as a 'lynx-morph' when bipedal, and a 'lynxtaur' when the lower body is that of a typically-oversized feral lynx."
-					+ " To be identified as a Lynx-morph, a character must be a cat-morph that has fluffy fur, tufted ears, a short tail, and side-fluff hair type.",
-			Util.newHashMapOfValues(
-					new Value<>(WorldType.DOMINION, SubspeciesSpawnRarity.FOUR_COMMON),
-					new Value<>(WorldType.NIGHTLIFE_CLUB, SubspeciesSpawnRarity.FOUR_COMMON))) {
+					+ " To be identified as a Lynx-morph, a character must be a cat-morph that has fluffy fur, tufted ears, a short tail, and side-fluff hair type.", Util.newHashMapOfValues(
+							new Value<>(WorldType.DOMINION, SubspeciesSpawnRarity.FOUR_COMMON),
+							new Value<>(WorldType.NIGHTLIFE_CLUB, SubspeciesSpawnRarity.FOUR_COMMON)), null) {
 		@Override
 		public void applySpeciesChanges(Body body) {
 			Colour primaryColor = PresetColour.COVERING_BROWN;
@@ -1487,13 +1598,20 @@ public enum Subspecies {
 			body.getCoverings().put(BodyCoveringType.FELINE_FUR, new Covering(BodyCoveringType.FELINE_FUR, CoveringPattern.SPOTTED, CoveringModifier.FLUFFY, primaryColor, false, PresetColour.COVERING_BLACK, false));
 			body.getCoverings().put(BodyCoveringType.HAIR_FELINE_FUR, new Covering(BodyCoveringType.FELINE_FUR, CoveringPattern.NONE, primaryColor, false, PresetColour.COVERING_BLACK, false));
 			body.updateCoverings(true, true, true, true);
-			body.getEar().setType(null, EarType.CAT_MORPH_TUFTED);
-			body.getTail().setType(null, TailType.CAT_MORPH_SHORT);
-			body.getHair().setType(null, HairType.CAT_MORPH_SIDEFLUFF);
+			if(body.getEar().getType().getRace()==Race.CAT_MORPH) {
+				body.getEar().setType(null, EarType.CAT_MORPH_TUFTED);
+			}
+			if(body.getTail().getType().getRace()==Race.CAT_MORPH) {
+				body.getTail().setType(null, TailType.CAT_MORPH_SHORT);
+			}
+			if(body.getHair().getType().getRace()==Race.CAT_MORPH) {
+				body.getHair().setType(null, HairType.CAT_MORPH_SIDEFLUFF);
+			}
 		}
 	},
 	
-	CAT_MORPH_LEOPARD_SNOW("statusEffects/race/raceCatMorph",
+	CAT_MORPH_LEOPARD_SNOW(false,
+			"statusEffects/race/raceCatMorph",
 			"statusEffects/race/raceBackgroundSnowLeopard",
 			"snow leopard-morph",
 			"snow leopard-morphs",
@@ -1529,10 +1647,9 @@ public enum Subspecies {
 			PresetColour.RACE_CAT_MORPH_LEOPARD_SNOW,
 			SubspeciesPreference.TWO_AVERAGE,
 			"An anthropomorphic snow leopard, known as a 'snow leopard-morph' when bipedal, and a 'snow leopardtaur' when the lower body is that of a typically-oversized feral snow leopard."
-					+ " To be identified as a snow leopard-morph, a character must be a cat-morph that has fluffy spotted fur, normal tail and panther face.",
-			Util.newHashMapOfValues(
-					new Value<>(WorldType.DOMINION, SubspeciesSpawnRarity.FOUR_COMMON),
-					new Value<>(WorldType.NIGHTLIFE_CLUB, SubspeciesSpawnRarity.FOUR_COMMON))) {
+					+ " To be identified as a snow leopard-morph, a character must be a cat-morph that has fluffy spotted fur, normal tail and panther face.", Util.newHashMapOfValues(
+							new Value<>(WorldType.DOMINION, SubspeciesSpawnRarity.FOUR_COMMON),
+							new Value<>(WorldType.NIGHTLIFE_CLUB, SubspeciesSpawnRarity.FOUR_COMMON)), null) {
 		@Override
 		public void applySpeciesChanges(Body body) {
 			Colour primaryColor = PresetColour.COVERING_WHITE;
@@ -1551,14 +1668,18 @@ public enum Subspecies {
 			if(body.getFace().getType()==FaceType.CAT_MORPH) {
 				body.getFace().setType(null, FaceType.CAT_MORPH_PANTHER);
 			}
-			body.getTail().setType(null, TailType.CAT_MORPH);
+			if(body.getTail().getType().getRace()==Race.CAT_MORPH) {
+				body.getTail().setType(null, TailType.CAT_MORPH);
+				body.getTail().setTailGirth(null, PenetrationGirth.FOUR_THICK.getValue());
+			}
 			
 			body.setBodySize(BodySize.TWO_AVERAGE.getMedianValue());
 			body.setMuscle(Muscle.FOUR_RIPPED.getMedianValue());
 		}
 	},
 	
-	CAT_MORPH_LEOPARD("statusEffects/race/raceCatMorph",
+	CAT_MORPH_LEOPARD(false,
+			"statusEffects/race/raceCatMorph",
 			"statusEffects/race/raceBackgroundLeopard",
 			"leopard-morph",
 			"leopard-morphs",
@@ -1594,10 +1715,9 @@ public enum Subspecies {
 			PresetColour.RACE_CAT_MORPH_LEOPARD,
 			SubspeciesPreference.TWO_AVERAGE,
 			"An anthropomorphic leopard, known as a 'leopard-morph' when bipedal, and a 'leopardtaur' when the lower body is that of a typically-oversized feral leopard."
-					+ " To be identified as a leopard-morph, a character must be a cat-morph that has short spotted fur, normal tail and panther face.",
-			Util.newHashMapOfValues(
-					new Value<>(WorldType.DOMINION, SubspeciesSpawnRarity.FOUR_COMMON),
-					new Value<>(WorldType.NIGHTLIFE_CLUB, SubspeciesSpawnRarity.FOUR_COMMON))) {
+					+ " To be identified as a leopard-morph, a character must be a cat-morph that has short spotted fur, normal tail and panther face.", Util.newHashMapOfValues(
+							new Value<>(WorldType.DOMINION, SubspeciesSpawnRarity.FOUR_COMMON),
+							new Value<>(WorldType.NIGHTLIFE_CLUB, SubspeciesSpawnRarity.FOUR_COMMON)), null) {
 		@Override
 		public void applySpeciesChanges(Body body) {
 			Colour primaryColor = PresetColour.COVERING_ORANGE;
@@ -1612,14 +1732,16 @@ public enum Subspecies {
 			if(body.getFace().getType()==FaceType.CAT_MORPH) {
 				body.getFace().setType(null, FaceType.CAT_MORPH_PANTHER);
 			}
-			body.getTail().setType(null, TailType.CAT_MORPH);
-			
+			if(body.getTail().getType().getRace()==Race.CAT_MORPH) {
+				body.getTail().setType(null, TailType.CAT_MORPH);
+			}
 			body.setBodySize(BodySize.TWO_AVERAGE.getMedianValue());
 			body.setMuscle(Muscle.FOUR_RIPPED.getMedianValue());
 		}
 	},
 	
-	CAT_MORPH_LION("statusEffects/race/raceCatMorph",
+	CAT_MORPH_LION(false,
+			"statusEffects/race/raceCatMorph",
 			"statusEffects/race/raceBackground",
 			"lion-morph",
 			"lion-morphs",
@@ -1654,10 +1776,9 @@ public enum Subspecies {
 			PresetColour.RACE_CAT_MORPH_LION,
 			SubspeciesPreference.TWO_AVERAGE,
 			"An anthropomorphic lion, known as a 'lion-morph' when bipedal, and a 'liontaur' when the lower body is that of a feral lion."
-					+ " To be identified as a lion-morph, a character must be a cat-morph that has short fur, tufted tail and panther face.",
-			Util.newHashMapOfValues(
-					new Value<>(WorldType.DOMINION, SubspeciesSpawnRarity.FOUR_COMMON),
-					new Value<>(WorldType.NIGHTLIFE_CLUB, SubspeciesSpawnRarity.FOUR_COMMON))) {
+					+ " To be identified as a lion-morph, a character must be a cat-morph that has short fur, tufted tail and panther face.", Util.newHashMapOfValues(
+							new Value<>(WorldType.DOMINION, SubspeciesSpawnRarity.FOUR_COMMON),
+							new Value<>(WorldType.NIGHTLIFE_CLUB, SubspeciesSpawnRarity.FOUR_COMMON)), null) {
 		@Override
 		public void applySpeciesChanges(Body body) {
 			Colour primaryColor = PresetColour.COVERING_TAN;
@@ -1675,14 +1796,16 @@ public enum Subspecies {
 			if(body.getFace().getType()==FaceType.CAT_MORPH) {
 				body.getFace().setType(null, FaceType.CAT_MORPH_PANTHER);
 			}
-			body.getTail().setType(null, TailType.CAT_MORPH_TUFTED);
-			
+			if(body.getTail().getType().getRace()==Race.CAT_MORPH) {
+				body.getTail().setType(null, TailType.CAT_MORPH_TUFTED);
+			}
 			body.setBodySize(BodySize.TWO_AVERAGE.getMedianValue());
 			body.setMuscle(Muscle.FOUR_RIPPED.getMedianValue());
 		}
 	},
 	
-	CAT_MORPH_TIGER("statusEffects/race/raceCatMorph",
+	CAT_MORPH_TIGER(false,
+			"statusEffects/race/raceCatMorph",
 			"statusEffects/race/raceBackgroundTiger",
 			"tiger-morph",
 			"tiger-morphs",
@@ -1715,10 +1838,9 @@ public enum Subspecies {
 			PresetColour.RACE_CAT_MORPH_TIGER,
 			SubspeciesPreference.TWO_AVERAGE,
 			"An anthropomorphic tiger, known as a 'tiger-morph' when bipedal, and a 'tigertaur' when the lower body is that of a feral tiger."
-					+ " To be identified as a tiger-morph, a character must be a cat-morph that has striped fur, normal tail and panther face.",
-			Util.newHashMapOfValues(
-					new Value<>(WorldType.DOMINION, SubspeciesSpawnRarity.FOUR_COMMON),
-					new Value<>(WorldType.NIGHTLIFE_CLUB, SubspeciesSpawnRarity.FOUR_COMMON))) {
+					+ " To be identified as a tiger-morph, a character must be a cat-morph that has striped fur, normal tail and panther face.", Util.newHashMapOfValues(
+							new Value<>(WorldType.DOMINION, SubspeciesSpawnRarity.FOUR_COMMON),
+							new Value<>(WorldType.NIGHTLIFE_CLUB, SubspeciesSpawnRarity.FOUR_COMMON)), null) {
 		@Override
 		public void applySpeciesChanges(Body body) {
 			Colour primaryColor = PresetColour.COVERING_ORANGE;
@@ -1737,14 +1859,16 @@ public enum Subspecies {
 			if(body.getFace().getType()==FaceType.CAT_MORPH) {
 				body.getFace().setType(null, FaceType.CAT_MORPH_PANTHER);
 			}
-			body.getTail().setType(null, TailType.CAT_MORPH);
-			
+			if(body.getTail().getType().getRace()==Race.CAT_MORPH) {
+				body.getTail().setType(null, TailType.CAT_MORPH);
+			}
 			body.setBodySize(BodySize.TWO_AVERAGE.getMedianValue());
 			body.setMuscle(Muscle.FOUR_RIPPED.getMedianValue());
 		}
 	},
 	
-	CAT_MORPH_CHEETAH("statusEffects/race/raceCatMorph",
+	CAT_MORPH_CHEETAH(false,
+			"statusEffects/race/raceCatMorph",
 			"statusEffects/race/raceBackgroundCheetah",
 			"cheetah-morph",
 			"cheetah-morphs",
@@ -1776,10 +1900,9 @@ public enum Subspecies {
 			PresetColour.RACE_CAT_MORPH_CHEETAH,
 			SubspeciesPreference.TWO_AVERAGE,
 			"An anthropomorphic cheetah, known as a 'cheetah-morph' when bipedal, and a 'cheetahtaur' when the lower body is that of a typically-oversized feral cheetah."
-					+ " To be identified as a cheetah-morph, a character must be a cat-morph that has short, spotted fur and not identified as other feline morphs.",
-			Util.newHashMapOfValues(
-					new Value<>(WorldType.DOMINION, SubspeciesSpawnRarity.FOUR_COMMON),
-					new Value<>(WorldType.NIGHTLIFE_CLUB, SubspeciesSpawnRarity.FOUR_COMMON))) {
+					+ " To be identified as a cheetah-morph, a character must be a cat-morph that has short, spotted fur and not identified as other feline morphs.", Util.newHashMapOfValues(
+							new Value<>(WorldType.DOMINION, SubspeciesSpawnRarity.FOUR_COMMON),
+							new Value<>(WorldType.NIGHTLIFE_CLUB, SubspeciesSpawnRarity.FOUR_COMMON)), null) {
 		@Override
 		public void applySpeciesChanges(Body body) {
 			Colour primaryColor = PresetColour.COVERING_ORANGE;
@@ -1791,7 +1914,9 @@ public enum Subspecies {
 			body.getCoverings().put(BodyCoveringType.FELINE_FUR, new Covering(BodyCoveringType.FELINE_FUR, CoveringPattern.SPOTTED, CoveringModifier.SHORT, primaryColor, false, secondaryColor, false));
 			body.getCoverings().put(BodyCoveringType.HAIR_FELINE_FUR, new Covering(BodyCoveringType.FELINE_FUR, CoveringPattern.NONE, primaryColor, false, secondaryColor, false));
 			body.updateCoverings(true, true, true, true);
-			body.getTail().setType(null, TailType.CAT_MORPH);
+			if(body.getTail().getType().getRace()==Race.CAT_MORPH) {
+				body.getTail().setType(null, TailType.CAT_MORPH);
+			}
 			
 			// Body size adjustment
 			if(body.getBreast().getRawSizeValue()>CupSize.B.getMeasurement()) {
@@ -1810,7 +1935,8 @@ public enum Subspecies {
 		}
 	},
 	
-	CAT_MORPH_CARACAL("statusEffects/race/raceCatMorph",
+	CAT_MORPH_CARACAL(false,
+			"statusEffects/race/raceCatMorph",
 			"statusEffects/race/raceBackground",
 			"caracal-morph",
 			"caracal-morphs",
@@ -1846,18 +1972,20 @@ public enum Subspecies {
 			PresetColour.RACE_CAT_MORPH_CARACAL,
 			SubspeciesPreference.TWO_AVERAGE,
 			"An anthropomorphic caracal, known as a 'caracal-morph' when bipedal, and a 'caracaltaur' when the lower body is that of a typically-oversized feral caracal."
-					+ " To be identified as a caracal-morph, a character must be a cat-morph with tufted ears.",
-			Util.newHashMapOfValues(
-					new Value<>(WorldType.DOMINION, SubspeciesSpawnRarity.FOUR_COMMON),
-					new Value<>(WorldType.NIGHTLIFE_CLUB, SubspeciesSpawnRarity.FOUR_COMMON))) {
+					+ " To be identified as a caracal-morph, a character must be a cat-morph with tufted ears.", Util.newHashMapOfValues(
+							new Value<>(WorldType.DOMINION, SubspeciesSpawnRarity.FOUR_COMMON),
+							new Value<>(WorldType.NIGHTLIFE_CLUB, SubspeciesSpawnRarity.FOUR_COMMON)), null) {
 		@Override
 		public void applySpeciesChanges(Body body) {
-			body.getEar().setType(null, EarType.CAT_MORPH_TUFTED);
+			if(body.getEar().getType().getRace()==Race.CAT_MORPH) {
+				body.getEar().setType(null, EarType.CAT_MORPH_TUFTED);
+			}
 		}
 	},
 
 	// EQUINES:
-	HORSE_MORPH("statusEffects/race/raceHorseMorph",
+	HORSE_MORPH(true,
+			"statusEffects/race/raceHorseMorph",
 			"statusEffects/race/raceBackground",
 			"horse-morph",
 			"horse-morphs",
@@ -1890,10 +2018,9 @@ public enum Subspecies {
 					new Value<>(PerkCategory.ARCANE, 0)),
 			PresetColour.RACE_HORSE_MORPH,
 			SubspeciesPreference.FOUR_ABUNDANT,
-			"An anthropomorphic, bipedal horse.",
-			Util.newHashMapOfValues(
-					new Value<>(WorldType.DOMINION, SubspeciesSpawnRarity.FOUR_COMMON),
-					new Value<>(WorldType.NIGHTLIFE_CLUB, SubspeciesSpawnRarity.FOUR_COMMON))) {
+			"An anthropomorphic, bipedal horse.", Util.newHashMapOfValues(
+							new Value<>(WorldType.DOMINION, SubspeciesSpawnRarity.FOUR_COMMON),
+							new Value<>(WorldType.NIGHTLIFE_CLUB, SubspeciesSpawnRarity.FOUR_COMMON)), null) {
 		@Override
 		public void applySpeciesChanges(Body body) {
 			body.getHorn().setType(null, HornType.NONE);
@@ -1904,16 +2031,30 @@ public enum Subspecies {
 		}
 		@Override
 		public String[] getHalfDemonName(GameCharacter character) {
-			return new String[] {
+			String[] names = new String[] {
 					"nightmare",
 					"nightmares",
 					"nightmare",
 					"nightmare",
 					"nightmares",
 					"nightmares"};
+			
+			if(character!=null && !character.getHalfDemonSubspecies().isNonBiped()) {
+				names = new String[] {
+					applyNonBipedNameChange(character, "nightmare", false, false),
+					applyNonBipedNameChange(character, "nightmare", false, true),
+					applyNonBipedNameChange(character, "nightmare", false, false),
+					applyNonBipedNameChange(character, "nightmare", true, false),
+					applyNonBipedNameChange(character, "nightmare", false, true),
+					applyNonBipedNameChange(character, "nightmare", true, true)
+				};
+			}
+			
+			return names;
 		}
 	},
-	HORSE_MORPH_UNICORN("statusEffects/race/raceHorseMorph",
+	HORSE_MORPH_UNICORN(false,
+			"statusEffects/race/raceHorseMorph",
 			"statusEffects/race/raceBackground",
 			"unicorn-morph",
 			"unicorn-morphs",
@@ -1921,7 +2062,7 @@ public enum Subspecies {
 			"unicorn-girl",
 			"unicorn-boys",
 			"unicorn-girls",
-			"horse",
+			"unicorn",
 			"Although physically weaker than a regular horse-morph, [npc.nameHasFull] a special bond with the arcane, and [npc.is] able to cast many spells before exhausting [npc.her] aura.",
 			Util.newHashMapOfValues(
 					new Value<Attribute, Float>(Attribute.MAJOR_PHYSIQUE, 20f),
@@ -1946,10 +2087,9 @@ public enum Subspecies {
 					new Value<>(PerkCategory.ARCANE, 3)),
 			PresetColour.RACE_UNICORN,
 			SubspeciesPreference.ONE_LOW,
-			"An anthropomorphic, bipedal horse, who has a single magical horn growing from their forehead.",
-			Util.newHashMapOfValues(
-					new Value<>(WorldType.DOMINION, SubspeciesSpawnRarity.ONE_VERY_RARE),
-					new Value<>(WorldType.NIGHTLIFE_CLUB, SubspeciesSpawnRarity.ONE_VERY_RARE))) {
+			"An anthropomorphic, bipedal horse, who has a single magical horn growing from their forehead.", Util.newHashMapOfValues(
+							new Value<>(WorldType.DOMINION, SubspeciesSpawnRarity.ONE_VERY_RARE),
+							new Value<>(WorldType.NIGHTLIFE_CLUB, SubspeciesSpawnRarity.ONE_VERY_RARE)), null) {
 		@Override
 		public void applySpeciesChanges(Body body) {
 			body.getHorn().setType(null, HornType.HORSE_STRAIGHT);
@@ -1963,16 +2103,30 @@ public enum Subspecies {
 		}
 		@Override
 		public String[] getHalfDemonName(GameCharacter character) {
-			return new String[] {
+			String[] names = new String[] {
 					"unicorn-nightmare",
 					"unicorn-nightmares",
 					"unicorn-nightmare",
 					"unicorn-nightmare",
 					"unicorn-nightmares",
 					"unicorn-nightmares"};
+			
+			if(character!=null && !character.getHalfDemonSubspecies().isNonBiped()) {
+				names = new String[] {
+					applyNonBipedNameChange(character, "unicorn-nightmare", false, false),
+					applyNonBipedNameChange(character, "unicorn-nightmare", false, true),
+					applyNonBipedNameChange(character, "unicorn-nightmare", false, false),
+					applyNonBipedNameChange(character, "unicorn-nightmare", true, false),
+					applyNonBipedNameChange(character, "unicorn-nightmare", false, true),
+					applyNonBipedNameChange(character, "unicorn-nightmare", true, true)
+				};
+			}
+			
+			return names;
 		}
 	},
-	HORSE_MORPH_PEGASUS("statusEffects/race/raceHorseMorph",
+	HORSE_MORPH_PEGASUS(false,
+			"statusEffects/race/raceHorseMorph",
 			"statusEffects/race/raceBackground",
 			"pegasus-morph",
 			"pegasus-morphs",
@@ -1980,7 +2134,7 @@ public enum Subspecies {
 			"pegasus-girl",
 			"pegasus-boys",
 			"pegasus-girls",
-			"horse",
+			"pegasus",
 			"Although physically weaker than a regular horse-morph, [npc.nameIsFull] a lot more agile, allowing [npc.herHim] to avoid incoming damage.",
 			Util.newHashMapOfValues(
 					new Value<Attribute, Float>(Attribute.MAJOR_PHYSIQUE, 15f),
@@ -2004,10 +2158,9 @@ public enum Subspecies {
 					new Value<>(PerkCategory.ARCANE, 0)),
 			PresetColour.RACE_PEGASUS,
 			SubspeciesPreference.ONE_LOW,
-			"An anthropomorphic, bipedal horse, who has a pair of feathered wings growing from their back.",
-			Util.newHashMapOfValues(
-					new Value<>(WorldType.DOMINION, SubspeciesSpawnRarity.ONE_VERY_RARE),
-					new Value<>(WorldType.NIGHTLIFE_CLUB, SubspeciesSpawnRarity.ONE_VERY_RARE))) {
+			"An anthropomorphic, bipedal horse, who has a pair of feathered wings growing from their back.", Util.newHashMapOfValues(
+							new Value<>(WorldType.DOMINION, SubspeciesSpawnRarity.ONE_VERY_RARE),
+							new Value<>(WorldType.NIGHTLIFE_CLUB, SubspeciesSpawnRarity.ONE_VERY_RARE)), null) {
 		@Override
 		public void applySpeciesChanges(Body body) {
 			body.getHorn().setType(null, HornType.NONE);
@@ -2018,16 +2171,30 @@ public enum Subspecies {
 		}
 		@Override
 		public String[] getHalfDemonName(GameCharacter character) {
-			return new String[] {
+			String[] names = new String[] {
 					"pegasus-nightmare",
 					"pegasus-nightmares",
 					"pegasus-nightmare",
 					"pegasus-nightmare",
 					"pegasus-nightmares",
 					"pegasus-nightmares"};
+			
+			if(character!=null && !character.getHalfDemonSubspecies().isNonBiped()) {
+				names = new String[] {
+					applyNonBipedNameChange(character, "pegasus-nightmare", false, false),
+					applyNonBipedNameChange(character, "pegasus-nightmare", false, true),
+					applyNonBipedNameChange(character, "pegasus-nightmare", false, false),
+					applyNonBipedNameChange(character, "pegasus-nightmare", true, false),
+					applyNonBipedNameChange(character, "pegasus-nightmare", false, true),
+					applyNonBipedNameChange(character, "pegasus-nightmare", true, true)
+				};
+			}
+			
+			return names;
 		}
 	},
-	HORSE_MORPH_ALICORN("statusEffects/race/raceHorseMorph",
+	HORSE_MORPH_ALICORN(false,
+			"statusEffects/race/raceHorseMorph",
 			"statusEffects/race/raceBackground",
 			"alicorn-morph",
 			"alicorn-morphs",
@@ -2035,7 +2202,7 @@ public enum Subspecies {
 			"alicorn-girl",
 			"alicorn-boys",
 			"alicorn-girls",
-			"horse",
+			"alicorn",
 			"Possessing both feathered wings and a unicorn horn, [npc.nameIsFull] classified as a powerful alicorn, and [npc.verb(find)] it almost effortlessly trivial to cast spells.",
 			Util.newHashMapOfValues(
 					new Value<Attribute, Float>(Attribute.MAJOR_PHYSIQUE, 15f),
@@ -2060,10 +2227,9 @@ public enum Subspecies {
 					new Value<>(PerkCategory.ARCANE, 3)),
 			PresetColour.RACE_ALICORN,
 			SubspeciesPreference.ONE_LOW,
-			"An anthropomorphic, bipedal horse, who has both a pair of feathered wings growing from their back, as well as a single magical horn growing from their forehead.",
-			Util.newHashMapOfValues(
-					new Value<>(WorldType.DOMINION, SubspeciesSpawnRarity.ZERO_EXTREMELY_RARE),
-					new Value<>(WorldType.NIGHTLIFE_CLUB, SubspeciesSpawnRarity.ZERO_EXTREMELY_RARE))) {
+			"An anthropomorphic, bipedal horse, who has both a pair of feathered wings growing from their back, as well as a single magical horn growing from their forehead.", Util.newHashMapOfValues(
+							new Value<>(WorldType.DOMINION, SubspeciesSpawnRarity.ZERO_EXTREMELY_RARE),
+							new Value<>(WorldType.NIGHTLIFE_CLUB, SubspeciesSpawnRarity.ZERO_EXTREMELY_RARE)), null) {
 		@Override
 		public void applySpeciesChanges(Body body) {
 			body.getHorn().setType(null, HornType.HORSE_STRAIGHT);
@@ -2077,17 +2243,31 @@ public enum Subspecies {
 		}
 		@Override
 		public String[] getHalfDemonName(GameCharacter character) {
-			return new String[] {
+			String[] names = new String[] {
 					"alicorn-nightmare",
 					"alicorn-nightmares",
 					"alicorn-nightmare",
 					"alicorn-nightmare",
 					"alicorn-nightmares",
 					"alicorn-nightmares"};
+			
+			if(character!=null && !character.getHalfDemonSubspecies().isNonBiped()) {
+				names = new String[] {
+					applyNonBipedNameChange(character, "alicorn-nightmare", false, false),
+					applyNonBipedNameChange(character, "alicorn-nightmare", false, true),
+					applyNonBipedNameChange(character, "alicorn-nightmare", false, false),
+					applyNonBipedNameChange(character, "alicorn-nightmare", true, false),
+					applyNonBipedNameChange(character, "alicorn-nightmare", false, true),
+					applyNonBipedNameChange(character, "alicorn-nightmare", true, true)
+				};
+			}
+			
+			return names;
 		}
 	},
 	
-	CENTAUR("statusEffects/race/raceHorseMorph",
+	CENTAUR(false,
+			"statusEffects/race/raceHorseMorph",
 			"statusEffects/race/raceBackground",
 			"centaur",
 			"centaurs",
@@ -2120,10 +2300,9 @@ public enum Subspecies {
 					new Value<>(PerkCategory.ARCANE, 0)),
 			PresetColour.RACE_CENTAUR,
 			SubspeciesPreference.FOUR_ABUNDANT,
-			"Anyone who has the feral, quadrupedal lower body of a horse is classified as a centaur.",
-			Util.newHashMapOfValues(
-					new Value<>(WorldType.DOMINION, SubspeciesSpawnRarity.ONE_VERY_RARE),
-					new Value<>(WorldType.NIGHTLIFE_CLUB, SubspeciesSpawnRarity.ONE_VERY_RARE))) { //TODO add to fields
+			"Anyone who has the feral, quadrupedal lower body of a horse is classified as a centaur.", Util.newHashMapOfValues(
+							new Value<>(WorldType.DOMINION, SubspeciesSpawnRarity.ONE_VERY_RARE),
+							new Value<>(WorldType.NIGHTLIFE_CLUB, SubspeciesSpawnRarity.ONE_VERY_RARE)), null) { //TODO add to fields
 		@Override
 		public boolean isNonBiped() {
 			return true;
@@ -2149,7 +2328,8 @@ public enum Subspecies {
 					"demonic-centauresses"};
 		}
 	},
-	PEGATAUR("statusEffects/race/raceHorseMorph",
+	PEGATAUR(false,
+			"statusEffects/race/raceHorseMorph",
 			"statusEffects/race/raceBackground",
 			"pegataur",
 			"pegataurs",
@@ -2181,10 +2361,9 @@ public enum Subspecies {
 					new Value<>(PerkCategory.ARCANE, 0)),
 			PresetColour.RACE_PEGATAUR,
 			SubspeciesPreference.ONE_LOW,
-			"Anyone who has the feral, winged, quadrupedal lower body of a horse is classified as a pegataur.",
-			Util.newHashMapOfValues(
-					new Value<>(WorldType.DOMINION, SubspeciesSpawnRarity.ZERO_EXTREMELY_RARE),
-					new Value<>(WorldType.NIGHTLIFE_CLUB, SubspeciesSpawnRarity.ZERO_EXTREMELY_RARE))) { //TODO add to fields
+			"Anyone who has the feral, winged, quadrupedal lower body of a horse is classified as a pegataur.", Util.newHashMapOfValues(
+							new Value<>(WorldType.DOMINION, SubspeciesSpawnRarity.ZERO_EXTREMELY_RARE),
+							new Value<>(WorldType.NIGHTLIFE_CLUB, SubspeciesSpawnRarity.ZERO_EXTREMELY_RARE)), null) { //TODO add to fields
 		@Override
 		public boolean isNonBiped() {
 			return true;
@@ -2211,7 +2390,8 @@ public enum Subspecies {
 					"demonic-pegatauresses"};
 		}
 	},
-	UNITAUR("statusEffects/race/raceHorseMorph",
+	UNITAUR(false,
+			"statusEffects/race/raceHorseMorph",
 			"statusEffects/race/raceBackground",
 			"unitaur",
 			"unitaurs",
@@ -2244,10 +2424,9 @@ public enum Subspecies {
 					new Value<>(PerkCategory.ARCANE, 1)),
 			PresetColour.RACE_UNICORN,
 			SubspeciesPreference.ONE_LOW,
-			"Anyone who has the feral, quadrupedal lower body of a horse, along with a single unicorn horn, is classified as a unitaur.",
-			Util.newHashMapOfValues(
-					new Value<>(WorldType.DOMINION, SubspeciesSpawnRarity.ZERO_EXTREMELY_RARE),
-					new Value<>(WorldType.NIGHTLIFE_CLUB, SubspeciesSpawnRarity.ZERO_EXTREMELY_RARE))) { //TODO add to fields
+			"Anyone who has the feral, quadrupedal lower body of a horse, along with a single unicorn horn, is classified as a unitaur.", Util.newHashMapOfValues(
+							new Value<>(WorldType.DOMINION, SubspeciesSpawnRarity.ZERO_EXTREMELY_RARE),
+							new Value<>(WorldType.NIGHTLIFE_CLUB, SubspeciesSpawnRarity.ZERO_EXTREMELY_RARE)), null) { //TODO add to fields
 		@Override
 		public boolean isNonBiped() {
 			return true;
@@ -2276,7 +2455,8 @@ public enum Subspecies {
 					"demonic-unitauresses"};
 		}
 	},
-	ALITAUR("statusEffects/race/raceHorseMorph",
+	ALITAUR(false,
+			"statusEffects/race/raceHorseMorph",
 			"statusEffects/race/raceBackground",
 			"alitaur",
 			"alitaurs",
@@ -2309,10 +2489,9 @@ public enum Subspecies {
 					new Value<>(PerkCategory.ARCANE, 2)),
 			PresetColour.RACE_ALICORN,
 			SubspeciesPreference.ONE_LOW,
-			"Anyone who has the feral, winged, quadrupedal lower body of a horse, along with a single unicorn horn, is classified as an alitaur.",
-			Util.newHashMapOfValues(
-					new Value<>(WorldType.DOMINION, SubspeciesSpawnRarity.ZERO_EXTREMELY_RARE),
-					new Value<>(WorldType.NIGHTLIFE_CLUB, SubspeciesSpawnRarity.ZERO_EXTREMELY_RARE))) { //TODO add to fields
+			"Anyone who has the feral, winged, quadrupedal lower body of a horse, along with a single unicorn horn, is classified as an alitaur.", Util.newHashMapOfValues(
+							new Value<>(WorldType.DOMINION, SubspeciesSpawnRarity.ZERO_EXTREMELY_RARE),
+							new Value<>(WorldType.NIGHTLIFE_CLUB, SubspeciesSpawnRarity.ZERO_EXTREMELY_RARE)), null) { //TODO add to fields
 		@Override
 		public boolean isNonBiped() {
 			return true;
@@ -2342,7 +2521,8 @@ public enum Subspecies {
 		}
 	},
 
-	HORSE_MORPH_ZEBRA("statusEffects/race/raceHorseMorphZebra",
+	HORSE_MORPH_ZEBRA(false,
+			"statusEffects/race/raceHorseMorphZebra",
 			"statusEffects/race/raceBackgroundZebra",
 			"zebra-morph",
 			"zebra-morphs",
@@ -2378,10 +2558,9 @@ public enum Subspecies {
 			PresetColour.BASE_BLACK,
 			SubspeciesPreference.ONE_LOW,
 			"An anthropomorphic horse with black-and-white striped fur, known as a 'zebra-morph' when bipedal, and a 'zebrataur' when the lower body is that of a feral zebra."
-				+" To be identified as a zebra-morph, a character must be a horse-morph that has black-and-white striped hair, with a zebra-morph's tail.",
-			Util.newHashMapOfValues(
-					new Value<>(WorldType.DOMINION, SubspeciesSpawnRarity.FOUR_COMMON),
-					new Value<>(WorldType.NIGHTLIFE_CLUB, SubspeciesSpawnRarity.FOUR_COMMON))) {
+				+" To be identified as a zebra-morph, a character must be a horse-morph that has black-and-white striped hair, with a zebra-morph's tail.", Util.newHashMapOfValues(
+							new Value<>(WorldType.DOMINION, SubspeciesSpawnRarity.FOUR_COMMON),
+							new Value<>(WorldType.NIGHTLIFE_CLUB, SubspeciesSpawnRarity.FOUR_COMMON)), null) {
 		@Override
 		public void applySpeciesChanges(Body body) {
 			body.getHorn().setType(null, HornType.NONE);
@@ -2400,17 +2579,31 @@ public enum Subspecies {
 		}
 		@Override
 		public String[] getHalfDemonName(GameCharacter character) {
-			return new String[] {
+			String[] names = new String[] {
 					"nightmare",
 					"nightmares",
 					"nightmare",
 					"nightmare",
 					"nightmares",
 					"nightmares"};
+			
+			if(character!=null && !character.getHalfDemonSubspecies().isNonBiped()) {
+				names = new String[] {
+					applyNonBipedNameChange(character, "nightmare", false, false),
+					applyNonBipedNameChange(character, "nightmare", false, true),
+					applyNonBipedNameChange(character, "nightmare", false, false),
+					applyNonBipedNameChange(character, "nightmare", true, false),
+					applyNonBipedNameChange(character, "nightmare", false, true),
+					applyNonBipedNameChange(character, "nightmare", true, true)
+				};
+			}
+			
+			return names;
 		}
 	},
 
-	REINDEER_MORPH("statusEffects/race/raceReindeerMorph",
+	REINDEER_MORPH(true,
+			"statusEffects/race/raceReindeerMorph",
 			"statusEffects/race/raceBackground",
 			"reindeer-morph",
 			"reindeer-morphs",
@@ -2443,13 +2636,13 @@ public enum Subspecies {
 					new Value<>(PerkCategory.ARCANE, 0)),
 			PresetColour.RACE_REINDEER_MORPH,
 			SubspeciesPreference.FOUR_ABUNDANT,
-			"An anthropomorphic reindeer, known as a 'reindeer-morph' when bipedal, and a 'reindeertaur' when the lower body is that of a feral reindeer.",
-			Util.newHashMapOfValues(
-					new Value<>(WorldType.DOMINION, SubspeciesSpawnRarity.FOUR_COMMON),
-					new Value<>(WorldType.NIGHTLIFE_CLUB, SubspeciesSpawnRarity.FOUR_COMMON))),
+			"An anthropomorphic reindeer, known as a 'reindeer-morph' when bipedal, and a 'reindeertaur' when the lower body is that of a feral reindeer.", Util.newHashMapOfValues(
+							new Value<>(WorldType.DOMINION, SubspeciesSpawnRarity.FOUR_COMMON),
+							new Value<>(WorldType.NIGHTLIFE_CLUB, SubspeciesSpawnRarity.FOUR_COMMON)), null),
 	
 	// REPTILE:
-	ALLIGATOR_MORPH("statusEffects/race/raceGatorMorph",
+	ALLIGATOR_MORPH(true,
+			"statusEffects/race/raceGatorMorph",
 			"statusEffects/race/raceBackground",
 			"alligator-morph",
 			"alligator-morphs",
@@ -2482,10 +2675,9 @@ public enum Subspecies {
 					new Value<>(PerkCategory.ARCANE, 0)),
 			PresetColour.RACE_ALLIGATOR_MORPH,
 			SubspeciesPreference.FOUR_ABUNDANT,
-			"An anthropomorphic alligator, known as an 'alligator-morph' when bipedal, and an 'alligatortaur' when the lower body is that of a typically-oversized feral alligator.",
-			Util.newHashMapOfValues(
-					new Value<>(WorldType.SUBMISSION, SubspeciesSpawnRarity.FOUR_COMMON),
-					new Value<>(WorldType.NIGHTLIFE_CLUB, SubspeciesSpawnRarity.ONE_VERY_RARE))),
+			"An anthropomorphic alligator, known as an 'alligator-morph' when bipedal, and an 'alligatortaur' when the lower body is that of a typically-oversized feral alligator.", Util.newHashMapOfValues(
+							new Value<>(WorldType.SUBMISSION, SubspeciesSpawnRarity.FOUR_COMMON),
+							new Value<>(WorldType.NIGHTLIFE_CLUB, SubspeciesSpawnRarity.ONE_VERY_RARE)), null),
 	
 	//LIZARD_MORPH(Race.LIZARD_MORPH.getName(), Race.LIZARD_MORPH, RacialBody.LIZARD_MORPH, SubspeciesPreference.FIVE_ABUNDANT,
 	//		"A typical bipedal "+Race.LIZARD_MORPH.getName()),
@@ -2523,7 +2715,8 @@ public enum Subspecies {
 	//		"A "+Race.DRAGON.getName()+" with a serpentine lower body, devoid of legs"),
 	
 	// SLIMES:
-	SLIME("statusEffects/race/raceSlime",
+	SLIME(true,
+			"statusEffects/race/raceSlime",
 			"statusEffects/race/raceBackgroundSlime",
 			"slime",
 			"slimes",
@@ -2532,17 +2725,13 @@ public enum Subspecies {
 			"slime-boys",
 			"slime-girls",
 			"slime",
-			"Due to [npc.her] soft, slimy body, [npc.nameIsFull] almost completely immune to physical damage, but [npc.she] is also unable to inflict any serious unarmed damage."
+			"Due to [npc.her] soft, slimy body, [npc.nameIsFull] almost completely immune to physical damage, but [npc.she] is also unable to inflict any significant damage while unarmed."
 					+ " [npc.She] can also morph [npc.her] body at will, allowing [npc.herHim] to take on any form that [npc.she] [npc.verb(desire)].",
 			Util.newHashMapOfValues(
 					new Value<Attribute, Float>(Attribute.MAJOR_PHYSIQUE, 0f),
 					new Value<Attribute, Float>(Attribute.MAJOR_ARCANE, 0f),
-					new Value<Attribute, Float>(Attribute.MAJOR_CORRUPTION, 25f),
-					new Value<Attribute, Float>(Attribute.RESISTANCE_PHYSICAL, 100f),
-					new Value<Attribute, Float>(Attribute.DAMAGE_UNARMED, -100f)),
-			Util.newArrayListOfValues(
-					"<b style='color: "+ PresetColour.TRANSFORMATION_GENERIC.toWebHexString()+ ";'>Can morph body at will</b>",
-					"<b style='color: "+ PresetColour.GENERIC_SEX.toWebHexString()+ ";'>Impregnated through any orifice</b>"),
+					new Value<Attribute, Float>(Attribute.MAJOR_CORRUPTION, 25f)),
+			Util.newArrayListOfValues(),
 			"Slimy Fun",
 			"Slimy Funs",
 			"SLIME_BASIC",
@@ -2561,7 +2750,8 @@ public enum Subspecies {
 			"Someone who is made completely of slime, with a sold core suspended in the place where their heart should be.",
 			Util.newHashMapOfValues(
 					new Value<>(WorldType.SUBMISSION, SubspeciesSpawnRarity.FOUR_COMMON),
-					new Value<>(WorldType.BAT_CAVERNS, SubspeciesSpawnRarity.FOUR_COMMON))) {
+					new Value<>(WorldType.BAT_CAVERNS, SubspeciesSpawnRarity.FOUR_COMMON)), Util.newArrayListOfValues(
+					SubspeciesFlag.HIDDEN_FROM_PREFERENCES)) {
 		@Override
 		public void applySpeciesChanges(Body body) {
 			// Slime subspecies are set in the CharacterUtils.generateBody() method
@@ -2700,7 +2890,8 @@ public enum Subspecies {
 //			"A "+Race.GARGOYLE.getName()+" resembling a typical bipedal "+Race.HORSE_MORPH.getName()),
 
 	// RODENTS:
-	SQUIRREL_MORPH("statusEffects/race/raceSquirrelMorph",
+	SQUIRREL_MORPH(true,
+			"statusEffects/race/raceSquirrelMorph",
 			"statusEffects/race/raceBackground",
 			"squirrel-morph",
 			"squirrel-morphs",
@@ -2731,15 +2922,15 @@ public enum Subspecies {
 					new Value<>(PerkCategory.ARCANE, 0)),
 			PresetColour.RACE_SQUIRREL_MORPH,
 			SubspeciesPreference.FOUR_ABUNDANT,
-			"An anthropomorphic squirrel, known as a 'squirrel-morph' when bipedal, and a 'squirreltaur' when the lower body is that of an oversized feral squirrel.",
-			Util.newHashMapOfValues(
-					new Value<>(WorldType.DOMINION, SubspeciesSpawnRarity.FOUR_COMMON),
-					new Value<>(WorldType.NIGHTLIFE_CLUB, SubspeciesSpawnRarity.FOUR_COMMON))),
+			"An anthropomorphic squirrel, known as a 'squirrel-morph' when bipedal, and a 'squirreltaur' when the lower body is that of an oversized feral squirrel.", Util.newHashMapOfValues(
+							new Value<>(WorldType.DOMINION, SubspeciesSpawnRarity.FOUR_COMMON),
+							new Value<>(WorldType.NIGHTLIFE_CLUB, SubspeciesSpawnRarity.FOUR_COMMON)), null),
 	
 	//MOUSE_MORPH(Race.MOUSE_MORPH.getName(), Race.MOUSE_MORPH, RacialBody.MOUSE_MORPH, SubspeciesPreference.FIVE_ABUNDANT,
 	//		"A typical bipedal "+Race.MOUSE_MORPH.getName()),
 	
-	RAT_MORPH("statusEffects/race/raceRatMorph",
+	RAT_MORPH(true,
+			"statusEffects/race/raceRatMorph",
 			"statusEffects/race/raceBackground",
 			"rat-morph",
 			"rat-morphs",
@@ -2771,12 +2962,12 @@ public enum Subspecies {
 					new Value<>(PerkCategory.ARCANE, 0)),
 			PresetColour.RACE_RAT_MORPH,
 			SubspeciesPreference.FOUR_ABUNDANT,
-			"An anthropomorphic rat, known as a 'rat-morph' when bipedal, and a 'rat-taur' when the lower body is that of an oversized feral rat.",
-			Util.newHashMapOfValues(
-					new Value<>(WorldType.SUBMISSION, SubspeciesSpawnRarity.FOUR_COMMON),
-					new Value<>(WorldType.NIGHTLIFE_CLUB, SubspeciesSpawnRarity.ONE_VERY_RARE))),
+			"An anthropomorphic rat, known as a 'rat-morph' when bipedal, and a 'rat-taur' when the lower body is that of an oversized feral rat.", Util.newHashMapOfValues(
+							new Value<>(WorldType.SUBMISSION, SubspeciesSpawnRarity.FOUR_COMMON),
+							new Value<>(WorldType.NIGHTLIFE_CLUB, SubspeciesSpawnRarity.ONE_VERY_RARE)), null),
 
-	RABBIT_MORPH("statusEffects/race/raceRabbitMorph",
+	RABBIT_MORPH(true,
+			"statusEffects/race/raceRabbitMorph",
 			"statusEffects/race/raceBackground",
 			"rabbit-morph",
 			"rabbit-morphs",
@@ -2810,12 +3001,36 @@ public enum Subspecies {
 					new Value<>(PerkCategory.ARCANE, 0)),
 			PresetColour.RACE_RABBIT_MORPH,
 			SubspeciesPreference.FOUR_ABUNDANT,
-			"An anthropomorphic rabbit, known as a 'rabbit-morph' when bipedal, and a 'rabbit-taur' when the lower body is that of an oversized feral rabbit.",
-			Util.newHashMapOfValues(
-					new Value<>(WorldType.DOMINION, SubspeciesSpawnRarity.FOUR_COMMON),
-					new Value<>(WorldType.NIGHTLIFE_CLUB, SubspeciesSpawnRarity.FOUR_COMMON))), //TODO move to fields
+			"An anthropomorphic rabbit, known as a 'rabbit-morph' when bipedal, and a 'rabbit-taur' when the lower body is that of an oversized feral rabbit.", Util.newHashMapOfValues(
+							new Value<>(WorldType.DOMINION, SubspeciesSpawnRarity.FOUR_COMMON),
+							new Value<>(WorldType.NIGHTLIFE_CLUB, SubspeciesSpawnRarity.FOUR_COMMON)), null) { //TODO move to fields
+		@Override
+		public String[] getHalfDemonName(GameCharacter character) {
+			String[] names = new String[] {
+					"jackalope",
+					"jackalopes",
+					"jackalope",
+					"jackalope",
+					"jackalopes",
+					"jackalopes"};
+			
+			if(character!=null && !character.getHalfDemonSubspecies().isNonBiped()) {
+				names = new String[] {
+					applyNonBipedNameChange(character, "jackalope", false, false),
+					applyNonBipedNameChange(character, "jackalope", false, true),
+					applyNonBipedNameChange(character, "jackalope", false, false),
+					applyNonBipedNameChange(character, "jackalope", true, false),
+					applyNonBipedNameChange(character, "jackalope", false, true),
+					applyNonBipedNameChange(character, "jackalope", true, true)
+				};
+			}
+			
+			return names;
+		}
+	},
 
-	RABBIT_MORPH_LOP("statusEffects/race/raceRabbitLopMorph",
+	RABBIT_MORPH_LOP(false,
+			"statusEffects/race/raceRabbitLopMorph",
 			"statusEffects/race/raceBackground",
 			"lop-rabbit-morph",
 			"lop-rabbit-morphs",
@@ -2849,19 +3064,42 @@ public enum Subspecies {
 					new Value<>(PerkCategory.ARCANE, 0)),
 			PresetColour.RACE_RABBIT_MORPH,
 			SubspeciesPreference.FOUR_ABUNDANT,
-			"An anthropomorphic rabbit which has floppy ears instead of the usual upright ones. Known as a 'lop-rabbit-morph' when bipedal, and a 'lop-rabbit-taur' when the lower body is that of an oversized feral lop-rabbit.",
-			Util.newHashMapOfValues(
-					new Value<>(WorldType.DOMINION, SubspeciesSpawnRarity.FOUR_COMMON),
-					new Value<>(WorldType.NIGHTLIFE_CLUB, SubspeciesSpawnRarity.FOUR_COMMON))) {  //TODO move to fields
+			"An anthropomorphic rabbit which has floppy ears instead of the usual upright ones. Known as a 'lop-rabbit-morph' when bipedal, and a 'lop-rabbit-taur' when the lower body is that of an oversized feral lop-rabbit.", Util.newHashMapOfValues(
+							new Value<>(WorldType.DOMINION, SubspeciesSpawnRarity.FOUR_COMMON),
+							new Value<>(WorldType.NIGHTLIFE_CLUB, SubspeciesSpawnRarity.FOUR_COMMON)), null) {  //TODO move to fields
 		@Override
 		public void applySpeciesChanges(Body body) {
 			if(body.getEar().getType()==EarType.RABBIT_MORPH) {
 				body.getEar().setType(null, EarType.RABBIT_MORPH_FLOPPY);
 			}
 		}
+		@Override
+		public String[] getHalfDemonName(GameCharacter character) {
+			String[] names = new String[] {
+					"jackalope",
+					"jackalopes",
+					"jackalope",
+					"jackalope",
+					"jackalopes",
+					"jackalopes"};
+			
+			if(character!=null && !character.getHalfDemonSubspecies().isNonBiped()) {
+				names = new String[] {
+					applyNonBipedNameChange(character, "jackalope", false, false),
+					applyNonBipedNameChange(character, "jackalope", false, true),
+					applyNonBipedNameChange(character, "jackalope", false, false),
+					applyNonBipedNameChange(character, "jackalope", true, false),
+					applyNonBipedNameChange(character, "jackalope", false, true),
+					applyNonBipedNameChange(character, "jackalope", true, true)
+				};
+			}
+			
+			return names;
+		}
 	},
 	
-	BAT_MORPH("statusEffects/race/raceBatMorph",
+	BAT_MORPH(true,
+			"statusEffects/race/raceBatMorph",
 			"statusEffects/race/raceBackground",
 			"bat-morph",
 			"bat-morphs",
@@ -2893,14 +3131,14 @@ public enum Subspecies {
 					new Value<>(PerkCategory.ARCANE, 0)),
 			PresetColour.RACE_BAT_MORPH,
 			SubspeciesPreference.FOUR_ABUNDANT,
-			"An anthropomorphic, bipedal bat.",
-			Util.newHashMapOfValues(
-					new Value<>(WorldType.SUBMISSION, SubspeciesSpawnRarity.ONE_VERY_RARE),
-					new Value<>(WorldType.BAT_CAVERNS, SubspeciesSpawnRarity.FOUR_COMMON),
-					new Value<>(WorldType.NIGHTLIFE_CLUB, SubspeciesSpawnRarity.ZERO_EXTREMELY_RARE))),
+			"An anthropomorphic, bipedal bat.", Util.newHashMapOfValues(
+							new Value<>(WorldType.SUBMISSION, SubspeciesSpawnRarity.ONE_VERY_RARE),
+							new Value<>(WorldType.BAT_CAVERNS, SubspeciesSpawnRarity.FOUR_COMMON),
+							new Value<>(WorldType.NIGHTLIFE_CLUB, SubspeciesSpawnRarity.ZERO_EXTREMELY_RARE)), null),
 	
 	// AVIAN:
-	HARPY("statusEffects/race/raceHarpy",
+	HARPY(true,
+			"statusEffects/race/raceHarpy",
 			"statusEffects/race/raceBackground",
 			"harpy",
 			"harpies",
@@ -2934,20 +3172,36 @@ public enum Subspecies {
 			"An anthropomorphic, bipedal bird. Typically only possessing non-human arms, legs, eyes, ears, and hair.",
 			Util.newHashMapOfValues(
 					new Value<>(WorldType.HARPY_NEST, SubspeciesSpawnRarity.FOUR_COMMON),
-					new Value<>(WorldType.NIGHTLIFE_CLUB, SubspeciesSpawnRarity.FOUR_COMMON))) {
+					new Value<>(WorldType.NIGHTLIFE_CLUB, SubspeciesSpawnRarity.FOUR_COMMON)), Util.newArrayListOfValues(
+					SubspeciesFlag.DISBALE_SPAWN_PREFERENCE,
+					SubspeciesFlag.DISBALE_FURRY_PREFERENCE)) {
 		@Override
 		public String[] getHalfDemonName(GameCharacter character) {
-			return new String[] {
+			String[] names = new String[] {
 					"fury",
 					"furies",
 					"fury",
 					"fury",
 					"furies",
 					"furies"};
+			
+			if(character!=null && !character.getHalfDemonSubspecies().isNonBiped()) {
+				names = new String[] {
+					applyNonBipedNameChange(character, "fury", false, false),
+					applyNonBipedNameChange(character, "fury", false, true),
+					applyNonBipedNameChange(character, "fury", false, false),
+					applyNonBipedNameChange(character, "fury", true, false),
+					applyNonBipedNameChange(character, "fury", false, true),
+					applyNonBipedNameChange(character, "fury", true, true)
+				};
+			}
+			
+			return names;
 		}
 	},
 	
-	HARPY_RAVEN("statusEffects/race/raceHarpy",
+	HARPY_RAVEN(false,
+			"statusEffects/race/raceHarpy",
 			"statusEffects/race/raceBackground",
 			"raven-harpy",
 			"raven-harpies",
@@ -2981,7 +3235,8 @@ public enum Subspecies {
 			"An anthropomorphic, bipedal raven, with dark black feathers. Typically only possessing non-human arms, legs, eyes, ears, and hair.",
 			Util.newHashMapOfValues(
 					new Value<>(WorldType.HARPY_NEST, SubspeciesSpawnRarity.TWO_RARE),
-					new Value<>(WorldType.NIGHTLIFE_CLUB, SubspeciesSpawnRarity.FOUR_COMMON))) {
+					new Value<>(WorldType.NIGHTLIFE_CLUB, SubspeciesSpawnRarity.FOUR_COMMON)), Util.newArrayListOfValues(
+					SubspeciesFlag.DISBALE_FURRY_PREFERENCE)) {
 		@Override
 		public void applySpeciesChanges(Body body) {
 			if(Math.random()<0.5f) {
@@ -2994,17 +3249,31 @@ public enum Subspecies {
 		}
 		@Override
 		public String[] getHalfDemonName(GameCharacter character) {
-			return new String[] {
+			String[] names = new String[] {
 					"fury",
 					"furies",
 					"fury",
 					"fury",
 					"furies",
 					"furies"};
+			
+			if(character!=null && !character.getHalfDemonSubspecies().isNonBiped()) {
+				names = new String[] {
+					applyNonBipedNameChange(character, "fury", false, false),
+					applyNonBipedNameChange(character, "fury", false, true),
+					applyNonBipedNameChange(character, "fury", false, false),
+					applyNonBipedNameChange(character, "fury", true, false),
+					applyNonBipedNameChange(character, "fury", false, true),
+					applyNonBipedNameChange(character, "fury", true, true)
+				};
+			}
+			
+			return names;
 		}
 	},
 
-	HARPY_BALD_EAGLE("statusEffects/race/raceHarpy",
+	HARPY_BALD_EAGLE(false,
+			"statusEffects/race/raceHarpy",
 			"statusEffects/race/raceBackground",
 			"bald-eagle-harpy",
 			"bald-eagle-harpies",
@@ -3038,7 +3307,8 @@ public enum Subspecies {
 			"An anthropomorphic, bipedal bald eagle, dark brown feathers covering their body and white feathers on their head. Typically only possessing non-human arms, legs, eyes, ears, and hair.",
 			Util.newHashMapOfValues(
 					new Value<>(WorldType.HARPY_NEST, SubspeciesSpawnRarity.ONE_VERY_RARE),
-					new Value<>(WorldType.NIGHTLIFE_CLUB, SubspeciesSpawnRarity.FOUR_COMMON))) {
+					new Value<>(WorldType.NIGHTLIFE_CLUB, SubspeciesSpawnRarity.FOUR_COMMON)), Util.newArrayListOfValues(
+					SubspeciesFlag.DISBALE_FURRY_PREFERENCE)) {
 		@Override
 		public void applySpeciesChanges(Body body) {
 			body.getCoverings().put(BodyCoveringType.FEATHERS, new Covering(BodyCoveringType.FEATHERS, CoveringPattern.NONE, PresetColour.COVERING_BROWN_DARK, false, PresetColour.COVERING_BROWN_DARK, false));
@@ -3047,17 +3317,31 @@ public enum Subspecies {
 		}
 		@Override
 		public String[] getHalfDemonName(GameCharacter character) {
-			return new String[] {
+			String[] names = new String[] {
 					"fury",
 					"furies",
 					"fury",
 					"fury",
 					"furies",
 					"furies"};
+			
+			if(character!=null && !character.getHalfDemonSubspecies().isNonBiped()) {
+				names = new String[] {
+					applyNonBipedNameChange(character, "fury", false, false),
+					applyNonBipedNameChange(character, "fury", false, true),
+					applyNonBipedNameChange(character, "fury", false, false),
+					applyNonBipedNameChange(character, "fury", true, false),
+					applyNonBipedNameChange(character, "fury", false, true),
+					applyNonBipedNameChange(character, "fury", true, true)
+				};
+			}
+			
+			return names;
 		}
 	},
 
-	HARPY_PHOENIX("statusEffects/race/raceHarpy",
+	HARPY_PHOENIX(false,
+			"statusEffects/race/raceHarpy",
 			"statusEffects/race/raceBackgroundPhoenix",
 			"phoenix-harpy",
 			"phoenix-harpies",
@@ -3093,7 +3377,8 @@ public enum Subspecies {
 			SubspeciesPreference.ONE_LOW,
 			"An anthropomorphic, bipedal, mythological bird, whose feathers are either glowing red, orange, or yellow, or are actually made out of arcane fire. They are extremely rare and typically only possess non-human arms, legs, eyes, ears, and hair.",
 			Util.newHashMapOfValues(
-					new Value<>(WorldType.HARPY_NEST, SubspeciesSpawnRarity.ZERO_EXTREMELY_RARE))) {
+					new Value<>(WorldType.HARPY_NEST, SubspeciesSpawnRarity.ZERO_EXTREMELY_RARE)), Util.newArrayListOfValues(
+					SubspeciesFlag.DISBALE_FURRY_PREFERENCE)) {
 		@Override
 		public void applySpeciesChanges(Body body) {
 			CoveringPattern pattern = CoveringPattern.OMBRE;
@@ -3106,128 +3391,35 @@ public enum Subspecies {
 		}
 		@Override
 		public String[] getHalfDemonName(GameCharacter character) {
-			return new String[] {
+			String[] names = new String[] {
 					"phoenix-fury",
 					"phoenix-furies",
 					"phoenix-fury",
 					"phoenix-fury",
 					"phoenix-furies",
 					"phoenix-furies"};
+			
+			if(character!=null && !character.getHalfDemonSubspecies().isNonBiped()) {
+				names = new String[] {
+					applyNonBipedNameChange(character, "phoenix-fury", false, false),
+					applyNonBipedNameChange(character, "phoenix-fury", false, true),
+					applyNonBipedNameChange(character, "phoenix-fury", false, false),
+					applyNonBipedNameChange(character, "phoenix-fury", true, false),
+					applyNonBipedNameChange(character, "phoenix-fury", false, true),
+					applyNonBipedNameChange(character, "phoenix-fury", true, true)
+				};
+			}
+			
+			return names;
 		}
 	},
 	
 	// ELEMENTALS:
 
-	ELEMENTAL_EARTH("combat/spell/elemental_earth",
-			"",
-			"earth elemental",
-			"earth elementals",
-			"earth elemental",
-			"earth elemental",
-			"earth elementals",
-			"earth elementals",
-			"earth",
-			"[npc.NameIsFull] a summoned elemental, currently bound to the school of Earth.",
-			Util.newHashMapOfValues(
-					new Value<Attribute, Float>(Attribute.MAJOR_PHYSIQUE, 20f)),
-			null,
-			"Earth Elementals",
-			"Earth Elementals'",
-			"ELEMENTAL_EARTH_BASIC",
-			"ELEMENTAL_EARTH_ADVANCED",
-			Race.ELEMENTAL,
-			Util.newHashMapOfValues(
-					new Value<>(PerkCategory.PHYSICAL, 5),
-					new Value<>(PerkCategory.LUST, 1),
-					new Value<>(PerkCategory.ARCANE, 5)),
-			Util.newHashMapOfValues(
-					new Value<>(PerkCategory.PHYSICAL, 5),
-					new Value<>(PerkCategory.LUST, 1),
-					new Value<>(PerkCategory.ARCANE, 5)),
-			PresetColour.SPELL_SCHOOL_EARTH,
-			SubspeciesPreference.FOUR_ABUNDANT,
-			"An arcane elemental bound to the school of Earth.",
-			Util.newHashMapOfValues()) {
-		@Override
-		public void applySpeciesChanges(Body body) {
-			body.setBodyMaterial(BodyMaterial.STONE);
-		}
-	},
 
-	ELEMENTAL_WATER("combat/spell/elemental_water",
-			"",
-			"water elemental",
-			"water elementals",
-			"water elemental",
-			"water elemental",
-			"water elementals",
-			"water elementals",
-			"water",
-			"[npc.NameIsFull] a summoned elemental, currently bound to the school of Water.",
-			Util.newHashMapOfValues(
-					new Value<Attribute, Float>(Attribute.MAJOR_PHYSIQUE, 20f)),
-			null,
-			"Water Elementals",
-			"Water Elementals'",
-			"ELEMENTAL_WATER_BASIC",
-			"ELEMENTAL_WATER_ADVANCED",
-			Race.ELEMENTAL,
-			Util.newHashMapOfValues(
-					new Value<>(PerkCategory.PHYSICAL, 5),
-					new Value<>(PerkCategory.LUST, 3),
-					new Value<>(PerkCategory.ARCANE, 5)),
-			Util.newHashMapOfValues(
-					new Value<>(PerkCategory.PHYSICAL, 5),
-					new Value<>(PerkCategory.LUST, 3),
-					new Value<>(PerkCategory.ARCANE, 5)),
-			PresetColour.SPELL_SCHOOL_WATER,
-			SubspeciesPreference.FOUR_ABUNDANT,
-			"An arcane elemental bound to the school of Water.",
-			Util.newHashMapOfValues()) {
-		@Override
-		public void applySpeciesChanges(Body body) {
-			body.setBodyMaterial(BodyMaterial.WATER);
-		}
-	},
-
-	ELEMENTAL_AIR("combat/spell/elemental_air",
-			"",
-			"air elemental",
-			"air elementals",
-			"air elemental",
-			"air elemental",
-			"air elementals",
-			"air elementals",
-			"air",
-			"[npc.NameIsFull] a summoned elemental, currently bound to the school of Air.",
-			Util.newHashMapOfValues(
-					new Value<Attribute, Float>(Attribute.MAJOR_PHYSIQUE, 20f)),
-			null,
-			"Air Elementals",
-			"Air Elementals'",
-			"ELEMENTAL_AIR_BASIC",
-			"ELEMENTAL_AIR_ADVANCED",
-			Race.ELEMENTAL,
-			Util.newHashMapOfValues(
-					new Value<>(PerkCategory.PHYSICAL, 5),
-					new Value<>(PerkCategory.LUST, 5),
-					new Value<>(PerkCategory.ARCANE, 5)),
-			Util.newHashMapOfValues(
-					new Value<>(PerkCategory.PHYSICAL, 5),
-					new Value<>(PerkCategory.LUST, 5),
-					new Value<>(PerkCategory.ARCANE, 5)),
-			PresetColour.SPELL_SCHOOL_AIR,
-			SubspeciesPreference.FOUR_ABUNDANT,
-			"An arcane elemental bound to the school of Air.",
-			Util.newHashMapOfValues()) {
-		@Override
-		public void applySpeciesChanges(Body body) {
-			body.setBodyMaterial(BodyMaterial.AIR);
-		}
-	},
-
-	ELEMENTAL_FIRE("combat/spell/elemental_fire",
-			"",
+	ELEMENTAL_FIRE(false,
+			"statusEffects/race/raceElemental",
+			"statusEffects/race/raceBackgroundFire",
 			"fire elemental",
 			"fire elementals",
 			"fire elemental",
@@ -3237,8 +3429,11 @@ public enum Subspecies {
 			"fire",
 			"[npc.NameIsFull] a summoned elemental, currently bound to the school of Fire.",
 			Util.newHashMapOfValues(
-					new Value<Attribute, Float>(Attribute.MAJOR_PHYSIQUE, 20f)),
-			null,
+					new Value<Attribute, Float>(Attribute.MAJOR_PHYSIQUE, 15f),
+					new Value<Attribute, Float>(Attribute.DAMAGE_FIRE, 50f),
+					new Value<Attribute, Float>(Attribute.RESISTANCE_FIRE, 50f)),
+			Util.newArrayListOfValues(
+					"[style.boldExcellent(Unlimited)] <b style='color: "+ PresetColour.TRANSFORMATION_GENERIC.toWebHexString()+ ";'> self-transformations</b>"),
 			"Fire Elementals",
 			"Fire Elementals'",
 			"ELEMENTAL_FIRE_BASIC",
@@ -3255,15 +3450,220 @@ public enum Subspecies {
 			PresetColour.SPELL_SCHOOL_FIRE,
 			SubspeciesPreference.FOUR_ABUNDANT,
 			"An arcane elemental bound to the school of Fire.",
-			Util.newHashMapOfValues()) {
+			Util.newHashMapOfValues(), Util.newArrayListOfValues(
+					SubspeciesFlag.HIDDEN_FROM_PREFERENCES)) {
 		@Override
 		public void applySpeciesChanges(Body body) {
 			body.setBodyMaterial(BodyMaterial.FIRE);
 		}
+		@Override
+		public String getSVGString(GameCharacter character) {
+			if(character!=null && !((Elemental)character).getSummoner().isElementalActive()) {
+				if(((Elemental)character).getPassiveForm()==null) {
+					String wispSVG = SvgUtil.colourReplacement(this.toString(),
+									this.getColour(character),
+									this.getColour(character),
+									this.getColour(character),
+									"<div style='width:100%;height:100%;position:absolute;left:0;bottom:0;'>"+SVGImages.SVG_IMAGE_PROVIDER.getRaceWisp()+"</div>");
+					return wispSVG;
+				}
+				String raceSvg = SvgUtil.colourReplacement(this.toString(),
+						this.getColour(character),
+						this.getColour(character),
+						this.getColour(character),
+						((Elemental)character).getPassiveForm().SVGStringUncoloured);
+				return getBipedBackground(raceSvg, character, this.getColour(character));
+			}
+			return super.getSVGString(character);
+		}
+	},
+	
+	ELEMENTAL_EARTH(false,
+			"statusEffects/race/raceElemental",
+			"statusEffects/race/raceBackgroundEarth",
+			"earth elemental",
+			"earth elementals",
+			"earth elemental",
+			"earth elemental",
+			"earth elementals",
+			"earth elementals",
+			"earth",
+			"[npc.NameIsFull] a summoned elemental, currently bound to the school of Earth.",
+			Util.newHashMapOfValues(
+					new Value<Attribute, Float>(Attribute.MAJOR_PHYSIQUE, 50f),
+					new Value<Attribute, Float>(Attribute.DAMAGE_PHYSICAL, 50f),
+					new Value<Attribute, Float>(Attribute.RESISTANCE_PHYSICAL, 50f)),
+			Util.newArrayListOfValues(
+					"[style.boldExcellent(Unlimited)] <b style='color: "+ PresetColour.TRANSFORMATION_GENERIC.toWebHexString()+ ";'> self-transformations</b>"),
+			"Earth Elementals",
+			"Earth Elementals'",
+			"ELEMENTAL_EARTH_BASIC",
+			"ELEMENTAL_EARTH_ADVANCED",
+			Race.ELEMENTAL,
+			Util.newHashMapOfValues(
+					new Value<>(PerkCategory.PHYSICAL, 5),
+					new Value<>(PerkCategory.LUST, 1),
+					new Value<>(PerkCategory.ARCANE, 5)),
+			Util.newHashMapOfValues(
+					new Value<>(PerkCategory.PHYSICAL, 5),
+					new Value<>(PerkCategory.LUST, 1),
+					new Value<>(PerkCategory.ARCANE, 5)),
+			PresetColour.SPELL_SCHOOL_EARTH,
+			SubspeciesPreference.FOUR_ABUNDANT,
+			"An arcane elemental bound to the school of Earth.",
+			Util.newHashMapOfValues(), Util.newArrayListOfValues(
+					SubspeciesFlag.HIDDEN_FROM_PREFERENCES)) {
+		@Override
+		public void applySpeciesChanges(Body body) {
+			body.setBodyMaterial(BodyMaterial.STONE);
+		}
+		@Override
+		public String getSVGString(GameCharacter character) {
+			if(character!=null && !((Elemental)character).getSummoner().isElementalActive()) {
+				if(((Elemental)character).getPassiveForm()==null) {
+					String wispSVG = SvgUtil.colourReplacement(this.toString(),
+							this.getColour(character),
+							this.getColour(character),
+							this.getColour(character),
+							"<div style='width:100%;height:100%;position:absolute;left:0;bottom:0;'>"+SVGImages.SVG_IMAGE_PROVIDER.getRaceWisp()+"</div>");
+					return wispSVG;
+				}
+				String raceSvg = SvgUtil.colourReplacement(this.toString(),
+						this.getColour(character),
+						this.getColour(character),
+						this.getColour(character),
+						((Elemental)character).getPassiveForm().SVGStringUncoloured);
+				return getBipedBackground(raceSvg, character, this.getColour(character));
+			}
+			return super.getSVGString(character);
+		}
 	},
 
-	ELEMENTAL_ARCANE("combat/spell/elemental_arcane",
-			"",
+	ELEMENTAL_WATER(false,
+			"statusEffects/race/raceElemental",
+			"statusEffects/race/raceBackgroundWater",
+			"water elemental",
+			"water elementals",
+			"water elemental",
+			"water elemental",
+			"water elementals",
+			"water elementals",
+			"water",
+			"[npc.NameIsFull] a summoned elemental, currently bound to the school of Water.",
+			Util.newHashMapOfValues(
+					new Value<Attribute, Float>(Attribute.MAJOR_PHYSIQUE, 15f),
+					new Value<Attribute, Float>(Attribute.DAMAGE_ICE, 50f),
+					new Value<Attribute, Float>(Attribute.RESISTANCE_ICE, 50f)),
+			Util.newArrayListOfValues(
+					"[style.boldExcellent(Unlimited)] <b style='color: "+ PresetColour.TRANSFORMATION_GENERIC.toWebHexString()+ ";'> self-transformations</b>"),
+			"Water Elementals",
+			"Water Elementals'",
+			"ELEMENTAL_WATER_BASIC",
+			"ELEMENTAL_WATER_ADVANCED",
+			Race.ELEMENTAL,
+			Util.newHashMapOfValues(
+					new Value<>(PerkCategory.PHYSICAL, 5),
+					new Value<>(PerkCategory.LUST, 3),
+					new Value<>(PerkCategory.ARCANE, 5)),
+			Util.newHashMapOfValues(
+					new Value<>(PerkCategory.PHYSICAL, 5),
+					new Value<>(PerkCategory.LUST, 3),
+					new Value<>(PerkCategory.ARCANE, 5)),
+			PresetColour.SPELL_SCHOOL_WATER,
+			SubspeciesPreference.FOUR_ABUNDANT,
+			"An arcane elemental bound to the school of Water.",
+			Util.newHashMapOfValues(), Util.newArrayListOfValues(
+					SubspeciesFlag.HIDDEN_FROM_PREFERENCES)) {
+		@Override
+		public void applySpeciesChanges(Body body) {
+			body.setBodyMaterial(BodyMaterial.WATER);
+		}
+		@Override
+		public String getSVGString(GameCharacter character) {
+			if(character!=null && !((Elemental)character).getSummoner().isElementalActive()) {
+				if(((Elemental)character).getPassiveForm()==null) {
+					String wispSVG = SvgUtil.colourReplacement(this.toString(),
+									this.getColour(character),
+									this.getColour(character),
+									this.getColour(character),
+									"<div style='width:100%;height:100%;position:absolute;left:0;bottom:0;'>"+SVGImages.SVG_IMAGE_PROVIDER.getRaceWisp()+"</div>");
+					return wispSVG;
+				}
+				String raceSvg = SvgUtil.colourReplacement(this.toString(),
+						this.getColour(character),
+						this.getColour(character),
+						this.getColour(character),
+						((Elemental)character).getPassiveForm().SVGStringUncoloured);
+				return getBipedBackground(raceSvg, character, this.getColour(character));
+			}
+			return super.getSVGString(character);
+		}
+	},
+
+	ELEMENTAL_AIR(false,
+			"statusEffects/race/raceElemental",
+			"statusEffects/race/raceBackgroundAir",
+			"air elemental",
+			"air elementals",
+			"air elemental",
+			"air elemental",
+			"air elementals",
+			"air elementals",
+			"air",
+			"[npc.NameIsFull] a summoned elemental, currently bound to the school of Air.",
+			Util.newHashMapOfValues(
+					new Value<Attribute, Float>(Attribute.MAJOR_PHYSIQUE, 5f),
+					new Value<Attribute, Float>(Attribute.DAMAGE_POISON, 50f),
+					new Value<Attribute, Float>(Attribute.RESISTANCE_POISON, 50f)),
+			Util.newArrayListOfValues(
+					"[style.boldExcellent(Unlimited)] <b style='color: "+ PresetColour.TRANSFORMATION_GENERIC.toWebHexString()+ ";'> self-transformations</b>"),
+			"Air Elementals",
+			"Air Elementals'",
+			"ELEMENTAL_AIR_BASIC",
+			"ELEMENTAL_AIR_ADVANCED",
+			Race.ELEMENTAL,
+			Util.newHashMapOfValues(
+					new Value<>(PerkCategory.PHYSICAL, 5),
+					new Value<>(PerkCategory.LUST, 5),
+					new Value<>(PerkCategory.ARCANE, 5)),
+			Util.newHashMapOfValues(
+					new Value<>(PerkCategory.PHYSICAL, 5),
+					new Value<>(PerkCategory.LUST, 5),
+					new Value<>(PerkCategory.ARCANE, 5)),
+			PresetColour.SPELL_SCHOOL_AIR,
+			SubspeciesPreference.FOUR_ABUNDANT,
+			"An arcane elemental bound to the school of Air.",
+			Util.newHashMapOfValues(), Util.newArrayListOfValues(
+					SubspeciesFlag.HIDDEN_FROM_PREFERENCES)) {
+		@Override
+		public void applySpeciesChanges(Body body) {
+			body.setBodyMaterial(BodyMaterial.AIR);
+		}
+		@Override
+		public String getSVGString(GameCharacter character) {
+			if(character!=null && !((Elemental)character).getSummoner().isElementalActive()) {
+				if(((Elemental)character).getPassiveForm()==null) {
+					String wispSVG = SvgUtil.colourReplacement(this.toString(),
+									this.getColour(character),
+									this.getColour(character),
+									this.getColour(character),
+									"<div style='width:100%;height:100%;position:absolute;left:0;bottom:0;'>"+SVGImages.SVG_IMAGE_PROVIDER.getRaceWisp()+"</div>");
+					return wispSVG;
+				}
+				String raceSvg = SvgUtil.colourReplacement(this.toString(),
+						this.getColour(character),
+						this.getColour(character),
+						this.getColour(character),
+						((Elemental)character).getPassiveForm().SVGStringUncoloured);
+				return getBipedBackground(raceSvg, character, this.getColour(character));
+			}
+			return super.getSVGString(character);
+		}
+	},
+
+	ELEMENTAL_ARCANE(true,
+			"statusEffects/race/raceElemental",
+			"statusEffects/race/raceBackgroundArcane",
 			"arcane elemental",
 			"arcane elementals",
 			"arcane elemental",
@@ -3273,8 +3673,11 @@ public enum Subspecies {
 			"arcane",
 			"[npc.NameIsFull] a summoned elemental, currently bound to the school of Arcane.",
 			Util.newHashMapOfValues(
-					new Value<Attribute, Float>(Attribute.MAJOR_PHYSIQUE, 20f)),
-			null,
+					new Value<Attribute, Float>(Attribute.MAJOR_PHYSIQUE, 15f),
+					new Value<Attribute, Float>(Attribute.DAMAGE_LUST, 50f),
+					new Value<Attribute, Float>(Attribute.RESISTANCE_LUST, 50f)),
+			Util.newArrayListOfValues(
+					"[style.boldExcellent(Unlimited)] <b style='color: "+ PresetColour.TRANSFORMATION_GENERIC.toWebHexString()+ ";'> self-transformations</b>"),
 			"Arcane Elementals",
 			"Arcane Elementals'",
 			"ELEMENTAL_ARCANE_BASIC",
@@ -3291,10 +3694,31 @@ public enum Subspecies {
 			PresetColour.SPELL_SCHOOL_ARCANE,
 			SubspeciesPreference.FOUR_ABUNDANT,
 			"An arcane elemental bound to the school of Arcane.",
-			Util.newHashMapOfValues()) {
+			Util.newHashMapOfValues(), Util.newArrayListOfValues(
+					SubspeciesFlag.HIDDEN_FROM_PREFERENCES)) {
 		@Override
 		public void applySpeciesChanges(Body body) {
 			body.setBodyMaterial(BodyMaterial.ARCANE);
+		}
+		@Override
+		public String getSVGString(GameCharacter character) {
+			if(character!=null && !((Elemental)character).getSummoner().isElementalActive()) {
+				if(((Elemental)character).getPassiveForm()==null) {
+					String wispSVG = SvgUtil.colourReplacement(this.toString(),
+									this.getColour(character),
+									this.getColour(character),
+									this.getColour(character),
+									"<div style='width:100%;height:100%;position:absolute;left:0;bottom:0;'>"+SVGImages.SVG_IMAGE_PROVIDER.getRaceWisp()+"</div>");
+					return wispSVG;
+				}
+				String raceSvg = SvgUtil.colourReplacement(this.toString(),
+						this.getColour(character),
+						this.getColour(character),
+						this.getColour(character),
+						((Elemental)character).getPassiveForm().SVGStringUncoloured);
+				return getBipedBackground(raceSvg, character, this.getColour(character));
+			}
+			return super.getSVGString(character);
 		}
 	},
 	
@@ -3302,7 +3726,7 @@ public enum Subspecies {
 	//TENGU(Race.TENGU.getName(), Race.TENGU, RacialBody.TENGU, SubspeciesPreference.TWO_LOW,
 	//		"A hermetic kind of "+Race.HARPY.getName());
 
-	
+	private boolean mainSubspecies;
 	private String name;
 	private String namePlural;
 	private String singularMaleName;
@@ -3322,12 +3746,13 @@ public enum Subspecies {
 	private String basicDescriptionId;
 	private String advancedDescriptionId;
 	
-	private Race race;
+	private AbstractRace race;
 	private Colour colour;
 	private SubspeciesPreference subspeciesPreferenceDefault;
 	private String description;
 	
 	protected String SVGString;
+	protected String SVGStringUncoloured;
 	protected String SVGStringNoBackground;
 	protected String SVGStringDesaturated;
 	protected String slimeSVGString;
@@ -3335,6 +3760,8 @@ public enum Subspecies {
 	protected String demonSVGString;
 	
 	private Map<AbstractWorldType, SubspeciesSpawnRarity> worldLocations;
+	
+	private List<SubspeciesFlag> flags;
 
 	private static Map<Integer, String> youkoIconMap;
 	private static Map<Integer, String> youkoDesaturatedIconMap;
@@ -3342,7 +3769,7 @@ public enum Subspecies {
 	
 	private static Map<AbstractWorldType, Map<Subspecies, SubspeciesSpawnRarity>> worldSpecies;
 	private static Map<Subspecies, SubspeciesSpawnRarity> dominionStormImmuneSpecies;
-	private static Map<Race, List<Subspecies>> subspeciesFromRace;
+	private static Map<AbstractRace, List<Subspecies>> subspeciesFromRace;
 	
 	static {
 		youkoIconMap = new HashMap<>();
@@ -3426,6 +3853,7 @@ public enum Subspecies {
 	}
 	
 	private Subspecies(
+			boolean mainSubspecies,
 			String iconPathName,
 			String iconBackgroundPathName,
 			String name,
@@ -3442,14 +3870,15 @@ public enum Subspecies {
 			String bookNamePlural,
 			String basicDescription,
 			String advancedDescription,
-			Race race,
+			AbstractRace race,
 			Map<PerkCategory, Integer> perkWeightingFeminine,
 			Map<PerkCategory, Integer> perkWeightingMasculine,
 			Colour colour,
 			SubspeciesPreference subspeciesPreferenceDefault,
 			String description,
-			Map<AbstractWorldType, SubspeciesSpawnRarity> worldLocations) {
+			Map<AbstractWorldType, SubspeciesSpawnRarity> worldLocations, List<SubspeciesFlag> flags) {
 		
+		this.mainSubspecies = mainSubspecies;
 		this.name = name;
 		this.namePlural = namePlural;
 
@@ -3502,13 +3931,19 @@ public enum Subspecies {
 			this.worldLocations = worldLocations;
 		}
 		
+		if(flags == null) {
+			this.flags = new ArrayList<>();
+		} else {
+			this.flags = flags;
+		}
+		
 		if(iconPathName!=null) {
 			try {
 				InputStream is = this.getClass().getResourceAsStream("/com/lilithsthrone/res/" + iconPathName + ".svg");
 				if(is==null) {
 					System.err.println("Error! Subspecies icon file does not exist (Trying to read from '"+iconPathName+"')! (Code 1)");
 				}
-				SVGString = Util.inputStreamToString(is);
+				SVGStringUncoloured = Util.inputStreamToString(is);
 				
 				is.close();
 				
@@ -3523,46 +3958,47 @@ public enum Subspecies {
 					is.close();
 				}
 				
-				String baseSVGString = SVGStringBackground + "<div style='width:100%;height:100%;position:absolute;left:0;bottom:0;'>"+SVGString+"</div>";
-				
+
 				SVGStringNoBackground = SvgUtil.colourReplacement(this.toString(),
 						colour,
 						colour,
 						colour,
-						"<div style='width:100%;height:100%;position:absolute;left:0;bottom:0;'>"+SVGString+"</div>");
+						"<div style='width:100%;height:100%;position:absolute;left:0;bottom:0;'>"+SVGStringUncoloured+"</div>");
+				
+				SVGStringUncoloured = SVGStringBackground + "<div style='width:100%;height:100%;position:absolute;left:0;bottom:0;'>"+SVGStringUncoloured+"</div>";
 				
 				slimeSVGString = SvgUtil.colourReplacement(this.toString(),
 						PresetColour.RACE_SLIME,
 						PresetColour.RACE_SLIME,
 						PresetColour.RACE_SLIME,
 						"<div style='width:100%;height:100%;position:absolute;left:0;bottom:0;'>" + SVGImages.SVG_IMAGE_PROVIDER.getRaceBackgroundSlime()+"</div>"
-						+ "<div style='width:100%;height:100%;position:absolute;left:0;bottom:0;'>"+SVGString+"</div>");
+						+ "<div style='width:100%;height:100%;position:absolute;left:0;bottom:0;'>"+SVGStringUncoloured+"</div>");
 
 				halfDemonSVGString = SvgUtil.colourReplacement(this.toString(),
 						PresetColour.RACE_HALF_DEMON,
 						PresetColour.RACE_HALF_DEMON,
 						PresetColour.RACE_HALF_DEMON,
 						"<div style='width:100%;height:100%;position:absolute;left:0;bottom:0;'>" + SVGImages.SVG_IMAGE_PROVIDER.getRaceBackgroundDemon()+"</div>"
-						+ "<div style='width:100%;height:100%;position:absolute;left:0;bottom:0;'>"+SVGString+"</div>");
+						+ "<div style='width:100%;height:100%;position:absolute;left:0;bottom:0;'>"+SVGStringUncoloured+"</div>");
 
 				demonSVGString = SvgUtil.colourReplacement(this.toString(),
 						PresetColour.RACE_DEMON,
 						PresetColour.RACE_DEMON,
 						PresetColour.RACE_DEMON,
 						"<div style='width:100%;height:100%;position:absolute;left:0;bottom:0;'>" + SVGImages.SVG_IMAGE_PROVIDER.getRaceBackgroundDemon()+"</div>"
-						+ "<div style='width:100%;height:100%;position:absolute;left:0;bottom:0;'>"+SVGString+"</div>");
+						+ "<div style='width:100%;height:100%;position:absolute;left:0;bottom:0;'>"+SVGStringUncoloured+"</div>");
 				
 				SVGStringDesaturated = SvgUtil.colourReplacement(this.toString(),
 						PresetColour.BASE_GREY,
 						PresetColour.BASE_GREY,
 						PresetColour.BASE_GREY,
-						baseSVGString);
+						SVGStringUncoloured);
 				
 				SVGString = SvgUtil.colourReplacement(this.toString(),
 						colour,
 						colour,
 						colour,
-						baseSVGString);
+						SVGStringUncoloured);
 				
 			} catch (IOException e) {
 				e.printStackTrace();
@@ -3572,7 +4008,10 @@ public enum Subspecies {
 			SVGString = "";
 		}
 	}
-
+	
+	/**
+	 * Changes that should be applied to characters of this species upon generation. Called <b>after</b> this Subspecies' Race.applyRaceChanges().
+	 */
 	public void applySpeciesChanges(Body body) {
 	}
 
@@ -3583,48 +4022,18 @@ public enum Subspecies {
 		applySpeciesChanges(body);
 	}
 
-	public static Subspecies getMainSubspeciesOfRace(Race race) {
-		switch(race) {
-			case NONE:
-				break;
-			case ALLIGATOR_MORPH:
-				return Subspecies.ALLIGATOR_MORPH;
-			case ANGEL:
-				return Subspecies.ANGEL;
-			case BAT_MORPH:
-				return Subspecies.BAT_MORPH;
-			case CAT_MORPH:
-				return Subspecies.CAT_MORPH;
-			case COW_MORPH:
-				return Subspecies.COW_MORPH;
-			case DEMON:
-				return Subspecies.DEMON;
-			case DOG_MORPH:
-				return Subspecies.DOG_MORPH;
-			case FOX_MORPH:
-				return Subspecies.FOX_MORPH;
-			case HARPY:
-				return Subspecies.HARPY;
-			case HORSE_MORPH:
-				return Subspecies.HORSE_MORPH;
-			case HUMAN:
-				return Subspecies.HUMAN;
-			case RABBIT_MORPH:
-				return Subspecies.RABBIT_MORPH;
-			case RAT_MORPH:
-				return Subspecies.RAT_MORPH;
-			case REINDEER_MORPH:
-				return Subspecies.REINDEER_MORPH;
-			case SLIME:
-				return Subspecies.SLIME;
-			case SQUIRREL_MORPH:
-				return Subspecies.SQUIRREL_MORPH;
-			case WOLF_MORPH:
-				return Subspecies.WOLF_MORPH;
-			case ELEMENTAL:
-				return Subspecies.ELEMENTAL_ARCANE;
+	public static Subspecies getMainSubspeciesOfRace(AbstractRace race) {
+		Subspecies backup = Subspecies.HUMAN;
+		for(Subspecies sub : Subspecies.values()) {
+			if(sub.getRace()==race) {
+				if(sub.isMainSubspecies()) {
+					return sub;
+				}
+				backup = sub;
+			}
 		}
-		return Subspecies.HUMAN;
+		System.err.println("Warning: getMainSubspeciesOfRace("+Race.getIdFromRace(race)+") did not find a main subspecies!");
+		return backup;
 	}
 	
 	/**
@@ -3634,16 +4043,16 @@ public enum Subspecies {
 		return getSubspeciesFromBody(character, character.getBody(), character.getBody().getRaceFromPartWeighting());
 	}
 
-	public static Subspecies getSubspeciesFromBody(GameCharacter character, Body body, Race race) {
+	public static Subspecies getSubspeciesFromBody(GameCharacter character, Body body, AbstractRace race) {
 		return getSubspeciesFromBody(character, body, race, false);
 	}
 	
 	//TODO Make an internal method to get weighting of subspecies, then run through all subspecies and return the one with the highest weighting
-	public static Subspecies getSubspeciesFromBody(GameCharacter character, Body body, Race race, boolean ignoreOverride) {
+	public static Subspecies getSubspeciesFromBody(GameCharacter character, Body body, AbstractRace race, boolean ignoreOverride) {
 		
 		switch(body.getBodyMaterial()) {
 			case FIRE:
-				if(race==Race.HARPY) {
+				if((character==null || !character.isElemental()) && race==Race.HARPY) {
 					return Subspecies.HARPY_PHOENIX;
 				}
 				return Subspecies.ELEMENTAL_FIRE;
@@ -3715,223 +4124,220 @@ public enum Subspecies {
 		}
 		
 		Subspecies subspecies = null;
-		switch(race) {
-			case NONE:
-				break;
-			case ALLIGATOR_MORPH:
-				subspecies = Subspecies.ALLIGATOR_MORPH;
-				break;
-			case ANGEL:
-				subspecies = Subspecies.ANGEL;
-				break;
-			case CAT_MORPH:
-				subspecies = Subspecies.CAT_MORPH;
-				AbstractFaceType faceType = body.getFace().getType();
-				BodyCoveringType felineFur = body.getBodyMaterial()==BodyMaterial.SLIME?BodyCoveringType.SLIME:BodyCoveringType.FELINE_FUR;
-				
-				if(body.getHair().getType() == HairType.CAT_MORPH_SIDEFLUFF
-					&& body.getEar().getType()==EarType.CAT_MORPH_TUFTED
-					&& body.getCoverings().get(felineFur).getModifier() == CoveringModifier.FLUFFY
-					&& body.getTail().getType()==TailType.CAT_MORPH_SHORT) {
-					subspecies = Subspecies.CAT_MORPH_LYNX;
-						
-				} else if((faceType == FaceType.CAT_MORPH_PANTHER || faceType == FaceType.HUMAN)
-					&& body.getCoverings().get(felineFur).getPattern() == CoveringPattern.SPOTTED
-					&& body.getCoverings().get(felineFur).getModifier() == CoveringModifier.FLUFFY
-					&& body.getTail().getType()==TailType.CAT_MORPH) {
-					subspecies = Subspecies.CAT_MORPH_LEOPARD_SNOW;
+		//TODO this needs to be replaced as soon as possible.
+		if(race==Race.ALLIGATOR_MORPH) {
+			subspecies = Subspecies.ALLIGATOR_MORPH;
+		}
+		if(race==Race.ANGEL) {
+			subspecies = Subspecies.ANGEL;
+		}
+		if(race==Race.CAT_MORPH) {
+			subspecies = Subspecies.CAT_MORPH;
+			AbstractFaceType faceType = body.getFace().getType();
+			BodyCoveringType felineFur = body.getBodyMaterial()==BodyMaterial.SLIME?BodyCoveringType.SLIME:BodyCoveringType.FELINE_FUR;
+			
+			if(body.getHair().getType() == HairType.CAT_MORPH_SIDEFLUFF
+				&& body.getEar().getType()==EarType.CAT_MORPH_TUFTED
+				&& body.getCoverings().get(felineFur).getModifier() == CoveringModifier.FLUFFY
+				&& body.getTail().getType()==TailType.CAT_MORPH_SHORT) {
+				subspecies = Subspecies.CAT_MORPH_LYNX;
 					
-				} else if((faceType == FaceType.CAT_MORPH_PANTHER || faceType == FaceType.HUMAN)
+			} else if((faceType == FaceType.CAT_MORPH_PANTHER || faceType == FaceType.HUMAN)
+				&& body.getCoverings().get(felineFur).getPattern() == CoveringPattern.SPOTTED
+				&& body.getCoverings().get(felineFur).getModifier() == CoveringModifier.FLUFFY
+				&& body.getTail().getType()==TailType.CAT_MORPH) {
+				subspecies = Subspecies.CAT_MORPH_LEOPARD_SNOW;
+				
+			} else if((faceType == FaceType.CAT_MORPH_PANTHER || faceType == FaceType.HUMAN)
+				&& body.getCoverings().get(felineFur).getPattern() == CoveringPattern.SPOTTED
+				&& body.getCoverings().get(felineFur).getModifier() == CoveringModifier.SHORT
+				&& body.getTail().getType()==TailType.CAT_MORPH) {
+				subspecies = Subspecies.CAT_MORPH_LEOPARD;
+				
+			} else if((faceType == FaceType.CAT_MORPH_PANTHER || faceType == FaceType.HUMAN)
+				&& body.getCoverings().get(felineFur).getModifier() == CoveringModifier.SHORT
+				&& body.getTail().getType()==TailType.CAT_MORPH_TUFTED) {
+				subspecies = Subspecies.CAT_MORPH_LION;
+				
+			} else if((faceType == FaceType.CAT_MORPH_PANTHER || faceType == FaceType.HUMAN)
+				&& body.getCoverings().get(felineFur).getPattern() == CoveringPattern.STRIPED
+				&& body.getTail().getType()==TailType.CAT_MORPH) {
+				subspecies = Subspecies.CAT_MORPH_TIGER;
+				
+			} else if((faceType == FaceType.CAT_MORPH || faceType == FaceType.HUMAN)
 					&& body.getCoverings().get(felineFur).getPattern() == CoveringPattern.SPOTTED
 					&& body.getCoverings().get(felineFur).getModifier() == CoveringModifier.SHORT
 					&& body.getTail().getType()==TailType.CAT_MORPH) {
-					subspecies = Subspecies.CAT_MORPH_LEOPARD;
-					
-				} else if((faceType == FaceType.CAT_MORPH_PANTHER || faceType == FaceType.HUMAN)
-					&& body.getCoverings().get(felineFur).getModifier() == CoveringModifier.SHORT
-					&& body.getTail().getType()==TailType.CAT_MORPH_TUFTED) {
-					subspecies = Subspecies.CAT_MORPH_LION;
-					
-				} else if((faceType == FaceType.CAT_MORPH_PANTHER || faceType == FaceType.HUMAN)
-					&& body.getCoverings().get(felineFur).getPattern() == CoveringPattern.STRIPED
-					&& body.getTail().getType()==TailType.CAT_MORPH) {
-					subspecies = Subspecies.CAT_MORPH_TIGER;
-					
-				} else if((faceType == FaceType.CAT_MORPH || faceType == FaceType.HUMAN)
-						&& body.getCoverings().get(felineFur).getPattern() == CoveringPattern.SPOTTED
-						&& body.getCoverings().get(felineFur).getModifier() == CoveringModifier.SHORT
-						&& body.getTail().getType()==TailType.CAT_MORPH) {
-					subspecies = Subspecies.CAT_MORPH_CHEETAH;
-					
-				} else if(body.getEar().getType()==EarType.CAT_MORPH_TUFTED) {
-					subspecies = Subspecies.CAT_MORPH_CARACAL;
-				}
-				break;
+				subspecies = Subspecies.CAT_MORPH_CHEETAH;
 				
-			case COW_MORPH:
-				subspecies = Subspecies.COW_MORPH;
-				break;
-			case DEMON:
-				subspecies = Subspecies.DEMON;
-				if(body.getRaceWeightMap().size()>1) {
-					subspecies = Subspecies.HALF_DEMON;
-				} else if(body.getHeight()==Height.NEGATIVE_TWO_MIMIMUM) {
-					subspecies = Subspecies.IMP;
-				} else if(body.getHeight()==Height.NEGATIVE_ONE_TINY) {
-					subspecies = Subspecies.IMP_ALPHA;
-				}
-				break;
-			case ELEMENTAL:
-				switch(body.getBodyMaterial()) {
-					case AIR:
-						subspecies = Subspecies.ELEMENTAL_AIR;
-						break;
-					case ARCANE:
-						subspecies = Subspecies.ELEMENTAL_ARCANE;
-						break;
-					case FIRE:
-						subspecies = Subspecies.ELEMENTAL_FIRE;
-						break;
-					case FLESH:
-					case SLIME:
-					case RUBBER:
-					case STONE:
-						subspecies = Subspecies.ELEMENTAL_EARTH;
-						break;
-					case ICE:
-					case WATER:
-						subspecies = Subspecies.ELEMENTAL_WATER;
-						break;
-				}
-				break;
-			case DOG_MORPH:
-				subspecies = Subspecies.DOG_MORPH;
-				BodyCoveringType canineFur = body.getBodyMaterial()==BodyMaterial.SLIME?BodyCoveringType.SLIME:BodyCoveringType.CANINE_FUR;
-				
-				if((body.getCoverings().get(canineFur).getPrimaryColour()==PresetColour.COVERING_BLACK
-						|| body.getCoverings().get(canineFur).getPrimaryColour()==PresetColour.COVERING_JET_BLACK)
-					&& (body.getCoverings().get(canineFur).getSecondaryColour()==PresetColour.COVERING_BROWN
-							|| body.getCoverings().get(canineFur).getSecondaryColour()==PresetColour.COVERING_BROWN_DARK
-							|| body.getCoverings().get(canineFur).getSecondaryColour()==PresetColour.COVERING_TAN)
+			} else if(body.getEar().getType()==EarType.CAT_MORPH_TUFTED) {
+				subspecies = Subspecies.CAT_MORPH_CARACAL;
+			}
+		}
+			
+		if(race==Race.COW_MORPH) {
+			subspecies = Subspecies.COW_MORPH;
+		}
+		if(race==Race.DEMON) {
+			subspecies = Subspecies.DEMON;
+			if(body.getRaceWeightMap().size()>1) {
+				subspecies = Subspecies.HALF_DEMON;
+			} else if(body.getHeight()==Height.NEGATIVE_TWO_MIMIMUM) {
+				subspecies = Subspecies.IMP;
+			} else if(body.getHeight()==Height.NEGATIVE_ONE_TINY) {
+				subspecies = Subspecies.IMP_ALPHA;
+			}
+		}
+		if(race==Race.ELEMENTAL) {
+			switch(body.getBodyMaterial()) {
+				case AIR:
+					subspecies = Subspecies.ELEMENTAL_AIR;
+					break;
+				case ARCANE:
+					subspecies = Subspecies.ELEMENTAL_ARCANE;
+					break;
+				case FIRE:
+					subspecies = Subspecies.ELEMENTAL_FIRE;
+					break;
+				case FLESH:
+				case SLIME:
+				case RUBBER:
+				case STONE:
+					subspecies = Subspecies.ELEMENTAL_EARTH;
+					break;
+				case ICE:
+				case WATER:
+					subspecies = Subspecies.ELEMENTAL_WATER;
+					break;
+			}
+		}
+		if(race==Race.DOG_MORPH) {
+			subspecies = Subspecies.DOG_MORPH;
+			BodyCoveringType canineFur = body.getBodyMaterial()==BodyMaterial.SLIME?BodyCoveringType.SLIME:BodyCoveringType.CANINE_FUR;
+			
+			if((body.getCoverings().get(canineFur).getPrimaryColour()==PresetColour.COVERING_BLACK
+					|| body.getCoverings().get(canineFur).getPrimaryColour()==PresetColour.COVERING_JET_BLACK)
+				&& (body.getCoverings().get(canineFur).getSecondaryColour()==PresetColour.COVERING_BROWN
+						|| body.getCoverings().get(canineFur).getSecondaryColour()==PresetColour.COVERING_BROWN_DARK
+						|| body.getCoverings().get(canineFur).getSecondaryColour()==PresetColour.COVERING_TAN)
+				&& body.getCoverings().get(canineFur).getPattern() == CoveringPattern.MARKED
+				&& body.getCoverings().get(canineFur).getModifier() == CoveringModifier.SHORT
+				) {
+				subspecies = Subspecies.DOG_MORPH_DOBERMANN;
+			}
+		
+			if(body.getCoverings().get(canineFur).getPrimaryColour()==PresetColour.COVERING_BLACK
+					&& body.getCoverings().get(canineFur).getSecondaryColour()==PresetColour.COVERING_WHITE
 					&& body.getCoverings().get(canineFur).getPattern() == CoveringPattern.MARKED
-					&& body.getCoverings().get(canineFur).getModifier() == CoveringModifier.SHORT
+					&& body.getCoverings().get(canineFur).getModifier() == CoveringModifier.FLUFFY
+					&& (body.getEar().getType()==EarType.DOG_MORPH_FOLDED || body.getEar().getType()==EarType.DOG_MORPH_POINTED)
 					) {
-					subspecies = Subspecies.DOG_MORPH_DOBERMANN;
-				}
+					subspecies = Subspecies.DOG_MORPH_BORDER_COLLIE;
+			}
+		
+			if(body.getCoverings().get(canineFur).getPrimaryColour()==PresetColour.COVERING_BLACK
+					&& body.getCoverings().get(canineFur).getSecondaryColour()==PresetColour.COVERING_TAN
+					&& body.getCoverings().get(canineFur).getPattern() == CoveringPattern.MARKED
+					&& body.getCoverings().get(canineFur).getModifier() == CoveringModifier.FLUFFY
+					&& body.getEar().getType()==EarType.DOG_MORPH_POINTED
+					) {
+					subspecies = Subspecies.DOG_MORPH_GERMAN_SHEPHERD;
+			}
 			
-				if(body.getCoverings().get(canineFur).getPrimaryColour()==PresetColour.COVERING_BLACK
-						&& body.getCoverings().get(canineFur).getSecondaryColour()==PresetColour.COVERING_WHITE
-						&& body.getCoverings().get(canineFur).getPattern() == CoveringPattern.MARKED
-						&& body.getCoverings().get(canineFur).getModifier() == CoveringModifier.FLUFFY
-						&& (body.getEar().getType()==EarType.DOG_MORPH_FOLDED || body.getEar().getType()==EarType.DOG_MORPH_POINTED)
-						) {
-						subspecies = Subspecies.DOG_MORPH_BORDER_COLLIE;
-				}
+		}
+		if(race==Race.HARPY) {
+			subspecies = Subspecies.HARPY;
+			BodyCoveringType feathers = body.getBodyMaterial()==BodyMaterial.SLIME?BodyCoveringType.SLIME:BodyCoveringType.FEATHERS;
+			BodyCoveringType headFeathers = body.getBodyMaterial()==BodyMaterial.SLIME?BodyCoveringType.SLIME_HAIR:BodyCoveringType.HAIR_HARPY;
 			
-				if(body.getCoverings().get(canineFur).getPrimaryColour()==PresetColour.COVERING_BLACK
-						&& body.getCoverings().get(canineFur).getSecondaryColour()==PresetColour.COVERING_TAN
-						&& body.getCoverings().get(canineFur).getPattern() == CoveringPattern.MARKED
-						&& body.getCoverings().get(canineFur).getModifier() == CoveringModifier.FLUFFY
-						&& body.getEar().getType()==EarType.DOG_MORPH_POINTED
-						) {
-						subspecies = Subspecies.DOG_MORPH_GERMAN_SHEPHERD;
-				}
+			if(body.getCoverings().get(feathers).getPrimaryColour()==PresetColour.COVERING_BLACK
+					|| body.getCoverings().get(feathers).getPrimaryColour()==PresetColour.COVERING_JET_BLACK) {
+				subspecies = Subspecies.HARPY_RAVEN;
+			}
+			if(body.getCoverings().get(feathers).getPrimaryColour()==PresetColour.COVERING_BROWN_DARK
+					&& body.getCoverings().get(headFeathers).getPrimaryColour()==PresetColour.COVERING_WHITE) {
+				subspecies = Subspecies.HARPY_BALD_EAGLE;
+			}
+			if((body.getCoverings().get(feathers).getPrimaryColour()==PresetColour.COVERING_RED
+					|| body.getCoverings().get(feathers).getPrimaryColour()==PresetColour.COVERING_ORANGE
+					|| body.getCoverings().get(feathers).getPrimaryColour()==PresetColour.COVERING_YELLOW)
+				&& body.getCoverings().get(feathers).isPrimaryGlowing()) {
+				subspecies = Subspecies.HARPY_PHOENIX;
+			}
+		}
+			
+		if(race==Race.FOX_MORPH) {
+			subspecies = Subspecies.FOX_MORPH;
+			BodyCoveringType foxFur = body.getBodyMaterial()==BodyMaterial.SLIME?BodyCoveringType.SLIME:BodyCoveringType.FOX_FUR;
+			Covering fox_fur = body.getCoverings().get(foxFur);
+			List<Colour> fennecColours = Util.newArrayListOfValues(PresetColour.COVERING_DIRTY_BLONDE, PresetColour.COVERING_BLEACH_BLONDE, PresetColour.COVERING_TAN);
+			
+			if (fennecColours.contains(fox_fur.getPrimaryColour())
+					&& (fennecColours.contains(fox_fur.getSecondaryColour()) || fox_fur.getPattern()==CoveringPattern.NONE)
+					&& (body.getEar().getType()==EarType.FOX_MORPH_BIG)) {
+				subspecies = body.getTail().getType() == TailType.FOX_MORPH_MAGIC
+						?Subspecies.FOX_ASCENDANT_FENNEC
+						:Subspecies.FOX_MORPH_FENNEC;
 				
-				break;
-			case HARPY:
-				subspecies = Subspecies.HARPY;
-				BodyCoveringType feathers = body.getBodyMaterial()==BodyMaterial.SLIME?BodyCoveringType.SLIME:BodyCoveringType.FEATHERS;
-				BodyCoveringType headFeathers = body.getBodyMaterial()==BodyMaterial.SLIME?BodyCoveringType.SLIME_HAIR:BodyCoveringType.HAIR_HARPY;
+			} else if (fox_fur.getPrimaryColour() == PresetColour.COVERING_WHITE) {
+				subspecies = body.getTail().getType() == TailType.FOX_MORPH_MAGIC
+						?Subspecies.FOX_ASCENDANT_ARCTIC
+						:Subspecies.FOX_MORPH_ARCTIC;
 				
-				if(body.getCoverings().get(feathers).getPrimaryColour()==PresetColour.COVERING_BLACK
-						|| body.getCoverings().get(feathers).getPrimaryColour()==PresetColour.COVERING_JET_BLACK) {
-					subspecies = Subspecies.HARPY_RAVEN;
-				}
-				if(body.getCoverings().get(feathers).getPrimaryColour()==PresetColour.COVERING_BROWN_DARK
-						&& body.getCoverings().get(headFeathers).getPrimaryColour()==PresetColour.COVERING_WHITE) {
-					subspecies = Subspecies.HARPY_BALD_EAGLE;
-				}
-				if((body.getCoverings().get(feathers).getPrimaryColour()==PresetColour.COVERING_RED
-						|| body.getCoverings().get(feathers).getPrimaryColour()==PresetColour.COVERING_ORANGE
-						|| body.getCoverings().get(feathers).getPrimaryColour()==PresetColour.COVERING_YELLOW)
-					&& body.getCoverings().get(feathers).isPrimaryGlowing()) {
-					subspecies = Subspecies.HARPY_PHOENIX;
-				}
-				break;
+			} else if (body.getTail().getType() == TailType.FOX_MORPH_MAGIC) {
+				subspecies = Subspecies.FOX_ASCENDANT;
 				
-			case FOX_MORPH:
-				subspecies = Subspecies.FOX_MORPH;
-				BodyCoveringType foxFur = body.getBodyMaterial()==BodyMaterial.SLIME?BodyCoveringType.SLIME:BodyCoveringType.FOX_FUR;
-				Covering fox_fur = body.getCoverings().get(foxFur);
-				List<Colour> fennecColours = Util.newArrayListOfValues(PresetColour.COVERING_DIRTY_BLONDE, PresetColour.COVERING_BLEACH_BLONDE, PresetColour.COVERING_TAN);
-				
-				if (fennecColours.contains(fox_fur.getPrimaryColour())
-						&& (fennecColours.contains(fox_fur.getSecondaryColour()) || fox_fur.getPattern()==CoveringPattern.NONE)
-						&& (body.getEar().getType()==EarType.FOX_MORPH_BIG)) {
-					subspecies = body.getTail().getType() == TailType.FOX_MORPH_MAGIC
-							?Subspecies.FOX_ASCENDANT_FENNEC
-							:Subspecies.FOX_MORPH_FENNEC;
-					
-				} else if (fox_fur.getPrimaryColour() == PresetColour.COVERING_WHITE) {
-					subspecies = body.getTail().getType() == TailType.FOX_MORPH_MAGIC
-							?Subspecies.FOX_ASCENDANT_ARCTIC
-							:Subspecies.FOX_MORPH_ARCTIC;
-					
-				} else if (body.getTail().getType() == TailType.FOX_MORPH_MAGIC) {
-					subspecies = Subspecies.FOX_ASCENDANT;
-					
-				}
-				break;
-				
-			case HORSE_MORPH:
-				subspecies = Subspecies.HORSE_MORPH;
-				
-				if(body.getWing().getType()==WingType.FEATHERED) {
-					if(body.getHorn().getType().equals(HornType.HORSE_STRAIGHT) && body.getHorn().getHornRows()==1 && body.getHorn().getHornsPerRow()==1) {
-						return Subspecies.HORSE_MORPH_ALICORN;
-					}
-					return Subspecies.HORSE_MORPH_PEGASUS;
-				}
+			}
+		}
+			
+		if(race==Race.HORSE_MORPH) {
+			subspecies = Subspecies.HORSE_MORPH;
+			
+			if(body.getWing().getType()==WingType.FEATHERED) {
 				if(body.getHorn().getType().equals(HornType.HORSE_STRAIGHT) && body.getHorn().getHornRows()==1 && body.getHorn().getHornsPerRow()==1) {
-					return Subspecies.HORSE_MORPH_UNICORN;
+					return Subspecies.HORSE_MORPH_ALICORN;
 				}
-				BodyCoveringType horseHair = body.getBodyMaterial()==BodyMaterial.SLIME?BodyCoveringType.SLIME:BodyCoveringType.HORSE_HAIR;
-				Colour zebraPrimary = body.getCoverings().get(horseHair).getPrimaryColour();
-				Colour zebraSecondary = body.getCoverings().get(horseHair).getSecondaryColour();
-				if((((zebraPrimary==PresetColour.COVERING_BLACK || zebraPrimary==PresetColour.COVERING_JET_BLACK) && zebraSecondary==PresetColour.COVERING_WHITE)
-						|| (zebraPrimary==PresetColour.COVERING_WHITE && (zebraSecondary==PresetColour.COVERING_BLACK || zebraSecondary==PresetColour.COVERING_JET_BLACK)))
-					&& body.getTail().getType()==TailType.HORSE_MORPH_ZEBRA) {
-						subspecies = Subspecies.HORSE_MORPH_ZEBRA;
-					}
-				break;
-				
-			case HUMAN:
-				subspecies = Subspecies.HUMAN;
-				break;
-			case REINDEER_MORPH:
-				subspecies = Subspecies.REINDEER_MORPH;
-				break;
-			case SQUIRREL_MORPH:
-				subspecies = Subspecies.SQUIRREL_MORPH;
-				break;
-			case RAT_MORPH:
-				subspecies = Subspecies.RAT_MORPH;
-				break;
-			case BAT_MORPH:
-				subspecies = Subspecies.BAT_MORPH;
-				break;
-			case WOLF_MORPH:
-				subspecies = Subspecies.WOLF_MORPH;
-				break;
-			case SLIME:
-				subspecies = Subspecies.SLIME;
-				break;
-			case RABBIT_MORPH:
-				subspecies = Subspecies.RABBIT_MORPH;
-				if(body.getEar().getType()==EarType.RABBIT_MORPH_FLOPPY) {
-					subspecies = Subspecies.RABBIT_MORPH_LOP;
+				return Subspecies.HORSE_MORPH_PEGASUS;
+			}
+			if(!body.getHorn().getType().equals(HornType.NONE) && body.getHorn().getHornRows()==1 && body.getHorn().getHornsPerRow()==1) {
+				return Subspecies.HORSE_MORPH_UNICORN;
+			}
+			BodyCoveringType horseHair = body.getBodyMaterial()==BodyMaterial.SLIME?BodyCoveringType.SLIME:BodyCoveringType.HORSE_HAIR;
+			Colour zebraPrimary = body.getCoverings().get(horseHair).getPrimaryColour();
+			Colour zebraSecondary = body.getCoverings().get(horseHair).getSecondaryColour();
+			if((((zebraPrimary==PresetColour.COVERING_BLACK || zebraPrimary==PresetColour.COVERING_JET_BLACK) && zebraSecondary==PresetColour.COVERING_WHITE)
+					|| (zebraPrimary==PresetColour.COVERING_WHITE && (zebraSecondary==PresetColour.COVERING_BLACK || zebraSecondary==PresetColour.COVERING_JET_BLACK)))
+				&& body.getTail().getType()==TailType.HORSE_MORPH_ZEBRA) {
+					subspecies = Subspecies.HORSE_MORPH_ZEBRA;
 				}
-				break;
+		}
+			
+		if(race==Race.HUMAN) {
+			subspecies = Subspecies.HUMAN;
+		}
+		if(race==Race.REINDEER_MORPH) {
+			subspecies = Subspecies.REINDEER_MORPH;
+		}
+		if(race==Race.SQUIRREL_MORPH) {
+			subspecies = Subspecies.SQUIRREL_MORPH;
+		}
+		if(race==Race.RAT_MORPH) {
+			subspecies = Subspecies.RAT_MORPH;
+		}
+		if(race==Race.BAT_MORPH) {
+			subspecies = Subspecies.BAT_MORPH;
+		}
+		if(race==Race.WOLF_MORPH) {
+			subspecies = Subspecies.WOLF_MORPH;
+		}
+		if(race==Race.SLIME) {
+			subspecies = Subspecies.SLIME;
+		}
+		if(race==Race.RABBIT_MORPH) {
+			subspecies = Subspecies.RABBIT_MORPH;
+			if(body.getEar().getType()==EarType.RABBIT_MORPH_FLOPPY) {
+				subspecies = Subspecies.RABBIT_MORPH_LOP;
+			}
 		}
 		
 		return subspecies;
@@ -3999,7 +4405,7 @@ public enum Subspecies {
 	
 
 	public static Body getPreGeneratedBody(GameCharacter linkedCharacter, Gender startingGender, GameCharacter mother, GameCharacter father) {
-		return getPreGeneratedBody(linkedCharacter, startingGender, mother.getSubspecies(), mother.getHalfDemonSubspecies(), father.getSubspecies(), father.getHalfDemonSubspecies());
+		return getPreGeneratedBody(linkedCharacter, startingGender, mother.getTrueSubspecies(), mother.getHalfDemonSubspecies(), father.getTrueSubspecies(), father.getHalfDemonSubspecies());
 	}
 	
 	/**
@@ -4074,6 +4480,9 @@ public enum Subspecies {
 						case LILIN:
 						case DEMON:
 						case HALF_DEMON:
+							if(fatherHalfDemonSubspecies==Subspecies.HUMAN) {
+								return CharacterUtils.generateBody(linkedCharacter, startingGender, RacialBody.DEMON, Subspecies.IMP, RaceStage.GREATER);	
+							}
 							return CharacterUtils.generateHalfDemonBody(linkedCharacter, startingGender, motherHalfDemonSubspecies, true);
 						default:
 							return CharacterUtils.generateBody(linkedCharacter, startingGender, RacialBody.DEMON, Subspecies.IMP, RaceStage.GREATER);
@@ -4085,7 +4494,7 @@ public enum Subspecies {
 						case LILIN:
 						case DEMON:
 							return CharacterUtils.generateHalfDemonBody(linkedCharacter, startingGender, motherHalfDemonSubspecies, true);
-						case HALF_DEMON: // IF both are non-human half-demons, it's random as to whose species is birthed
+						case HALF_DEMON: // If both are non-human half-demons, it's random as to whose species is birthed
 							if(Math.random()<0.5f || fatherHalfDemonSubspecies==Subspecies.HUMAN) {
 								return CharacterUtils.generateHalfDemonBody(linkedCharacter, startingGender, motherHalfDemonSubspecies, true);
 							} else {
@@ -4122,22 +4531,6 @@ public enum Subspecies {
 		}
 	}
 	
-//	public static Subspecies getOffspringFromMotherSubspecies(GameCharacter mother, GameCharacter father) {
-//		Body body = getPreGeneratedBody(null, null, mother, father);
-//		if(body==null) {
-//			return mother.getSubspecies();
-//		}
-//		return body.getSubspecies();
-//	}
-//	
-//	public static Subspecies getOffspringFromFatherSubspecies(GameCharacter mother, GameCharacter father) {
-//		Body body = getPreGeneratedBody(null, null, mother, father);
-//		if(body==null) {
-//			return father.getSubspecies();
-//		}
-//		return body.getSubspecies();
-//	}
-	
 	public boolean isShortStature() {
 		return false;
 	}
@@ -4146,8 +4539,30 @@ public enum Subspecies {
 		return false;
 	}
 	
+	public boolean isMainSubspecies() {
+		return mainSubspecies;
+	}
+
 	private String getTaurEnding() {
 		return feralName.charAt(feralName.length()-1)=='t'?"-taur":"taur";
+	}
+	
+	protected String applyNonBipedNameChange(GameCharacter character, String baseName, boolean applyFeminineForm, boolean plural) {
+		switch(character.getLegConfiguration()) {
+			case ARACHNID:
+				return baseName+"-arachne"+(plural?"s":"");
+			case BIPEDAL:
+				break;
+			case CEPHALOPOD:
+				return baseName+"-kraken"+(plural?"s":"");
+			case TAIL:
+				return "mer"+baseName+(plural?"s":"");
+			case TAIL_LONG:
+				return baseName+"-lamia"+(plural?"s":"");
+			case TAUR:
+				return baseName+getTaurEnding()+(applyFeminineForm?"ess"+(plural?"es":""):(plural?"s":""));
+		}
+		return baseName;
 	}
 	
 	/**
@@ -4155,21 +4570,8 @@ public enum Subspecies {
 	 * @return  The singular name of this character's subspecies.
 	 */
 	public String getName(GameCharacter character) {
-		if(!isNonBiped() && character!=null) {
-			switch(character.getLegConfiguration()) {
-				case ARACHNID:
-					return getFeralName(character)+"-arachne";
-				case BIPEDAL:
-					break;
-				case CEPHALOPOD:
-					return getFeralName(character)+"-kraken";
-				case TAIL:
-					return "mer"+getFeralName(character);
-				case TAIL_LONG:
-					return getFeralName(character)+"-lamia";
-				case TAUR:
-					return getFeralName(character)+getTaurEnding();
-			}
+		if(character!=null && character.getLegConfiguration()!=LegConfiguration.BIPEDAL && !isNonBiped()) {
+			return applyNonBipedNameChange(character, getFeralName(character), false, false);
 		}
 		return name;
 	}
@@ -4179,21 +4581,8 @@ public enum Subspecies {
 	 * @return  The plural name of this character's subspecies.
 	 */
 	public String getNamePlural(GameCharacter character) {
-		if(!isNonBiped() && character!=null) {
-			switch(character.getLegConfiguration()) {
-				case ARACHNID:
-					return getFeralName(character)+"-arachnes";
-				case BIPEDAL:
-					break;
-				case CEPHALOPOD:
-					return getFeralName(character)+"-krakens";
-				case TAIL:
-					return "mer"+getFeralName(character);
-				case TAIL_LONG:
-					return getFeralName(character)+"-lamias";
-				case TAUR:
-					return getFeralName(character)+getTaurEnding()+"s";
-			}
+		if(character!=null && character.getLegConfiguration()!=LegConfiguration.BIPEDAL && !isNonBiped()) {
+			return applyNonBipedNameChange(character, getFeralName(character), false, true);
 		}
 		return namePlural;
 	}
@@ -4203,21 +4592,8 @@ public enum Subspecies {
 	 * @return  The singular male name of this character's subspecies.
 	 */
 	public String getSingularMaleName(GameCharacter character) {
-		if(!isNonBiped() && character!=null) {
-			switch(character.getLegConfiguration()) {
-				case ARACHNID:
-					return getFeralName(character)+"-arachne";
-				case BIPEDAL:
-					break;
-				case CEPHALOPOD:
-					return getFeralName(character)+"-kraken";
-				case TAIL:
-					return "mer"+getFeralName(character);
-				case TAIL_LONG:
-					return getFeralName(character)+"-lamia";
-				case TAUR:
-					return getFeralName(character)+getTaurEnding();
-			}
+		if(character!=null && character.getLegConfiguration()!=LegConfiguration.BIPEDAL && !isNonBiped()) {
+			return applyNonBipedNameChange(character, getFeralName(character), false, false);
 		}
 
 		if(Main.game.isSillyModeEnabled() && character!=null) {
@@ -4237,21 +4613,8 @@ public enum Subspecies {
 	 * @return  The singular female name of this character's subspecies.
 	 */
 	public String getSingularFemaleName(GameCharacter character) {
-		if(!isNonBiped() && character!=null) {
-			switch(character.getLegConfiguration()) {
-				case ARACHNID:
-					return getFeralName(character)+"-arachne";
-				case BIPEDAL:
-					break;
-				case CEPHALOPOD:
-					return getFeralName(character)+"-kraken";
-				case TAIL:
-					return "mer"+getFeralName(character);
-				case TAIL_LONG:
-					return getFeralName(character)+"-lamia";
-				case TAUR:
-					return getFeralName(character)+getTaurEnding()+"ess";
-			}
+		if(character!=null && character.getLegConfiguration()!=LegConfiguration.BIPEDAL && !isNonBiped()) {
+			return applyNonBipedNameChange(character, getFeralName(character), true, false);
 		}
 		
 		if(Main.game.isSillyModeEnabled() && character!=null) {
@@ -4272,21 +4635,8 @@ public enum Subspecies {
 	 * @return  The plural male name of this character's subspecies.
 	 */
 	public String getPluralMaleName(GameCharacter character) {
-		if(!isNonBiped() && character!=null) {
-			switch(character.getLegConfiguration()) {
-				case ARACHNID:
-					return getFeralName(character)+"-arachnes";
-				case BIPEDAL:
-					break;
-				case CEPHALOPOD:
-					return getFeralName(character)+"-krakens";
-				case TAIL:
-					return "mer"+getFeralName(character);
-				case TAIL_LONG:
-					return getFeralName(character)+"-lamias";
-				case TAUR:
-					return getFeralName(character)+getTaurEnding()+"s";
-			}
+		if(character!=null && character.getLegConfiguration()!=LegConfiguration.BIPEDAL && !isNonBiped()) {
+			return applyNonBipedNameChange(character, getFeralName(character), false, true);
 		}
 		return pluralMaleName;
 	}
@@ -4296,21 +4646,8 @@ public enum Subspecies {
 	 * @return  The plural female name of this character's subspecies.
 	 */
 	public String getPluralFemaleName(GameCharacter character) {
-		if(!isNonBiped() && character!=null) {
-			switch(character.getLegConfiguration()) {
-				case ARACHNID:
-					return getFeralName(character)+"-arachnes";
-				case BIPEDAL:
-					break;
-				case CEPHALOPOD:
-					return getFeralName(character)+"-krakens";
-				case TAIL:
-					return "mer"+getFeralName(character);
-				case TAIL_LONG:
-					return getFeralName(character)+"-lamias";
-				case TAUR:
-					return getFeralName(character)+getTaurEnding()+"esses";
-			}
+		if(character!=null && character.getLegConfiguration()!=LegConfiguration.BIPEDAL && !isNonBiped()) {
+			return applyNonBipedNameChange(character, getFeralName(character), false, true);
 		}
 		return pluralFemaleName;
 	}
@@ -4333,7 +4670,7 @@ public enum Subspecies {
 		}
 		return perkWeightingFeminine;
 	}
-
+	
 	public List<String> getExtraEffects(GameCharacter character) {
 		if(character!=null) {
 			List<String> effectsModified = new ArrayList<>(extraEffects);
@@ -4376,7 +4713,7 @@ public enum Subspecies {
 		return advancedDescriptionId;
 	}
 
-	public Race getRace() {
+	public AbstractRace getRace() {
 		return race;
 	}
 
@@ -4397,10 +4734,11 @@ public enum Subspecies {
 	}
 	
 	protected String getBipedBackground(String svg, GameCharacter character, Colour colour) {//TODO - when support other body types, add different backgrounds
+		String returnString = svg;
 		if(character!=null && character.getLegConfiguration()!=LegConfiguration.BIPEDAL) {
 			try {
 				String SVGStringLegConfigurationBackground = "";
-				InputStream is = this.getClass().getResourceAsStream("/com/lilithsthrone/res/statusEffects/race/raceBackgroundNonBipedAlt.svg");
+				InputStream is = this.getClass().getResourceAsStream("/com/lilithsthrone/res/statusEffects/race/raceBackgroundNonBiped.svg");
 				SVGStringLegConfigurationBackground = "<div style='width:100%;height:100%;position:absolute;left:0;bottom:0;'>"+Util.inputStreamToString(is)+"</div>";
 				is.close();
 				SVGStringLegConfigurationBackground = SvgUtil.colourReplacement(this.toString()+"NBPID",
@@ -4409,12 +4747,29 @@ public enum Subspecies {
 						colour,
 						SVGStringLegConfigurationBackground);
 				
-				return SVGStringLegConfigurationBackground + "<div style='width:100%;height:100%;position:absolute;left:0;bottom:0;'>" + svg +"</div>";
+				returnString = SVGStringLegConfigurationBackground + "<div style='width:100%;height:100%;position:absolute;left:0;bottom:0;'>" + svg +"</div>";
 			} catch (IOException e) {
 				e.printStackTrace();
 			}
 		}
-		return svg;
+		if(character!=null && (character.isTorsoBestial() || (character.isElemental() && !((Elemental)character).getSummoner().isElementalActive()))) {
+			try {
+				String feralBackground = "";
+				InputStream is = this.getClass().getResourceAsStream("/com/lilithsthrone/res/statusEffects/race/raceBackgroundFeral.svg");
+				feralBackground = "<div style='width:100%;height:100%;position:absolute;left:0;bottom:0;'>"+Util.inputStreamToString(is)+"</div>";
+				is.close();
+				feralBackground = SvgUtil.colourReplacement(this.toString()+"FERAL",
+						colour,
+						colour,
+						colour,
+						feralBackground);
+				
+				returnString = returnString + "<div style='width:100%;height:100%;position:absolute;left:0;bottom:0;'>" + feralBackground +"</div>";
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+		}
+		return returnString;
 	}
 	
 	public String getSVGString(GameCharacter character) {
@@ -4443,6 +4798,14 @@ public enum Subspecies {
 
 	public Map<AbstractWorldType, SubspeciesSpawnRarity> getWorldLocations() {
 		return worldLocations;
+	}
+
+	public List<SubspeciesFlag> getFlags() {
+		return flags;
+	}
+	
+	public boolean hasFlag(SubspeciesFlag flag) {
+		return getFlags().contains(flag);
 	}
 
 	/**
@@ -4491,7 +4854,7 @@ public enum Subspecies {
 		return map;
 	}
 
-	public static List<Subspecies> getSubspeciesOfRace(Race race) {
+	public static List<Subspecies> getSubspeciesOfRace(AbstractRace race) {
 		return subspeciesFromRace.get(race);
 	}
 	
@@ -4556,43 +4919,26 @@ public enum Subspecies {
 		}
 		return this.getRace().getDefaultMasculinePreference();
 	}
-	
+
+	/**
+	 * @return true if this subspecies should be displayed in the furry preferences options screen.
+	 */
 	public boolean isDisplayedInFurryPreferences() {
-		switch(this.getRace()) {
-			case ANGEL:
-			case DEMON:
-			case ELEMENTAL:
-			case HUMAN:
-			case NONE:
-			case SLIME:
-				return false;
-			case HARPY:
-				return this!=Subspecies.HARPY;
-			case FOX_MORPH:
-				return this!=Subspecies.FOX_ASCENDANT
-						&& this!=Subspecies.FOX_ASCENDANT_ARCTIC
-						&& this!=Subspecies.FOX_ASCENDANT_FENNEC;
-			case ALLIGATOR_MORPH:
-			case BAT_MORPH:
-			case CAT_MORPH:
-			case COW_MORPH:
-			case DOG_MORPH:
-			case HORSE_MORPH:
-			case RABBIT_MORPH:
-			case RAT_MORPH:
-			case REINDEER_MORPH:
-			case SQUIRREL_MORPH:
-			case WOLF_MORPH:
-				return true;
-		}
-		return false;
+		return !this.hasFlag(SubspeciesFlag.HIDDEN_FROM_PREFERENCES);
 	}
-	
+
 	/**
 	 * @return true if this subspecies can have its FurryPreference modified in the furry preferences options screen.
 	 */
 	public boolean isFurryPreferencesEnabled() {
-		return this.getRace()!=Race.HARPY;
+		return !this.hasFlag(SubspeciesFlag.DISBALE_FURRY_PREFERENCE);
+	}
+
+	/**
+	 * @return true if this subspecies can have its spawn frequency modified in the furry preferences options screen.
+	 */
+	public boolean isSpawnPreferencesEnabled() {
+		return !this.hasFlag(SubspeciesFlag.DISBALE_SPAWN_PREFERENCE);
 	}
 	
 	public int getBaseSlaveValue(GameCharacter character) {

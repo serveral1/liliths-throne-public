@@ -128,6 +128,7 @@ public class RatGangMember extends NPC {
 			this.addPersonalityTrait(PersonalityTrait.SLOVENLY);
 			this.removePersonalityTrait(PersonalityTrait.LISP);
 			this.removePersonalityTrait(PersonalityTrait.STUTTER);
+			this.removePersonalityTrait(PersonalityTrait.MUTE);
 		}
 		
 		this.setEnslavementDialogue(SlaveDialogue.DEFAULT_ENSLAVEMENT_DIALOGUE, true);
@@ -218,7 +219,7 @@ public class RatGangMember extends NPC {
 	public Response endCombat(boolean applyEffects, boolean victory) {
 		if(victory) {
 			if(Main.game.getDialogueFlags().hasFlag(DialogueFlagValue.ratWarrensCaptiveAttemptingEscape)) {
-				return new Response("", "", RatWarrensCaptiveDialogue.STOCKS_ESCAPE_FIGHT_VICTORY);
+				return new Response("", "", RatWarrensCaptiveDialogue.CAPTIVE_ESCAPE_FIGHT_VICTORY);
 			}
 			return new Response("", "", RatWarrensDialogue.GUARD_COMBAT_VICTORY) {
 				@Override
@@ -255,7 +256,7 @@ public class RatGangMember extends NPC {
 			
 		} else {
 			if(Main.game.getDialogueFlags().hasFlag(DialogueFlagValue.ratWarrensCaptiveAttemptingEscape)) {
-				return new Response("", "", RatWarrensCaptiveDialogue.STOCKS_ESCAPE_FIGHT_DEFEAT) {
+				return new Response("", "", RatWarrensCaptiveDialogue.CAPTIVE_ESCAPE_FIGHT_DEFEAT) {
 					@Override
 					public void effects() {
 						RatWarrensDialogue.applyCombatDefeatFlagsReset();

@@ -15,7 +15,7 @@ import com.lilithsthrone.game.inventory.AbstractCoreType;
 import com.lilithsthrone.game.inventory.enchanting.AbstractItemEffectType;
 import com.lilithsthrone.game.inventory.enchanting.EnchantingUtils;
 import com.lilithsthrone.game.inventory.enchanting.ItemEffect;
-import com.lilithsthrone.game.inventory.enchanting.TFEssence;
+import com.lilithsthrone.main.Main;
 import com.lilithsthrone.utils.Util;
 import com.lilithsthrone.utils.XMLSaving;
 import com.lilithsthrone.utils.colours.PresetColour;
@@ -83,7 +83,7 @@ public abstract class AbstractItem extends AbstractCoreItem implements XMLSaving
 				System.err.println("Warning: An instance of AbstractItem was unable to be imported, due to AbstractItemType not existing. ("+parentElement.getAttribute("id")+")");
 				return null;
 			}
-			AbstractItem item = AbstractItemType.generateItem(it);
+			AbstractItem item = Main.game.getItemGen().generateItem(it);
 			
 			if(!parentElement.getAttribute("name").isEmpty()) {
 				item.setName(parentElement.getAttribute("name"));
@@ -160,11 +160,6 @@ public abstract class AbstractItem extends AbstractCoreItem implements XMLSaving
 	@Override
 	public AbstractCoreType getEnchantmentItemType(List<ItemEffect> effects) {
 		return itemType.getEnchantmentItemType(effects);
-	}
-	
-	@Override
-	public TFEssence getRelatedEssence() {
-		return itemType.getRelatedEssence();
 	}
 	
 	// Getters & setters:

@@ -10,6 +10,7 @@ import com.lilithsthrone.game.character.body.abstractTypes.AbstractFluidType;
 import com.lilithsthrone.game.character.body.valueEnums.FluidFlavour;
 import com.lilithsthrone.game.character.body.valueEnums.FluidModifier;
 import com.lilithsthrone.game.character.body.valueEnums.FluidTypeBase;
+import com.lilithsthrone.game.character.race.AbstractRace;
 import com.lilithsthrone.game.character.race.Race;
 import com.lilithsthrone.utils.Util;
 
@@ -37,8 +38,8 @@ public class FluidType {
 	 public static AbstractFluidType CUM_ANGEL = new AbstractFluidType(FluidTypeBase.CUM,
 			FluidFlavour.CUM,
 			Race.ANGEL,
-			Util.newArrayListOfValues("", "angel-"),
-			Util.newArrayListOfValues("", "angel-"),
+			Util.newArrayListOfValues("angel-"),
+			Util.newArrayListOfValues("angel-"),
 			Util.newArrayListOfValues(""),
 			Util.newArrayListOfValues(""),
 			Util.newArrayListOfValues(
@@ -49,8 +50,8 @@ public class FluidType {
 	 public static AbstractFluidType CUM_DEMON = new AbstractFluidType(FluidTypeBase.CUM,
 			FluidFlavour.CUM,
 			Race.DEMON,
-			Util.newArrayListOfValues("", "demon-", "demonic-"),
-			Util.newArrayListOfValues("", "demon-", "demonic-"),
+			Util.newArrayListOfValues("demon-", "demonic-"),
+			Util.newArrayListOfValues("demon-", "demonic-"),
 			Util.newArrayListOfValues(""),
 			Util.newArrayListOfValues(""),
 			Util.newArrayListOfValues(
@@ -61,8 +62,8 @@ public class FluidType {
 	 public static AbstractFluidType CUM_DOG_MORPH = new AbstractFluidType(FluidTypeBase.CUM,
 			FluidFlavour.CUM,
 			Race.DOG_MORPH,
-			Util.newArrayListOfValues("", "dog-", "canine-"),
-			Util.newArrayListOfValues("", "bitch-", "canine-"),
+			Util.newArrayListOfValues("dog-", "canine-"),
+			Util.newArrayListOfValues("bitch-", "canine-"),
 			Util.newArrayListOfValues(""),
 			Util.newArrayListOfValues(""),
 			Util.newArrayListOfValues(
@@ -73,8 +74,8 @@ public class FluidType {
 	 public static AbstractFluidType CUM_WOLF_MORPH = new AbstractFluidType(FluidTypeBase.CUM,
 			FluidFlavour.CUM,
 			Race.WOLF_MORPH,
-			Util.newArrayListOfValues("", "wolf-", "lupine-"),
-			Util.newArrayListOfValues("", "wolf-", "lupine-"),
+			Util.newArrayListOfValues("wolf-", "lupine-"),
+			Util.newArrayListOfValues("wolf-", "lupine-"),
 			Util.newArrayListOfValues(""),
 			Util.newArrayListOfValues(""),
 			Util.newArrayListOfValues(
@@ -86,8 +87,8 @@ public class FluidType {
 	 public static AbstractFluidType CUM_FOX_MORPH = new AbstractFluidType(FluidTypeBase.CUM,
 			FluidFlavour.CUM,
 			Race.FOX_MORPH,
-			Util.newArrayListOfValues("", "fox-", "vulpine-"),
-			Util.newArrayListOfValues("", "vixen-", "vulpine-"),
+			Util.newArrayListOfValues("fox-", "vulpine-"),
+			Util.newArrayListOfValues("vixen-", "vulpine-"),
 			Util.newArrayListOfValues(""),
 			Util.newArrayListOfValues(""),
 			Util.newArrayListOfValues(
@@ -98,8 +99,8 @@ public class FluidType {
 	 public static AbstractFluidType CUM_CAT_MORPH = new AbstractFluidType(FluidTypeBase.CUM,
 			FluidFlavour.CUM,
 			Race.CAT_MORPH,
-			Util.newArrayListOfValues("", "cat-", "feline-"),
-			Util.newArrayListOfValues("", "cat-", "feline-"),
+			Util.newArrayListOfValues("cat-", "feline-"),
+			Util.newArrayListOfValues("cat-", "feline-"),
 			Util.newArrayListOfValues(""),
 			Util.newArrayListOfValues(""),
 			Util.newArrayListOfValues(
@@ -110,8 +111,8 @@ public class FluidType {
 	 public static AbstractFluidType CUM_SQUIRREL_MORPH = new AbstractFluidType(FluidTypeBase.CUM,
 			FluidFlavour.CUM,
 			Race.SQUIRREL_MORPH,
-			Util.newArrayListOfValues("", "squirrel-", "rodent-"),
-			Util.newArrayListOfValues("", "squirrel-", "rodent-"),
+			Util.newArrayListOfValues("squirrel-", "rodent-"),
+			Util.newArrayListOfValues("squirrel-", "rodent-"),
 			Util.newArrayListOfValues(""),
 			Util.newArrayListOfValues(""),
 			Util.newArrayListOfValues(
@@ -122,8 +123,8 @@ public class FluidType {
 	 public static AbstractFluidType CUM_RAT_MORPH = new AbstractFluidType(FluidTypeBase.CUM,
 			FluidFlavour.CUM,
 			Race.RAT_MORPH,
-			Util.newArrayListOfValues("", "rat-", "rodent-"),
-			Util.newArrayListOfValues("", "rat-", "rodent-"),
+			Util.newArrayListOfValues("rat-", "rodent-"),
+			Util.newArrayListOfValues("rat-", "rodent-"),
 			Util.newArrayListOfValues(""),
 			Util.newArrayListOfValues(""),
 			Util.newArrayListOfValues(
@@ -134,8 +135,8 @@ public class FluidType {
 	 public static AbstractFluidType CUM_RABBIT_MORPH = new AbstractFluidType(FluidTypeBase.CUM,
 			FluidFlavour.CUM,
 			Race.RABBIT_MORPH,
-			Util.newArrayListOfValues("", "rabbit-"),
-			Util.newArrayListOfValues("", "rabbit-"),
+			Util.newArrayListOfValues("rabbit-"),
+			Util.newArrayListOfValues("rabbit-"),
 			Util.newArrayListOfValues(""),
 			Util.newArrayListOfValues(""),
 			Util.newArrayListOfValues(
@@ -146,8 +147,8 @@ public class FluidType {
 	 public static AbstractFluidType CUM_BAT_MORPH = new AbstractFluidType(FluidTypeBase.CUM,
 			FluidFlavour.CUM,
 			Race.BAT_MORPH,
-			Util.newArrayListOfValues("", "bat-"),
-			Util.newArrayListOfValues("", "bat-"),
+			Util.newArrayListOfValues("bat-"),
+			Util.newArrayListOfValues("bat-"),
 			Util.newArrayListOfValues(""),
 			Util.newArrayListOfValues(""),
 			Util.newArrayListOfValues(
@@ -158,8 +159,8 @@ public class FluidType {
 	 public static AbstractFluidType CUM_ALLIGATOR_MORPH = new AbstractFluidType(FluidTypeBase.CUM,
 			FluidFlavour.CUM,
 			Race.ALLIGATOR_MORPH,
-			Util.newArrayListOfValues("", "alligator-", "reptilian-"),
-			Util.newArrayListOfValues("", "alligator-", "reptilian-"),
+			Util.newArrayListOfValues("alligator-", "reptilian-"),
+			Util.newArrayListOfValues("alligator-", "reptilian-"),
 			Util.newArrayListOfValues(""),
 			Util.newArrayListOfValues(""),
 			Util.newArrayListOfValues(
@@ -170,8 +171,8 @@ public class FluidType {
 	 public static AbstractFluidType CUM_HORSE_MORPH = new AbstractFluidType(FluidTypeBase.CUM,
 			FluidFlavour.CUM,
 			Race.HORSE_MORPH,
-			Util.newArrayListOfValues("", "stallion-", "horse-", "equine-"),
-			Util.newArrayListOfValues("", "mare-", "horse-", "equine-"),
+			Util.newArrayListOfValues("stallion-", "horse-", "equine-"),
+			Util.newArrayListOfValues("mare-", "horse-", "equine-"),
 			Util.newArrayListOfValues(""),
 			Util.newArrayListOfValues(""),
 			Util.newArrayListOfValues(
@@ -183,8 +184,8 @@ public class FluidType {
 	 public static AbstractFluidType CUM_REINDEER_MORPH = new AbstractFluidType(FluidTypeBase.CUM,
 			FluidFlavour.CUM,
 			Race.REINDEER_MORPH,
-			Util.newArrayListOfValues("", "reindeer-"),
-			Util.newArrayListOfValues("", "reindeer-"),
+			Util.newArrayListOfValues("reindeer-"),
+			Util.newArrayListOfValues("reindeer-"),
 			Util.newArrayListOfValues(""),
 			Util.newArrayListOfValues(""),
 			Util.newArrayListOfValues(
@@ -196,8 +197,8 @@ public class FluidType {
 	 public static AbstractFluidType CUM_COW_MORPH = new AbstractFluidType(FluidTypeBase.CUM,
 			FluidFlavour.CUM,
 			Race.COW_MORPH,
-			Util.newArrayListOfValues("", "bull-", "bovine-"),
-			Util.newArrayListOfValues("", "cow-", "bovine-"),
+			Util.newArrayListOfValues("bull-", "bovine-"),
+			Util.newArrayListOfValues("cow-", "bovine-"),
 			Util.newArrayListOfValues(""),
 			Util.newArrayListOfValues(""),
 			Util.newArrayListOfValues(
@@ -209,8 +210,8 @@ public class FluidType {
 	 public static AbstractFluidType CUM_HARPY = new AbstractFluidType(FluidTypeBase.CUM,
 			FluidFlavour.CUM,
 			Race.HARPY,
-			Util.newArrayListOfValues("", "harpy-", "avian-"),
-			Util.newArrayListOfValues("", "harpy-", "avian-"),
+			Util.newArrayListOfValues("harpy-", "avian-"),
+			Util.newArrayListOfValues("harpy-", "avian-"),
 			Util.newArrayListOfValues(""),
 			Util.newArrayListOfValues(""),
 			Util.newArrayListOfValues(
@@ -614,8 +615,8 @@ public class FluidType {
 		return allFluidTypes;
 	}
 	
-	private static Map<Race, List<AbstractFluidType>> typesMap = new HashMap<>();
-	public static List<AbstractFluidType> getFluidTypes(Race r) {
+	private static Map<AbstractRace, List<AbstractFluidType>> typesMap = new HashMap<>();
+	public static List<AbstractFluidType> getFluidTypes(AbstractRace r) {
 		if(typesMap.containsKey(r)) {
 			return typesMap.get(r);
 		}

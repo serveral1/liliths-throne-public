@@ -479,7 +479,7 @@ public class PenisAnus {
 			
 			UtilText.nodeContentSB.setLength(0);
 			
-			String assTargeting = "between [npc2.her] ass cheeks";
+			String assTargeting = "between [npc2.namePos] ass cheeks";
 			if(Main.sex.getCharacterTargetedForSexAction(this).getGenitalArrangement()!=GenitalArrangement.NORMAL) {
 				assTargeting = "over [npc2.namePos] [npc2.assCloaca+]";
 			}
@@ -1851,7 +1851,7 @@ public class PenisAnus {
 								"[npc.A_sob+] bursts out from [npc.namePos] mouth as [npc.she] frantically [npc.verb(try)] to pull [npc.her] [npc.ass+] away from [npc2.namePos] unwanted penetration,"
 										+ " struggling in desperation as [npc2.her] [npc2.cock+] [npc2.verb(continue)] slowly sliding in and out of [npc.her] [npc.asshole+].",
 								"Trying desperately to pull [npc.her] [npc.hips] away,"
-										+ " [npc.name] [npc.sobVerb] in distress as [npc2.namePos] [npc2.cock+] [npc2.verb(continue)] gently sliding deep into [npc.her] [npc.asshole+]."));
+										+ " [npc.name] [npc.sobVerb] in distress as [npc2.namePos] [npc2.cock+] continues gently sliding deep into [npc.her] [npc.asshole+]."));
 						break;
 					case DOM_ROUGH:
 						UtilText.nodeContentSB.append(UtilText.returnStringAtRandom(
@@ -1860,7 +1860,7 @@ public class PenisAnus {
 								"[npc.A_sob+] bursts out from [npc.namePos] mouth as [npc.she] frantically [npc.verb(try)] to pull [npc.her] [npc.ass+] away from [npc2.namePos] unwanted penetration,"
 										+ " struggling in desperation as [npc2.her] [npc2.cock+] [npc2.verb(continue)] roughly slamming in and out of [npc.her] [npc.asshole+].",
 								"Trying desperately to pull [npc.her] [npc.hips] away,"
-										+ " [npc.name] [npc.sobVerb] in distress as [npc2.namePos] [npc2.cock+] [npc2.verb(continue)] violently thrusting deep into [npc.her] [npc.asshole+]."));
+										+ " [npc.name] [npc.sobVerb] in distress as [npc2.namePos] [npc2.cock+] continues violently thrusting deep into [npc.her] [npc.asshole+]."));
 						break;
 					default:
 						UtilText.nodeContentSB.append(UtilText.returnStringAtRandom(
@@ -1869,7 +1869,7 @@ public class PenisAnus {
 								"[npc.A_sob+] bursts out from [npc.namePos] mouth as [npc.she] frantically [npc.verb(try)] to pull [npc.her] [npc.ass+] away from [npc2.namePos] unwanted penetration,"
 										+ " struggling in desperation as [npc2.her] [npc2.cock+] [npc2.verb(continue)] frantically pumping in and out of [npc.her] [npc.asshole+].",
 								"Trying desperately to pull [npc.her] [npc.hips] away,"
-										+ " [npc.name] [npc.sobVerb] in distress as [npc2.namePos] [npc2.cock+] [npc2.verb(continue)] greedily thrusting deep into [npc.her] [npc.asshole+]."));
+										+ " [npc.name] [npc.sobVerb] in distress as [npc2.namePos] [npc2.cock+] continues greedily thrusting deep into [npc.her] [npc.asshole+]."));
 						break;
 				}
 			}
