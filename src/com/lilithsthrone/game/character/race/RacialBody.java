@@ -598,7 +598,7 @@ public class RacialBody {
 			TorsoType.HARPY,
 			BodyMaterial.FLESH,
 			HornLength.ZERO_TINY, HornLength.ZERO_TINY, Util.newArrayListOfValues(HornType.NONE),
-			PenisType.HARPY, 7, PenetrationGirth.TWO_NARROW, TesticleSize.ONE_SMALL, 2, CumProduction.TWO_SMALL_AMOUNT,
+			PenisType.HARPY, 7, PenetrationGirth.TWO_NARROW, ONE_TINY, 2, CumProduction.TWO_SMALL_AMOUNT,
 			Util.newArrayListOfValues(TailType.HARPY),
 			TentacleType.NONE,
 			VaginaType.HARPY, Wetness.THREE_WET, Capacity.ONE_EXTREMELY_TIGHT, OrificeDepth.TWO_AVERAGE, ClitorisSize.ZERO_AVERAGE, OrificeElasticity.FOUR_LIMBER, OrificePlasticity.THREE_RESILIENT,

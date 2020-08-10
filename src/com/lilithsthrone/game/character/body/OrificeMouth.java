@@ -151,7 +151,7 @@ public class OrificeMouth implements OrificeInterface {
 	
 	@Override
 	public int getMaximumPenetrationDepthUncomfortable(GameCharacter owner, OrificeDepth depth) {
-		return (int) getMaximumPenetrationDepthComfortable(owner, depth) * 1.2f;
+		return (int) (getMaximumPenetrationDepthComfortable(owner, depth) * 1.2f);
 	}
 	
 	@Override
