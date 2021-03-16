@@ -11,7 +11,7 @@ import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
 
-import com.lilithsthrone.game.character.CharacterUtils;
+import com.lilithsthrone.controller.xmlParsing.XMLUtil;
 import com.lilithsthrone.game.character.FluidStored;
 import com.lilithsthrone.game.character.body.CoverableArea;
 import com.lilithsthrone.game.character.body.types.PenisType;
@@ -29,6 +29,7 @@ import com.lilithsthrone.game.character.npc.NPC;
 import com.lilithsthrone.game.character.npc.NPCFlagValue;
 import com.lilithsthrone.game.character.npc.dominion.Lilaya;
 import com.lilithsthrone.game.character.npc.misc.GenericSexualPartner;
+import com.lilithsthrone.game.character.race.AbstractSubspecies;
 import com.lilithsthrone.game.character.race.RacialBody;
 import com.lilithsthrone.game.character.race.Subspecies;
 import com.lilithsthrone.game.dialogue.DialogueFlagValue;
@@ -37,14 +38,14 @@ import com.lilithsthrone.game.dialogue.eventLog.SlaveryEventLogEntry;
 import com.lilithsthrone.game.dialogue.places.dominion.lilayashome.RoomPlayer;
 import com.lilithsthrone.game.dialogue.utils.UtilText;
 import com.lilithsthrone.game.inventory.InventorySlot;
-import com.lilithsthrone.game.occupantManagement.slave.SlaveEvent;
-import com.lilithsthrone.game.occupantManagement.slave.SlaveEventTag;
 import com.lilithsthrone.game.occupantManagement.slave.SlaveJob;
 import com.lilithsthrone.game.occupantManagement.slave.SlaveJobFlag;
 import com.lilithsthrone.game.occupantManagement.slave.SlaveJobSetting;
 import com.lilithsthrone.game.occupantManagement.slave.SlavePermission;
 import com.lilithsthrone.game.occupantManagement.slave.SlavePermissionSetting;
 import com.lilithsthrone.game.occupantManagement.slave.TestSubjectTransformation;
+import com.lilithsthrone.game.occupantManagement.slaveEvent.SlaveEvent;
+import com.lilithsthrone.game.occupantManagement.slaveEvent.SlaveEventTag;
 import com.lilithsthrone.game.sex.GenericSexFlag;
 import com.lilithsthrone.game.sex.SexAreaOrifice;
 import com.lilithsthrone.game.sex.SexAreaPenetration;
@@ -120,15 +121,15 @@ public class OccupancyUtil implements XMLSaving {
 		Element element = doc.createElement("slavery");
 		parentElement.appendChild(element);
 		
-		CharacterUtils.addAttribute(doc, element, "generatedIncome", String.valueOf(Main.game.getOccupancyUtil().getGeneratedIncome()));
-		CharacterUtils.addAttribute(doc, element, "generatedUpkeep", String.valueOf(Main.game.getOccupancyUtil().getGeneratedUpkeep()));
+		XMLUtil.addAttribute(doc, element, "generatedIncome", String.valueOf(Main.game.getOccupancyUtil().getGeneratedIncome()));
+		XMLUtil.addAttribute(doc, element, "generatedUpkeep", String.valueOf(Main.game.getOccupancyUtil().getGeneratedUpkeep()));
 		
 		Element slavesAtJobElement = doc.createElement("slavesAtJob");
 		element.appendChild(slavesAtJobElement);
 		for(Entry<SlaveJob, List<String>> entry : slavesAtJob.entrySet()) {
 			if(!entry.getValue().isEmpty()) {
 				Element jobElement = doc.createElement("slaves");
-				CharacterUtils.addAttribute(doc, jobElement, "job", entry.getKey().toString());
+				XMLUtil.addAttribute(doc, jobElement, "job", entry.getKey().toString());
 				slavesAtJobElement.appendChild(jobElement);
 				for(String id : entry.getValue()) {
 					Element slaveIdElement = doc.createElement("id");
@@ -215,7 +216,7 @@ public class OccupancyUtil implements XMLSaving {
 		for(String id : Main.game.getPlayer().getFriendlyOccupants()) {
 			try {
 				NPC occupant = (NPC) Main.game.getNPCById(id);
-				if(!Main.game.getCharactersPresent().contains(occupant)) { // If the player isn't interacting with them, then move them:
+				if(!Main.game.getPlayer().isActive() || !Main.game.getCharactersPresent().contains(occupant)) { // If the player isn't interacting with them, then move them:
 //					if(!occupant.getHistory().getOccupationTags().contains(OccupationTag.LOWLIFE)) {
 						if(occupant.getHistory().isAtWork(hour)) {
 							occupant.setLocation(WorldType.EMPTY, PlaceType.GENERIC_HOLDING_CELL);
@@ -252,7 +253,7 @@ public class OccupancyUtil implements XMLSaving {
 					continue;
 				}
 				
-				if(!Main.game.getCharactersPresent().contains(slave) // If the player isn't interacting with them, then move them
+				if(!Main.game.getPlayer().isActive() || !Main.game.getCharactersPresent().contains(slave) // If the player isn't interacting with them, then move them
 						|| Main.game.getPlayerCell().getPlace().getPlaceType()==PlaceType.LILAYA_HOME_ROOM_PLAYER) { // Also move slaves who are in bedroom but have elsewhere to be
 					slavesAtJob.get(currentJob).add(slave.getId());
 					
@@ -266,11 +267,13 @@ public class OccupancyUtil implements XMLSaving {
 							}
 						}
 					}
-					
+
 					if(currentJob==SlaveJob.IDLE) {
 						slavesResting.add(slave);
+					} else {
+						slavesToSendToWork.add(slave);
 					}
-					slavesToSendToWork.add(slave);
+
 				}
 				if(Main.game.getCurrentDialogueNode()==RoomPlayer.AUNT_HOME_PLAYERS_ROOM_SLEEP) {
 					Main.game.updateResponses();
@@ -279,17 +282,15 @@ public class OccupancyUtil implements XMLSaving {
 				Util.logGetNpcByIdError("performHourlyUpdate(), getSlavesOwned() section.", id);
 			}
 		}
-		
+
+		// a slave's room always has enough room, so do this first
+		for(NPC slave : slavesResting) {
+			updateSlaveJob(slave, hour, previousJobs);
+		}
+
 		// Send slaves to work after others have left, so that job rooms are emptied before trying to fill them:
 		for(NPC slave : slavesToSendToWork) {
-			SlaveJob currentJob = slave.getSlaveJob(hour);
-			SlaveJob previousJob = previousJobs.get(slave.getId());
-//			System.out.println(slave.getName()+": "+previousJob+" -> "+currentJob);
-			if(previousJob!=null && previousJob!=currentJob) {
-				previousJob.applyJobEndEffects(slave);
-			}
-			currentJob.sendToWorkLocation(hour, slave);
-			currentJob.applyJobStartEffects(slave);
+			updateSlaveJob(slave, hour, previousJobs);
 		}
 		
 		// Now can apply changes and generate events based on who else is present in the job:
@@ -347,7 +348,7 @@ public class OccupancyUtil implements XMLSaving {
 				
 			} else {
 				if(slave.hasSlavePermissionSetting(SlavePermissionSetting.SEX_MASTURBATE)
-						&& (slave.getLastTimeOrgasmed()+(60*(24+12))<Main.game.getMinutesPassed())) { // Give them a 12-hour period of pent up, so they will have the chance to ambush the player or have sex with other slaves
+						&& (slave.getLastTimeOrgasmedSeconds()+(60*60*(24+12))<Main.game.getSecondsPassed())) { // Give them a 12-hour period of pent up, so they will have the chance to ambush the player or have sex with other slaves
 					slave.setLastTimeHadSex((day*24*60l) + hour*60l, true);
 				}
 			}
@@ -363,6 +364,7 @@ public class OccupancyUtil implements XMLSaving {
 					&& !Main.game.getCharactersPresent().contains(slave)) {
 				SlaveryEventLogEntry entry = new SlaveryEventLogEntry(hour,
 						slave,
+						null,
 						SlaveEvent.WASHED_BODY,
 						null,
 						true);
@@ -387,6 +389,7 @@ public class OccupancyUtil implements XMLSaving {
 					&& !Main.game.getCharactersPresent().contains(slave)) {
 				Main.game.addSlaveryEvent(day, new SlaveryEventLogEntry(hour,
 						slave,
+						null,
 						SlaveEvent.WASHED_CLOTHES,
 						Util.newArrayListOfValues(SlaveEventTag.WASHED_CLOTHES),
 						true));
@@ -396,13 +399,15 @@ public class OccupancyUtil implements XMLSaving {
 			boolean eventAdded = false;
 			SlaveryEventLogEntry entry = null;
 			// Interaction events:
-			if(slavesAtJob.get(currentJob).size()>1 || currentJob==SlaveJob.IDLE) {
+			if(slavesAtJob.get(currentJob).size()>1 || (currentJob==SlaveJob.IDLE && slave.getLocationPlace().getPlaceType()!=PlaceType.SLAVER_ALLEY_SLAVERY_ADMINISTRATION)) {
 				if(Math.random()<0.25f && !Main.game.getCharactersPresent().contains(slave)) { // Do not generate sex events if the player is present.
 					List<NPC> slavesPresent = new ArrayList<>();
 					for(String npcId : slavesAtJob.get(currentJob)) {
 						try {
 							NPC slaveAtJob = (NPC) Main.game.getNPCById(npcId);
-							slavesPresent.add(slaveAtJob);
+							if(slaveAtJob.getLocationPlace().getPlaceType()!=PlaceType.SLAVER_ALLEY_SLAVERY_ADMINISTRATION) {
+								slavesPresent.add(slaveAtJob);
+							}
 						} catch(Exception ex) {
 						}
 					}
@@ -439,6 +444,7 @@ public class OccupancyUtil implements XMLSaving {
 			if(hour%24==0) { // At the start of a new day:
 				SlaveryEventLogEntry dailyEntry = new SlaveryEventLogEntry(hour,
 						slave,
+						null,
 						SlaveEvent.DAILY_UPDATE,
 						null,
 						true);
@@ -546,6 +552,22 @@ public class OccupancyUtil implements XMLSaving {
 			}
 		}
 		
+	}
+
+	/**
+	 * @param slave The slave whose job gets updated.
+	 * @param hour Time at which this event is happening.
+	 * @param previousJobs Map with the previous job of all slaves
+	 */
+	private void updateSlaveJob(NPC slave, int hour, Map<String, SlaveJob> previousJobs) {
+		SlaveJob currentJob = slave.getSlaveJob(hour);
+		SlaveJob previousJob = previousJobs.get(slave.getId());
+		// System.out.println(slave.getName()+": "+previousJob+" -> "+currentJob);
+		if(previousJob!=null && previousJob!=currentJob) {
+			previousJob.applyJobEndEffects(slave);
+		}
+		currentJob.sendToWorkLocation(hour, slave);
+		currentJob.applyJobStartEffects(slave);
 	}
 
 	/**
@@ -663,8 +685,7 @@ public class OccupancyUtil implements XMLSaving {
 									room.incrementFluidStored(new FluidStored(slave, slave.getCum(), milked), milked);
 									milkingStored.add("[style.colourCum("+ Units.fluid(milked) +")] [npc.cum] stored.");
 								}
-								slave.removeStatusEffect(StatusEffect.FRUSTRATED_NO_ORGASM);
-								slave.setLastTimeOrgasmed(((Main.game.getDayNumber()*24)+hour)*60);
+								slave.setLastTimeOrgasmedSeconds(((Main.game.getDayNumber()*24)+hour)*60*60);
 							}
 						}
 						if(slave.getClothingInSlot(InventorySlot.VAGINA)!=null
@@ -680,13 +701,12 @@ public class OccupancyUtil implements XMLSaving {
 									room.incrementFluidStored(new FluidStored(slave.getId(), slave.getGirlcum(), milked), milked);
 									milkingStored.add("[style.colourGirlCum("+ Units.fluid(milked) +")] [npc.girlcum] stored.");
 								}
-								slave.removeStatusEffect(StatusEffect.FRUSTRATED_NO_ORGASM);
-								slave.setLastTimeOrgasmed(((Main.game.getDayNumber()*24)+hour)*60);
+								slave.setLastTimeOrgasmedSeconds(((Main.game.getDayNumber()*24)+hour)*60*60);
 							}
 						}
 						generatedIncome += income;
 						if(!milkingSold.isEmpty()) {
-							events.add(new SlaveryEventLogEntry(hour, slave,
+							events.add(new SlaveryEventLogEntry(hour, slave, null,
 									SlaveEvent.JOB_MILK_MILKED,
 									Util.newArrayListOfValues(
 											SlaveEventTag.JOB_MILK_SOLD),
@@ -694,7 +714,7 @@ public class OccupancyUtil implements XMLSaving {
 									true));
 						}
 						if(!milkingStored.isEmpty()) {
-							events.add(new SlaveryEventLogEntry(hour, slave,
+							events.add(new SlaveryEventLogEntry(hour, slave, null,
 									SlaveEvent.JOB_MILK_MILKED,
 									Util.newArrayListOfValues(
 											SlaveEventTag.JOB_MILK_STORED),
@@ -709,7 +729,7 @@ public class OccupancyUtil implements XMLSaving {
 						if(slave.hasFetish(Fetish.FETISH_TRANSFORMATION_RECEIVING)) {
 							slave.incrementAffection(Main.game.getPlayer(), 1);
 							slave.incrementAffection(Main.game.getNpc(Lilaya.class), 5);
-							events.add(new SlaveryEventLogEntry(hour, slave,
+							events.add(new SlaveryEventLogEntry(hour, slave, null,
 									SlaveEvent.JOB_TEST_SUBJECT,
 									Util.newArrayListOfValues(
 											SlaveEventTag.JOB_LILAYA_INTRUSIVE_TESTING),
@@ -723,7 +743,7 @@ public class OccupancyUtil implements XMLSaving {
 						} else {
 							slave.incrementAffection(Main.game.getPlayer(), -1);
 							slave.incrementAffection(Main.game.getNpc(Lilaya.class), -5);
-							events.add(new SlaveryEventLogEntry(hour, slave,
+							events.add(new SlaveryEventLogEntry(hour, slave, null,
 									SlaveEvent.JOB_TEST_SUBJECT,
 									Util.newArrayListOfValues(
 											SlaveEventTag.JOB_LILAYA_INTRUSIVE_TESTING),
@@ -762,7 +782,7 @@ public class OccupancyUtil implements XMLSaving {
 								if(!tf.isEmpty()) {
 									list.add(tf);
 								}
-								events.add(new SlaveryEventLogEntry(hour, slave,
+								events.add(new SlaveryEventLogEntry(hour, slave, null,
 										SlaveEvent.JOB_TEST_SUBJECT,
 										Util.newArrayListOfValues(tag),
 										list,
@@ -794,7 +814,7 @@ public class OccupancyUtil implements XMLSaving {
 								if(!tf2.isEmpty()) {
 									list2.add(tf2);
 								}
-								events.add(new SlaveryEventLogEntry(hour, slave,
+								events.add(new SlaveryEventLogEntry(hour, slave, null,
 										SlaveEvent.JOB_TEST_SUBJECT,
 										Util.newArrayListOfValues(mascTag),
 										list2,
@@ -814,10 +834,10 @@ public class OccupancyUtil implements XMLSaving {
 						settingsEnabled = getSexSettingsEnabled(currentJob, slave);
 						
 						Gender gender = Gender.getGenderFromUserPreferences(false, true);
-						Map<Subspecies, Integer> availableRaces = Subspecies.getGenericSexPartnerSubspeciesMap(gender);
+						Map<AbstractSubspecies, Integer> availableRaces = AbstractSubspecies.getGenericSexPartnerSubspeciesMap(gender);
 						
-						Subspecies subspecies = Subspecies.HUMAN;
-						Subspecies halfDemonSubspecies = null;
+						AbstractSubspecies subspecies = Subspecies.HUMAN;
+						AbstractSubspecies halfDemonSubspecies = null;
 						if(!availableRaces.isEmpty()) {
 							subspecies = Util.getRandomObjectFromWeightedMap(availableRaces);
 						}
@@ -913,10 +933,10 @@ public class OccupancyUtil implements XMLSaving {
 									} else {
 										if(slave.isHasAnyPregnancyEffects()) {
 											effectDescriptions.append(UtilText.parse(slave,
-													"but as [npc.sheIs] on [#ITEM_PROMISCUITY_PILL.getNamePlural(false)], there's no chance of [npc.herHim] getting pregnant."
+													"but as [npc.sheIs] on [#ITEM_innoxia_pills_sterility.getNamePlural(false)], there's no chance of [npc.herHim] getting pregnant."
 													+ " ([npc.She] already has a risk of pregnancy from a previous encounter, however...)"));
 										} else {
-											effectDescriptions.append(UtilText.parse(slave, "but as [npc.sheIs] on [#ITEM_PROMISCUITY_PILL.getNamePlural(false)], there's no chance of [npc.herHim] getting pregnant."));
+											effectDescriptions.append(UtilText.parse(slave, "but as [npc.sheIs] on [#ITEM_innoxia_pills_sterility.getNamePlural(false)], there's no chance of [npc.herHim] getting pregnant."));
 										}
 										effects.add("<span style='color:"+PresetColour.CUM.toWebHexString()+";'>Pussy Creampie:</span> "+effectDescriptions.toString());
 										effectDescriptions.setLength(0);
@@ -930,7 +950,7 @@ public class OccupancyUtil implements XMLSaving {
 							}
 						}
 						
-						events.add(new SlaveryEventLogEntry(hour, slave,
+						events.add(new SlaveryEventLogEntry(hour, slave, null,
 								SlaveEvent.JOB_PUBLIC_STOCKS,
 								Util.newArrayListOfValues(
 										SlaveEventTag.JOB_STOCKS_USED),
@@ -954,9 +974,9 @@ public class OccupancyUtil implements XMLSaving {
 					String partnerName = "";
 					
 					Gender partnerGender = null;
-					Map<Subspecies, Integer> availablePartnerRaces = null;
-					Subspecies partnerSubspecies = Subspecies.HUMAN;
-					Subspecies partnerHalfDemonSubspecies = null;
+					Map<AbstractSubspecies, Integer> availablePartnerRaces = null;
+					AbstractSubspecies partnerSubspecies = Subspecies.HUMAN;
+					AbstractSubspecies partnerHalfDemonSubspecies = null;
 					
 					if(usingRealPartner) {
 						if(Math.random()<0.25f) {
@@ -973,7 +993,7 @@ public class OccupancyUtil implements XMLSaving {
 						
 					} else {
 						partnerGender = Gender.getGenderFromUserPreferences(false, true);
-						availablePartnerRaces = Subspecies.getGenericSexPartnerSubspeciesMap(partnerGender);
+						availablePartnerRaces = AbstractSubspecies.getGenericSexPartnerSubspeciesMap(partnerGender);
 						
 						if(!availablePartnerRaces.isEmpty()) {
 							partnerSubspecies = Util.getRandomObjectFromWeightedMap(availablePartnerRaces);
@@ -1108,10 +1128,10 @@ public class OccupancyUtil implements XMLSaving {
 										
 									} else {
 										if(slave.isHasAnyPregnancyEffects()) {
-											effectDescriptions.append(UtilText.parse(slave, "but as [npc.sheIs] on [#ITEM_PROMISCUITY_PILL.getNamePlural(false)], there's no chance of [npc.herHim] getting pregnant."
+											effectDescriptions.append(UtilText.parse(slave, "but as [npc.sheIs] on [#ITEM_innoxia_pills_sterility.getNamePlural(false)], there's no chance of [npc.herHim] getting pregnant."
 														+ " ([npc.She] already has a risk of pregnancy from a previous encounter, however...)"));
 										} else {
-											effectDescriptions.append(UtilText.parse(slave, "but as [npc.sheIs] on [#ITEM_PROMISCUITY_PILL.getNamePlural(false)], there's no chance of [npc.herHim] getting pregnant."));
+											effectDescriptions.append(UtilText.parse(slave, "but as [npc.sheIs] on [#ITEM_innoxia_pills_sterility.getNamePlural(false)], there's no chance of [npc.herHim] getting pregnant."));
 										}
 										effects.add("<span style='color:"+PresetColour.CUM.toWebHexString()+";'>Pussy Creampie:</span> "+effectDescriptions.toString());
 										effectDescriptions.setLength(0);
@@ -1138,10 +1158,10 @@ public class OccupancyUtil implements XMLSaving {
 									} else {
 										if(slave.isHasAnyPregnancyEffects()) {
 											effectDescriptions.append(UtilText.parse(slave,
-													"but as [npc.sheIs] on [#ITEM_PROMISCUITY_PILL.getNamePlural(false)], there's no chance of [npc.herHim] getting pregnant."
+													"but as [npc.sheIs] on [#ITEM_innoxia_pills_sterility.getNamePlural(false)], there's no chance of [npc.herHim] getting pregnant."
 													+ " ([npc.She] already has a risk of pregnancy from a previous encounter, however...)"));
 										} else {
-											effectDescriptions.append(UtilText.parse(slave, "but as [npc.sheIs] on [#ITEM_PROMISCUITY_PILL.getNamePlural(false)], there's no chance of [npc.herHim] getting pregnant."));
+											effectDescriptions.append(UtilText.parse(slave, "but as [npc.sheIs] on [#ITEM_innoxia_pills_sterility.getNamePlural(false)], there's no chance of [npc.herHim] getting pregnant."));
 										}
 										effects.add("<span style='color:"+PresetColour.CUM.toWebHexString()+";'>Pussy Creampie:</span> "+effectDescriptions.toString());
 										effectDescriptions.setLength(0);
@@ -1155,7 +1175,7 @@ public class OccupancyUtil implements XMLSaving {
 						}
 					}
 
-					events.add(new SlaveryEventLogEntry(hour, slave,
+					events.add(new SlaveryEventLogEntry(hour, slave, null,
 							SlaveEvent.JOB_PROSTITUTE,
 							Util.newArrayListOfValues(
 									SlaveEventTag.JOB_PROSTITUTE_USED),
@@ -1446,6 +1466,114 @@ public class OccupancyUtil implements XMLSaving {
 		return "";
 	}
 	
+	public static SlaveryEventLogEntry applySlaveSexWithOtherSlave(int day, int hourOfDay, NPC slave, NPC npc) {
+		SlaveJob currentJob = slave.getSlaveJob(hourOfDay);
+		
+		List<String> descriptions = null;
+		boolean canImpregnate = slave.hasSlavePermissionSetting(SlavePermissionSetting.SEX_IMPREGNATE) && npc.hasSlavePermissionSetting(SlavePermissionSetting.SEX_IMPREGNATED);
+		boolean canBeImpregnated = slave.hasSlavePermissionSetting(SlavePermissionSetting.SEX_IMPREGNATED) && npc.hasSlavePermissionSetting(SlavePermissionSetting.SEX_IMPREGNATE);
+		
+		slave.setLastTimeHadSex((day*24*60l) + hourOfDay*60l, true);
+		
+		slave.generateSexChoices(false, npc);
+		String sexDescription = UtilText.parse(slave, npc, "[npc.Name] spent some time kissing and groping [npc2.name].");
+		if(slave.getMainSexPreference(npc)!=null) {
+			SexType sexType = slave.getMainSexPreference(npc);
+			if(sexType.getPerformingSexArea()==SexAreaPenetration.PENIS && sexType.getTargetedSexArea()==SexAreaOrifice.VAGINA && !canImpregnate) {
+				sexDescription = slave.calculateGenericSexEffects(true, true, npc, sexType, GenericSexFlag.PREVENT_CREAMPIE);
+				
+			} else if(sexType.getPerformingSexArea()==SexAreaOrifice.VAGINA && sexType.getTargetedSexArea()==SexAreaPenetration.PENIS && !canBeImpregnated) {
+				sexDescription = slave.calculateGenericSexEffects(true, true, npc, sexType, GenericSexFlag.PREVENT_CREAMPIE);
+				
+			} else {
+				sexDescription = slave.calculateGenericSexEffects(true, true, npc, sexType);
+			}
+		}
+		
+		String paceName = slave.getTheoreticalSexPaceDomPreference().getName();
+		if(paceName.equals("normal")) {
+			paceName = "";
+		}
+		
+		switch(currentJob) {
+			case CLEANING:
+				descriptions = Util.newArrayListOfValues(UtilText.parse(slave, npc,
+								"While dusting one of the first-floor corridors, [npc1.name] caught sight of [npc2.name],"
+								+ " and couldn't resist pulling [npc2.herHim] into an empty room for some "+paceName+" sex.")
+								+ "<br/>[style.italicsSex("+sexDescription+")]");
+				break;
+			case IDLE:
+				descriptions = Util.newArrayListOfValues(UtilText.parse(slave, npc,
+								"[npc1.name] had some "+paceName+" fun with [npc2.name].")
+								+ "<br/>[style.italicsSex("+sexDescription+")]");
+				break;
+			case KITCHEN:
+				descriptions = Util.newArrayListOfValues(UtilText.parse(slave, npc,
+								"While working in the kitchen, [npc1.name] saw [npc2.name] enter the pantry alone,"
+										+ " and couldn't resist following [npc2.herHim] inside, before locking the door and having some "+paceName+" sex with [npc2.herHim].")
+								+ "<br/>[style.italicsSex("+sexDescription+")]");
+				break;
+			case LAB_ASSISTANT: case TEST_SUBJECT:
+				descriptions = Util.newArrayListOfValues(UtilText.parse(slave, npc,
+								"When Lilaya left to take a break, [npc1.name] used the opportunity to have some "+paceName+" sex with [npc2.name] on one of the lab's tables.")
+								+ "<br/>[style.italicsSex("+sexDescription+")]");
+				break;
+			case LIBRARY:
+				descriptions = Util.newArrayListOfValues(UtilText.parse(slave, npc,
+								"[npc1.Name] pulled [npc2.name] behind one of the shelves in the Library, before having some "+paceName+" sex with [npc2.herHim].")
+								+ "<br/>[style.italicsSex("+sexDescription+")]");
+				break;
+			case OFFICE:
+				descriptions = Util.newArrayListOfValues(UtilText.parse(slave, npc,
+								"Taking a small break from the paperwork assigned to [npc.herHim],"
+								+ " [npc.name] pushed [npc2.name] down over [npc.her] desk and had some "+paceName+" sex with [npc2.herHim].")
+								+ "<br/>[style.italicsSex("+sexDescription+")]");
+				break;
+			case BEDROOM:
+				descriptions = Util.newArrayListOfValues(UtilText.parse(slave, npc,
+								"[npc1.Name] took advantage of being in your bedroom with [npc2.name], and had some "+paceName+" sex with [npc2.herHim].")
+								+ "<br/>[style.italicsSex("+sexDescription+")]");
+				break;
+			case SPA:
+				descriptions = Util.newArrayListOfValues(UtilText.parse(slave, npc,
+								"[npc1.Name] took advantage of being in the spa with [npc2.name], and had some "+paceName+" sex with [npc2.herHim].")
+								+ "<br/>[style.italicsSex("+sexDescription+")]");
+				break;
+			case SPA_RECEPTIONIST:
+				descriptions = Util.newArrayListOfValues(UtilText.parse(slave, npc,
+								"[npc1.Name] took advantage of being assigned to the spa's reception desk with [npc2.name], and had some "+paceName+" sex with [npc2.herHim].")
+								+ "<br/>[style.italicsSex("+sexDescription+")]");
+				break;
+			case PUBLIC_STOCKS:
+			case MILKING:
+			case PROSTITUTE:
+				break;
+		}
+		if(descriptions!=null) {
+			if(npc.isAttractedTo(slave)) {
+				descriptions.add(slave.incrementAffection(npc, 10));
+				descriptions.add(npc.incrementAffection(slave, 10));
+				
+			} else if(npc.getFetishDesire(Fetish.FETISH_NON_CON_SUB).isPositive()) {
+				descriptions.add(slave.incrementAffection(npc, 10));
+				descriptions.add(UtilText.parse(slave, npc, "Due to the fact that [npc2.name] enjoys being raped, [npc2.she] gained some affection towards [npc.name]!")
+						+ "<br/>"+npc.incrementAffection(slave, 25));
+				
+			} else {
+				descriptions.add(UtilText.parse(slave, npc, "[npc2.Name] despises [npc.name] for having raped [npc2.herHim]!")
+						+ "<br/>"+npc.incrementAffection(slave, -200));
+			}
+			return new SlaveryEventLogEntry(hourOfDay,
+					slave,
+					Util.newArrayListOfValues(npc.getId()),
+					SlaveEvent.SLAVE_SEX,
+					null,
+					descriptions,
+					true);
+		}
+		return null;
+	}
+	
 	/**
 	 * 
 	 * @param hour Pass in hour of the day
@@ -1474,126 +1602,36 @@ public class OccupancyUtil implements XMLSaving {
 							}
 						}
 						
-						boolean canImpregnate = slave.hasSlavePermissionSetting(SlavePermissionSetting.SEX_IMPREGNATE) && npc.hasSlavePermissionSetting(SlavePermissionSetting.SEX_IMPREGNATED);
-						boolean canBeImpregnated = slave.hasSlavePermissionSetting(SlavePermissionSetting.SEX_IMPREGNATED) && npc.hasSlavePermissionSetting(SlavePermissionSetting.SEX_IMPREGNATE);
-						
-						slave.setLastTimeHadSex((day*24*60l) + hour*60l, true);
-						
-						slave.generateSexChoices(false, npc);
-						String sexDescription = UtilText.parse(slave, npc, "[npc.Name] had some naughty fun with [npc2.name], but they didn't end up having sex.");
-						if(slave.getMainSexPreference(npc)!=null) {
-							SexType sexType = slave.getMainSexPreference(npc);
-							if(sexType.getPerformingSexArea()==SexAreaPenetration.PENIS && sexType.getTargetedSexArea()==SexAreaOrifice.VAGINA && !canImpregnate) {
-								sexDescription = slave.calculateGenericSexEffects(true, true, npc, sexType, GenericSexFlag.PREVENT_CREAMPIE);
-								
-							} else if(sexType.getPerformingSexArea()==SexAreaOrifice.VAGINA && sexType.getTargetedSexArea()==SexAreaPenetration.PENIS && !canBeImpregnated) {
-								sexDescription = slave.calculateGenericSexEffects(true, true, npc, sexType, GenericSexFlag.PREVENT_CREAMPIE);
-								
-							} else {
-								sexDescription = slave.calculateGenericSexEffects(true, true, npc, sexType);
-							}
-						}
-						
-						switch(currentJob) {
-							case CLEANING:
-								descriptions = Util.newArrayListOfValues(UtilText.parse(slave, npc,
-												"While dusting one of the first-floor corridors, [npc1.name] caught sight of [npc2.name],"
-												+ " and couldn't resist pulling [npc2.herHim] into an empty room for some "+slave.getTheoreticalSexPaceDomPreference().getName()+" fun.")
-												+ "<br/>[style.italicsSex("+sexDescription+")]");
-								break;
-							case IDLE:
-								descriptions = Util.newArrayListOfValues(UtilText.parse(slave, npc,
-												"[npc1.name] had some "+slave.getTheoreticalSexPaceDomPreference().getName()+" fun with [npc2.name].")
-												+ "<br/>[style.italicsSex("+sexDescription+")]");
-								break;
-							case KITCHEN:
-								descriptions = Util.newArrayListOfValues(UtilText.parse(slave, npc,
-												"While working in the kitchen, [npc1.name] saw [npc2.name] enter the pantry alone,"
-														+ " and couldn't resist following [npc2.herHim] inside, before locking the door and having some "+slave.getTheoreticalSexPaceDomPreference().getName()+" fun with [npc2.herHim].")
-												+ "<br/>[style.italicsSex("+sexDescription+")]");
-								break;
-							case LAB_ASSISTANT: case TEST_SUBJECT:
-								descriptions = Util.newArrayListOfValues(UtilText.parse(slave, npc,
-												"When Lilaya left to take a break, [npc1.name] used the opportunity to have some "+slave.getTheoreticalSexPaceDomPreference().getName()+" fun with [npc2.name] on one of the lab's tables.")
-												+ "<br/>[style.italicsSex("+sexDescription+")]");
-								break;
-							case LIBRARY:
-								descriptions = Util.newArrayListOfValues(UtilText.parse(slave, npc,
-												"[npc1.Name] pulled [npc2.name] behind one of the shelves in the Library, before having some "+slave.getTheoreticalSexPaceDomPreference().getName()+" fun with [npc2.herHim].")
-												+ "<br/>[style.italicsSex("+sexDescription+")]");
-								break;
-							case OFFICE:
-								descriptions = Util.newArrayListOfValues(UtilText.parse(slave, npc,
-												"Taking a small break from the paperwork assigned to [npc.herHim],"
-												+ " [npc.name] pushed [npc2.name] down over [npc.her] desk and had some "+slave.getTheoreticalSexPaceDomPreference().getName()+" fun with [npc2.herHim].")
-												+ "<br/>[style.italicsSex("+sexDescription+")]");
-								break;
-							case BEDROOM:
-								descriptions = Util.newArrayListOfValues(UtilText.parse(slave, npc,
-												"[npc1.Name] took advantage of being in your bedroom with [npc2.name], and had some "+slave.getTheoreticalSexPaceDomPreference().getName()+" sex with [npc2.herHim].")
-												+ "<br/>[style.italicsSex("+sexDescription+")]");
-								break;
-							case SPA:
-								descriptions = Util.newArrayListOfValues(UtilText.parse(slave, npc,
-												"[npc1.Name] took advantage of being in the spa with [npc2.name], and had some "+slave.getTheoreticalSexPaceDomPreference().getName()+" sex with [npc2.herHim].")
-												+ "<br/>[style.italicsSex("+sexDescription+")]");
-								break;
-							case SPA_RECEPTIONIST:
-								descriptions = Util.newArrayListOfValues(UtilText.parse(slave, npc,
-												"[npc1.Name] took advantage of being assigned to the spa's reception desk with [npc2.name], and had some "+slave.getTheoreticalSexPaceDomPreference().getName()+" sex with [npc2.herHim].")
-												+ "<br/>[style.italicsSex("+sexDescription+")]");
-								break;
-							case PUBLIC_STOCKS:
-							case MILKING:
-							case PROSTITUTE:
-								break;
-						}
-						if(descriptions!=null) {
-							if(npc.isAttractedTo(slave)) {
-								descriptions.add(slave.incrementAffection(npc, 10));
-								descriptions.add(npc.incrementAffection(slave, 10));
-								
-							} else if(npc.getFetishDesire(Fetish.FETISH_NON_CON_SUB).isPositive()) {
-								descriptions.add(slave.incrementAffection(npc, 10));
-								descriptions.add(UtilText.parse(slave, npc, "Due to the fact that [npc2.name] enjoys being raped, [npc2.she] gained some affection towards [npc.name]!")
-										+ "<br/>"+npc.incrementAffection(slave, 25));
-								
-							} else {
-								descriptions.add(UtilText.parse(slave, npc, "[npc2.Name] despises [npc.name] for having raped [npc2.herHim]!")
-										+ "<br/>"+npc.incrementAffection(slave, -200));
-							}
-							return new SlaveryEventLogEntry(hour,
-									slave,
-									SlaveEvent.SLAVE_SEX,
-									null,
-									descriptions,
-									true);
+						SlaveryEventLogEntry sexEvent = applySlaveSexWithOtherSlave(day, hour, slave, npc);
+						if(sexEvent!=null) {
+							return sexEvent;
 						}
 					}
 				}
 				
-				if(currentJob.hasFlag(SlaveJobFlag.INTERACTION_BONDING)) { // Slaves cannot bond here
+				if(currentJob.hasFlag(SlaveJobFlag.INTERACTION_BONDING)) {
 					// Generic affection event:
 					descriptions = new ArrayList<>();
 					
-					float chanceToBond = 1f;
+					float chanceToBond = 0.2f;
 					// Negative modifiers:
 					if(slave.isShy()) {
-						chanceToBond -= 0.25f;
+						chanceToBond -= 0.075f;
 					}
 					if(npc.isShy()) {
-						chanceToBond -= 0.25f;
+						chanceToBond -= 0.075f;
 					}
 					// Positive modifiers:
 					if(slave.isConfident()) {
-						chanceToBond += 0.25f;
+						chanceToBond += 0.05f;
 					}
 					if(npc.isConfident()) {
-						chanceToBond += 0.25f;
+						chanceToBond += 0.05f;
 					}
 					if(slave.isRelatedTo(npc)) {
-						chanceToBond += 0.25f;
+						chanceToBond += 0.1f;
 					}
+					
 					float chanceForPositiveOutcome = 1f;
 					// Negative modifiers:
 					if(slave.isSelfish()) {
@@ -1615,24 +1653,31 @@ public class OccupancyUtil implements XMLSaving {
 					
 					if(Math.random()<chanceToBond) {
 						if(Math.random()<chanceForPositiveOutcome) {
-							descriptions.add(UtilText.parse(slave, npc, "[npc.Name] and [npc2.name] spent some time getting to know one another a little better."));
-							descriptions.add(slave.incrementAffection(npc, 5));
-							descriptions.add(npc.incrementAffection(slave, 5));
+							if(slave.getAffection(npc)<100 || npc.getAffection(slave)<100) {
+								descriptions.add(UtilText.parse(slave, npc, "[npc.Name] and [npc2.name] spent some time getting to know one another a little better."));
+								descriptions.add(slave.incrementAffection(npc, 5));
+								descriptions.add(npc.incrementAffection(slave, 5));
+							}
+							
 						} else {
-							descriptions.add(UtilText.parse(slave, npc,"[npc.Name] and [npc2.name] spent some time arguing with one another."));
-							descriptions.add(slave.incrementAffection(npc, -5));
-							descriptions.add(npc.incrementAffection(slave, -5));
+							if(slave.getAffection(npc)>-100 || npc.getAffection(slave)>-100) {
+								descriptions.add(UtilText.parse(slave, npc,"[npc.Name] and [npc2.name] spent some time arguing with one another."));
+								descriptions.add(slave.incrementAffection(npc, -5));
+								descriptions.add(npc.incrementAffection(slave, -5));
+							}
 						}
-						return new SlaveryEventLogEntry(hour,
-								slave,
-								SlaveEvent.SLAVE_BONDING,
-								null,
-								descriptions,
-								true);
+						if(!descriptions.isEmpty()) {
+							return new SlaveryEventLogEntry(hour,
+									slave,
+									Util.newArrayListOfValues(npc.getId()),
+									SlaveEvent.SLAVE_BONDING,
+									null,
+									descriptions,
+									true);
+						}
 					}
 				}
 			}
-			
 		}
 		
 //		TODO

@@ -7,6 +7,7 @@ import com.lilithsthrone.game.character.GameCharacter;
 import com.lilithsthrone.game.character.body.CoverableArea;
 import com.lilithsthrone.game.character.body.types.PenisType;
 import com.lilithsthrone.game.character.body.types.VaginaType;
+import com.lilithsthrone.game.character.body.valueEnums.LegConfiguration;
 import com.lilithsthrone.game.character.body.valueEnums.PenetrationGirth;
 import com.lilithsthrone.game.character.effects.StatusEffect;
 import com.lilithsthrone.game.character.fetishes.Fetish;
@@ -54,7 +55,7 @@ import com.lilithsthrone.world.places.PlaceType;
 
 /**
  * @since 0.3
- * @version 0.3.1
+ * @version 0.3.9.9
  * @author Innoxia
  */
 public class LyssiethPalaceDialogue {
@@ -74,15 +75,31 @@ public class LyssiethPalaceDialogue {
 		@Override
 		public Response getResponse(int responseTab, int index) {
 			if(index==1) {
-				return new Response("Leave", "Leave Lyssieth's palace and head back out into Submission.", PlaceType.SUBMISSION_LILIN_PALACE_GATE.getDialogue(false)) {
+				return new Response("Leave", "Leave Lyssieth's palace and head back out into Submission.", ENTRANCE_LEAVING) {
 					@Override
 					public void effects() {
 						Main.game.getPlayer().setLocation(WorldType.SUBMISSION, PlaceType.SUBMISSION_LILIN_PALACE_GATE);
+						Main.game.getPlayer().setNearestLocation(WorldType.SUBMISSION, PlaceType.SUBMISSION_LILIN_PALACE_CAVERN, false);
 						Main.game.getTextStartStringBuilder().append(UtilText.parseFromXMLFile("places/submission/lyssiethsPalace", "ENTRANCE_LEAVING"));
 					}
 				};
 			}
 			return null;
+		}
+	};
+	
+	public static final DialogueNode ENTRANCE_LEAVING = new DialogueNode("", "", false) {
+		@Override
+		public int getSecondsPassed() {
+			return 5*60;
+		}
+		@Override
+		public String getContent() {
+			return "";
+		}
+		@Override
+		public Response getResponse(int responseTab, int index) {
+			return PlaceType.SUBMISSION_LILIN_PALACE_CAVERN.getDialogue(false).getResponse(responseTab, index);
 		}
 	};
 	
@@ -289,7 +306,11 @@ public class LyssiethPalaceDialogue {
 					public void effects() {
 						((Lyssieth)Main.game.getNpc(Lyssieth.class)).setDaughterToFullDemon(DarkSiren.class);
 						Main.game.getNpc(DarkSiren.class).calculateGenericSexEffects(false, true, Main.game.getNpc(Lyssieth.class), new SexType(SexParticipantType.NORMAL, SexAreaOrifice.VAGINA, SexAreaPenetration.PENIS));
-						Main.game.getNpc(DarkSiren.class).calculateGenericSexEffects(false, true, Main.game.getNpc(Lilaya.class), new SexType(SexParticipantType.NORMAL, SexAreaOrifice.ANUS, SexAreaPenetration.PENIS));
+						if(Main.game.isAnalContentEnabled()) {
+							Main.game.getNpc(DarkSiren.class).calculateGenericSexEffects(false, true, Main.game.getNpc(Lilaya.class), new SexType(SexParticipantType.NORMAL, SexAreaOrifice.ANUS, SexAreaPenetration.PENIS));
+						} else {
+							Main.game.getNpc(DarkSiren.class).calculateGenericSexEffects(false, true, Main.game.getNpc(Lilaya.class), new SexType(SexParticipantType.NORMAL, SexAreaPenetration.TONGUE, SexAreaOrifice.VAGINA));
+						}
 						Main.game.getNpc(Lyssieth.class).setStartingBody(false);
 						Main.game.getPlayer().setLocation(WorldType.LYSSIETH_PALACE, PlaceType.LYSSIETH_PALACE_SIREN_OFFICE);
 					}
@@ -545,7 +566,13 @@ public class LyssiethPalaceDialogue {
 					};
 					
 				} else {
-					if(Main.game.getPlayer().hasStatusEffect(StatusEffect.CORRUPTION_PERK_5)) {
+					if(!Main.game.getPlayer().hasStatusEffect(StatusEffect.CORRUPTION_PERK_5)) {
+						return new Response("Become a demon", "You are not corrupt enough to be turned into a demon...<br/>[style.italicsBad(Requires corruption of at least 95.)]", null);
+						
+					} else if(Main.game.getPlayer().getLegConfiguration()!=LegConfiguration.BIPEDAL) {
+						return new Response("Become a demon", "You need to have a bipedal leg configuration for Lyssieth to be able to turn you into a demon...", null);
+						
+					} else {
 						return new Response("Become a demon", "Tell Lyssieth that you want her to turn you into a demon.", DEMON_TF) {
 							@Override
 							public void effects() {
@@ -553,9 +580,6 @@ public class LyssiethPalaceDialogue {
 								updateLyssiethPregnancyReactions();
 							}
 						};
-						
-					} else {
-						return new Response("Become a demon", "You are not corrupt enough to be turned into a demon...<br/>[style.italicsBad(Requires corruption of at least 95.)]", null);
 					}
 				}
 				
@@ -884,6 +908,10 @@ public class LyssiethPalaceDialogue {
 	};
 	
 	public static final DialogueNode AFTER_DEMON_TF_SEX = new DialogueNode("Finished", "Thanks to Lyssieth, you are now a demon!", true) {
+		@Override
+		public void applyPreParsingEffects() {
+			Main.game.getTextEndStringBuilder().append(Main.game.getNpc(Lyssieth.class).setAffection(Main.game.getPlayer(), 75));
+		}
 		
 		@Override
 		public String getContent() {
@@ -1113,7 +1141,11 @@ public class LyssiethPalaceDialogue {
 						if(isMeraxisBeingTransformed()) {
 							((Lyssieth)Main.game.getNpc(Lyssieth.class)).setDaughterToFullDemon(DarkSiren.class);
 							Main.game.getNpc(DarkSiren.class).calculateGenericSexEffects(false, true, Main.game.getNpc(Lyssieth.class), new SexType(SexParticipantType.NORMAL, SexAreaOrifice.VAGINA, SexAreaPenetration.PENIS));
-							Main.game.getNpc(DarkSiren.class).calculateGenericSexEffects(false, true, Main.game.getNpc(Lilaya.class), new SexType(SexParticipantType.NORMAL, SexAreaOrifice.ANUS, SexAreaPenetration.PENIS));
+							if(Main.game.isAnalContentEnabled()) {
+								Main.game.getNpc(DarkSiren.class).calculateGenericSexEffects(false, true, Main.game.getNpc(Lilaya.class), new SexType(SexParticipantType.NORMAL, SexAreaOrifice.ANUS, SexAreaPenetration.PENIS));
+							} else {
+								Main.game.getNpc(DarkSiren.class).calculateGenericSexEffects(false, true, Main.game.getNpc(Lilaya.class), new SexType(SexParticipantType.NORMAL, SexAreaPenetration.TONGUE, SexAreaOrifice.VAGINA));
+							}
 						}
 						Main.game.getPlayer().setLocation(WorldType.LYSSIETH_PALACE, PlaceType.LYSSIETH_PALACE_SIREN_OFFICE);
 						returnCompanionsToLab();
@@ -1171,7 +1203,7 @@ public class LyssiethPalaceDialogue {
 						if(!Main.game.getPlayer().hasPenisIgnoreDildo()) {
 							Main.game.getPlayer().setPenisType(PenisType.DEMON_COMMON);
 							Main.game.getPlayer().setPenisSize(20);
-							Main.game.getPlayer().setPenisGirth(PenetrationGirth.FOUR_THICK);
+							Main.game.getPlayer().setPenisGirth(PenetrationGirth.FOUR_GIRTHY);
 						}
 					}
 					@Override
@@ -1224,7 +1256,7 @@ public class LyssiethPalaceDialogue {
 						if(!Main.game.getPlayer().hasPenisIgnoreDildo()) {
 							Main.game.getPlayer().setPenisType(PenisType.DEMON_COMMON);
 							Main.game.getPlayer().setPenisSize(20);
-							Main.game.getPlayer().setPenisGirth(PenetrationGirth.FOUR_THICK);
+							Main.game.getPlayer().setPenisGirth(PenetrationGirth.FOUR_GIRTHY);
 						}
 					}
 					@Override
@@ -1311,7 +1343,7 @@ public class LyssiethPalaceDialogue {
 						if(!Main.game.getNpc(Lilaya.class).hasPenisIgnoreDildo()) {
 							Main.game.getNpc(Lilaya.class).setPenisType(PenisType.DEMON_COMMON);
 							Main.game.getNpc(Lilaya.class).setPenisSize(20);
-							Main.game.getNpc(Lilaya.class).setPenisGirth(PenetrationGirth.FOUR_THICK);
+							Main.game.getNpc(Lilaya.class).setPenisGirth(PenetrationGirth.FOUR_GIRTHY);
 							Main.game.getNpc(Lilaya.class).setPenisCumStorage(100);
 						}
 					}
@@ -1461,7 +1493,7 @@ public class LyssiethPalaceDialogue {
 							if(!Main.game.getPlayer().hasPenisIgnoreDildo()) {
 								Main.game.getPlayer().setPenisType(PenisType.DEMON_COMMON);
 								Main.game.getPlayer().setPenisSize(20);
-								Main.game.getPlayer().setPenisGirth(PenetrationGirth.FOUR_THICK);
+								Main.game.getPlayer().setPenisGirth(PenetrationGirth.FOUR_GIRTHY);
 							}
 							Main.game.getNpc(Lilaya.class).setPenisType(PenisType.NONE);
 						}
@@ -1520,7 +1552,7 @@ public class LyssiethPalaceDialogue {
 							if(!Main.game.getPlayer().hasPenisIgnoreDildo()) {
 								Main.game.getPlayer().setPenisType(PenisType.DEMON_COMMON);
 								Main.game.getPlayer().setPenisSize(20);
-								Main.game.getPlayer().setPenisGirth(PenetrationGirth.FOUR_THICK);
+								Main.game.getPlayer().setPenisGirth(PenetrationGirth.FOUR_GIRTHY);
 							}
 							Main.game.getNpc(Lilaya.class).setPenisType(PenisType.NONE);
 						}
@@ -1579,7 +1611,7 @@ public class LyssiethPalaceDialogue {
 							if(!Main.game.getNpc(Lilaya.class).hasPenisIgnoreDildo()) {
 								Main.game.getNpc(Lilaya.class).setPenisType(PenisType.DEMON_COMMON);
 								Main.game.getNpc(Lilaya.class).setPenisSize(20);
-								Main.game.getNpc(Lilaya.class).setPenisGirth(PenetrationGirth.FOUR_THICK);
+								Main.game.getNpc(Lilaya.class).setPenisGirth(PenetrationGirth.FOUR_GIRTHY);
 								Main.game.getNpc(Lilaya.class).setPenisCumStorage(100);
 							}
 						}
@@ -1635,12 +1667,12 @@ public class LyssiethPalaceDialogue {
 							if(!Main.game.getPlayer().hasPenisIgnoreDildo()) {
 								Main.game.getPlayer().setPenisType(PenisType.DEMON_COMMON);
 								Main.game.getPlayer().setPenisSize(20);
-								Main.game.getPlayer().setPenisGirth(PenetrationGirth.FOUR_THICK);
+								Main.game.getPlayer().setPenisGirth(PenetrationGirth.FOUR_GIRTHY);
 							}
 							if(!Main.game.getNpc(Lilaya.class).hasPenisIgnoreDildo()) {
 								Main.game.getNpc(Lilaya.class).setPenisType(PenisType.DEMON_COMMON);
 								Main.game.getNpc(Lilaya.class).setPenisSize(20);
-								Main.game.getNpc(Lilaya.class).setPenisGirth(PenetrationGirth.FOUR_THICK);
+								Main.game.getNpc(Lilaya.class).setPenisGirth(PenetrationGirth.FOUR_GIRTHY);
 								Main.game.getNpc(Lilaya.class).setPenisCumStorage(100);
 							}
 						}
@@ -1692,7 +1724,7 @@ public class LyssiethPalaceDialogue {
 							if(!Main.game.getNpc(Lilaya.class).hasPenisIgnoreDildo()) {
 								Main.game.getNpc(Lilaya.class).setPenisType(PenisType.DEMON_COMMON);
 								Main.game.getNpc(Lilaya.class).setPenisSize(20);
-								Main.game.getNpc(Lilaya.class).setPenisGirth(PenetrationGirth.FOUR_THICK);
+								Main.game.getNpc(Lilaya.class).setPenisGirth(PenetrationGirth.FOUR_GIRTHY);
 								Main.game.getNpc(Lilaya.class).setPenisCumStorage(100);
 							}
 						}
@@ -1869,17 +1901,18 @@ public class LyssiethPalaceDialogue {
 	};
 
 	public static final DialogueNode LILAYA_DEMON_TF_END = new DialogueNode("", "", false, true) {
-		
+		@Override
+		public void applyPreParsingEffects() {
+			Main.game.getNpc(Lyssieth.class).setStartingBody(false);
+		}
 		@Override
 		public boolean isTravelDisabled() {
 			return Main.game.getDialogueFlags().hasFlag(DialogueFlagValue.meraxisRepeatDemonTF);
 		}
-		
 		@Override
 		public int getSecondsPassed() {
 			return 60;
 		}
-
 		@Override
 		public String getContent() {
 			if(Main.game.getDialogueFlags().hasFlag(DialogueFlagValue.meraxisRepeatDemonTF)) {
@@ -1887,7 +1920,6 @@ public class LyssiethPalaceDialogue {
 			}
 			return UtilText.parseFromXMLFile("places/submission/lyssiethsPalace", "LILAYA_DEMON_TF_END");
 		}
-
 		@Override
 		public Response getResponse(int responseTab, int index) {
 			if(Main.game.getDialogueFlags().hasFlag(DialogueFlagValue.meraxisRepeatDemonTF)) {

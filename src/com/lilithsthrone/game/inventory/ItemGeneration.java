@@ -31,19 +31,23 @@ import com.lilithsthrone.utils.colours.Colour;
 
 /**
  * @since 0.3.9
- * @version 0.3.9
+ * @version 0.4
  * @author Innoxia
  */
 public class ItemGeneration {
 	
 	// Item generation:
 
+	public AbstractItem generateItem(String id) {
+		return new AbstractItem(ItemType.getItemTypeFromId(id)) {};
+	}
+	
 	public AbstractItem generateItem(AbstractItemType itemType) {
 		return new AbstractItem(itemType) {};
 	}
 	
-	public AbstractItem generateFilledCondom(Colour colour, GameCharacter character, FluidCum cum, int millilitres) {
-		return new AbstractFilledCondom(ItemType.CONDOM_USED, colour, character, cum, millilitres) {};
+	public AbstractItem generateFilledCondom(AbstractItemType filledCondomType, Colour colour, GameCharacter character, FluidCum cum, int millilitres) {
+		return new AbstractFilledCondom(filledCondomType, colour, character, cum, millilitres) {};
 	}
 
 	public AbstractItem generateFilledBreastPump(Colour colour, GameCharacter character, FluidMilk milk, int quantity) {
@@ -85,7 +89,7 @@ public class ItemGeneration {
 		int index = 0;
 		ColourReplacement cr = wt.getColourReplacement(false, index);
 		while(cr!=null) {
-			if(colours.size()<=index || !cr.getAllColours().contains(colours.get(0))) {
+			if(colours.size()<=index || !cr.getAllColours().contains(colours.get(index))) {
 				colours.add(cr.getRandomOfDefaultColours());
 			}
 			index++;
@@ -149,7 +153,7 @@ public class ItemGeneration {
 		int index = 0;
 		ColourReplacement cr = clothingType.getColourReplacement(index);
 		while(cr!=null) {
-			if(colours.size()<=index || !cr.getAllColours().contains(colours.get(0))) {
+			if(colours.size()<=index || !cr.getAllColours().contains(colours.get(index))) {
 				colours.add(cr.getRandomOfDefaultColours());
 			}
 			index++;
@@ -173,19 +177,31 @@ public class ItemGeneration {
 		return this.generateClothing(ClothingType.getClothingTypeFromId(clothingTypeId), colourShade, null, null, allowRandomEnchantment);
 	}
 
-	/** Allows random enchantment. Uses random colour.*/
+	/** Uses random colour.*/
 	public AbstractClothing generateClothing(AbstractClothingType clothingType) {
 		return this.generateClothing(clothingType, null, true);
 	}
 
-	/** Uses random colour.*/
+	/** Allows random enchantment. Uses random colour.*/
 	public AbstractClothing generateClothing(AbstractClothingType clothingType, boolean allowRandomEnchantment) {
 		return this.generateClothing(clothingType, null, allowRandomEnchantment);
 	}
 
-	/** Uses random colour.*/
+	/** Allows random enchantment. Uses random colour.*/
 	public AbstractClothing generateClothing(String clothingTypeId, boolean allowRandomEnchantment) {
 		AbstractClothingType type = ClothingType.getClothingTypeFromId(clothingTypeId);
+		return this.generateClothing(type, null, allowRandomEnchantment);
+	}
+
+	/** Allows random enchantment. Uses random colour. Restricted by slotHint.*/
+	public AbstractClothing generateClothing(String clothingTypeId, boolean allowRandomEnchantment, String slotHint) {
+		AbstractClothingType type = ClothingType.getClothingTypeFromId(clothingTypeId, slotHint);
+		return this.generateClothing(type, null, allowRandomEnchantment);
+	}
+
+	/** Allows random enchantment. Uses random colour. Restricted by slot.*/
+	public AbstractClothing generateClothing(String clothingTypeId, boolean allowRandomEnchantment, InventorySlot slot) {
+		AbstractClothingType type = ClothingType.getClothingTypeFromId(clothingTypeId, slot.toString());
 		return this.generateClothing(type, null, allowRandomEnchantment);
 	}
 
@@ -200,7 +216,7 @@ public class ItemGeneration {
 		int index = 0;
 		ColourReplacement cr = clothingType.getColourReplacement(index);
 		while(cr!=null) {
-			if(colours.size()<=index || !cr.getAllColours().contains(colours.get(0))) {
+			if(colours.size()<=index || !cr.getAllColours().contains(colours.get(index))) {
 				colours.add(cr.getRandomOfDefaultColours());
 			}
 			index++;

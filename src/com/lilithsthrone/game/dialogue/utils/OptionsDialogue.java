@@ -14,7 +14,6 @@ import java.util.Properties;
 
 import com.lilithsthrone.game.Game;
 import com.lilithsthrone.game.PropertyValue;
-import com.lilithsthrone.game.character.CharacterUtils;
 import com.lilithsthrone.game.character.attributes.Attribute;
 import com.lilithsthrone.game.character.body.valueEnums.AgeCategory;
 import com.lilithsthrone.game.character.body.valueEnums.CupSize;
@@ -28,10 +27,10 @@ import com.lilithsthrone.game.character.gender.PronounType;
 import com.lilithsthrone.game.character.npc.NPC;
 import com.lilithsthrone.game.character.persona.SexualOrientation;
 import com.lilithsthrone.game.character.persona.SexualOrientationPreference;
+import com.lilithsthrone.game.character.race.AbstractSubspecies;
 import com.lilithsthrone.game.character.race.FurryPreference;
 import com.lilithsthrone.game.character.race.Subspecies;
 import com.lilithsthrone.game.character.race.SubspeciesPreference;
-import com.lilithsthrone.game.combat.Combat;
 import com.lilithsthrone.game.dialogue.DialogueNode;
 import com.lilithsthrone.game.dialogue.DialogueNodeType;
 import com.lilithsthrone.game.dialogue.responses.Response;
@@ -75,6 +74,7 @@ public class OptionsDialogue {
 	public static ContentOptionsPage contentOptionsPage = ContentOptionsPage.MISC;
 
 	private static boolean confirmNewGame = false;
+	public static boolean startingNewGame = false;
 	
 	public static final DialogueNode MENU = new DialogueNode("Menu", "Menu", true) {
 		
@@ -116,7 +116,6 @@ public class OptionsDialogue {
 		
 		@Override
 		public Response getResponse(int responseTab, int index) {
-			
 			 if (index == 1) {
 				 if(confirmNewGame || !Main.game.isStarted()) {
 					return new ResponseEffectsOnly(
@@ -129,19 +128,23 @@ public class OptionsDialogue {
 									:"")){
 						@Override
 						public void effects() {
-							//Fixes a bug where inventory would stay on screen
-							if (Main.game.isStarted()) {
-								Main.game.setInCombat(false);
-								Main.game.setInSex(false);
+							if(!startingNewGame) {
+								startingNewGame = true;
+								
+								//Fixes a bug where inventory would stay on screen
+								if (Main.game.isStarted()) {
+									Main.game.setInCombat(false);
+									Main.game.setInSex(false);
+								}
+								
+								Main.mainController.setAttributePanelContent("");
+								Main.mainController.setRightPanelContent("");
+								Main.mainController.setButtonsLeftContent("");
+								Main.mainController.setButtonsRightContent("");
+								Main.game.setRenderMap(false);
+								Main.startNewGame(CharacterCreation.CHARACTER_CREATION_START);
+								confirmNewGame = false;
 							}
-							
-							Main.mainController.setAttributePanelContent("");
-							Main.mainController.setRightPanelContent("");
-							Main.mainController.setButtonsLeftContent("");
-							Main.mainController.setButtonsRightContent("");
-							Main.game.setRenderMap(false);
-							Main.startNewGame(CharacterCreation.CHARACTER_CREATION_START);
-							confirmNewGame = false;
 						}
 					};
 					
@@ -192,7 +195,7 @@ public class OptionsDialogue {
 					public void effects() {
 						Main.primaryStage.close();
 						confirmNewGame=false;
-						
+						System.exit(0);
 					}
 				};
 				
@@ -493,7 +496,7 @@ public class OptionsDialogue {
 					return new Response("Export character", "Exports your character file to the 'data/characters/' folder.", IMPORT_EXPORT){
 						@Override
 						public void effects() {
-							CharacterUtils.saveCharacterAsXML(Main.game.getPlayer());
+							Main.game.getCharacterUtils().saveCharacterAsXML(Main.game.getPlayer());
 							Main.game.flashMessage(PresetColour.GENERIC_GOOD, "Character exported!");
 						}
 					};
@@ -520,7 +523,7 @@ public class OptionsDialogue {
 			String baseName = Util.getFileName(name);
 			String identifierName = Util.getFileIdentifier(name);
 			
-			return "<div class='container-full-width' style='padding:0; margin:0 0 4px 0;"+(altColour?"background:#222;":"")+"'>"
+			return "<div class='container-full-width' style='padding:0; margin:0 0 4px 0;"+(altColour?"background:"+PresetColour.BACKGROUND_ALT.toWebHexString()+";":"")+"'>"
 						+ "<div class='container-full-width' style='width:calc(25% - 16px); background:transparent;'>"
 							+ date
 						+ "</div>"
@@ -546,7 +549,7 @@ public class OptionsDialogue {
 					+ "</div>";
 			
 		} else {
-			return "<div class='container-full-width' style='padding:0; margin:0 0 4px 0;"+(altColour?"background:#222;":"")+"'>"
+			return "<div class='container-full-width' style='padding:0; margin:0 0 4px 0;"+(altColour?"background:"+PresetColour.BACKGROUND_ALT.toWebHexString()+";":"")+"'>"
 						+ "<div class='container-full-width' style='width:calc(25% - 16px); background:transparent;'>"
 							+ "-"
 						+ "</div>"
@@ -735,7 +738,7 @@ public class OptionsDialogue {
 						Main.saveProperties();
 						
 						for(NPC npc : Main.game.getAllNPCs()) {
-							if(!Main.game.isInCombat() || !Combat.getAllCombatants(false).contains(npc)) {
+							if(!Main.game.isInCombat() || !Main.combat.getAllCombatants(false).contains(npc)) {
 								npc.setMana(npc.getAttributeValue(Attribute.MANA_MAXIMUM));
 								npc.setHealth(npc.getAttributeValue(Attribute.HEALTH_MAXIMUM));
 							}
@@ -1689,7 +1692,7 @@ public class OptionsDialogue {
 											+ "</div>");
 
 			int i=0;
-			for(Subspecies subspecies : Subspecies.values()) {
+			for(AbstractSubspecies subspecies : Subspecies.getAllSubspecies()) {
 				if(subspecies.isDisplayedInFurryPreferences()) {
 					UtilText.nodeContentSB.append(getSubspeciesPreferencesPanel(subspecies, i%2==0));
 					i++;
@@ -1714,7 +1717,7 @@ public class OptionsDialogue {
 				return new Response("Defaults", "Reset all furry and spawn preferences to their default settings.", FURRY_PREFERENCE) {
 					@Override
 					public void effects() {
-						for(Subspecies subspecies : Subspecies.values()) {
+						for(AbstractSubspecies subspecies : Subspecies.getAllSubspecies()) {
 							Main.getProperties().setFeminineFurryPreference(subspecies, subspecies.getDefaultFemininePreference());
 							Main.getProperties().setMasculineFurryPreference(subspecies, subspecies.getDefaultMasculinePreference());
 
@@ -1776,9 +1779,10 @@ public class OptionsDialogue {
 		}
 	}
 	
-	private static String getSubspeciesPreferencesPanel(Subspecies s, boolean altColour) {
+	private static String getSubspeciesPreferencesPanel(AbstractSubspecies s, boolean altColour) {
 		StringBuilder sb = new StringBuilder();
 		String baseStyle = "max-width:30px; width:14%; margin:0 1%; padding:0;";
+		String subspeciesId = Subspecies.getIdFromSubspecies(s);
 		
 		sb.append("<div class='container-full-width' style='text-align:center; background:"+getEntryBackgroundColour(altColour)+"; padding:0; margin:0 0 6px 0; border-left:solid 4px "+s.getColour(null).toWebHexString()+";'>");
 		
@@ -1790,7 +1794,7 @@ public class OptionsDialogue {
 			sb.append("<div class='container-full-width' style='text-align:center; width:30%; background:transparent; margin:2px 0; padding:0;'>");
 
 				for(FurryPreference preference : FurryPreference.values()) {
-					sb.append("<div id='FEMININE_"+preference+"_"+s+"' class='square-button small"+(!s.isFurryPreferencesEnabled()?" disabled":"")
+					sb.append("<div id='FEMININE_"+preference+"_"+subspeciesId+"' class='square-button small"+(!s.isFurryPreferencesEnabled()?" disabled":"")
 								+(Main.getProperties().getSubspeciesFeminineFurryPreferencesMap().get(s)==preference && s.isFurryPreferencesEnabled()
 									?" selected' style='"+baseStyle+" border-color:"+preference.getColour().toWebHexString()+";'><div class='square-button-content'>"+preference.getSVGImage(false)+"</div></div>"
 									:"' style='"+baseStyle+"'><div class='square-button-content'>"+preference.getSVGImage(true)+"</div></div>"));
@@ -1798,7 +1802,7 @@ public class OptionsDialogue {
 				sb.append("</div>");
 				sb.append("<div class='container-full-width' style='text-align:center; width:30%; background:transparent; margin:2px 0; padding:0;'>");
 				for(SubspeciesPreference preference : SubspeciesPreference.values()) {
-					sb.append("<div id='FEMININE_SPAWN_"+preference+"_"+s+"' class='square-button small"+(!s.isSpawnPreferencesEnabled()?" disabled":"")
+					sb.append("<div id='FEMININE_SPAWN_"+preference+"_"+subspeciesId+"' class='square-button small"+(!s.isSpawnPreferencesEnabled()?" disabled":"")
 								+(Main.getProperties().getSubspeciesFemininePreferencesMap().get(s)==preference && s.isSpawnPreferencesEnabled()
 									?" selected' style='"+baseStyle+" border-color:"+PresetColour.FEMININE_PLUS.toWebHexString()+";'><div class='square-button-content'>"+preference.getSVGImage(false)+"</div></div>"
 									:"' style='"+baseStyle+"'><div class='square-button-content'>"+preference.getSVGImage(true)+"</div></div>"));
@@ -1814,7 +1818,7 @@ public class OptionsDialogue {
 			sb.append("<div class='container-full-width' style='text-align:center; width:30%; background:transparent; margin:2px 0; padding:0;'>");
 			
 				for(FurryPreference preference : FurryPreference.values()) {
-					sb.append("<div id='MASCULINE_"+preference+"_"+s+"' class='square-button small"+(!s.isFurryPreferencesEnabled()?" disabled":"")
+					sb.append("<div id='MASCULINE_"+preference+"_"+subspeciesId+"' class='square-button small"+(!s.isFurryPreferencesEnabled()?" disabled":"")
 								+(Main.getProperties().getSubspeciesMasculineFurryPreferencesMap().get(s)==preference && s.isFurryPreferencesEnabled()
 									?" selected' style='"+baseStyle+" border-color:"+preference.getColour().toWebHexString()+";'><div class='square-button-content'>"+preference.getSVGImage(false)+"</div></div>"
 									:"' style='"+baseStyle+"'><div class='square-button-content'>"+preference.getSVGImage(true)+"</div></div>"));
@@ -1822,7 +1826,7 @@ public class OptionsDialogue {
 			sb.append("</div>");
 			sb.append("<div class='container-full-width' style='text-align:center; width:30%; background:transparent; margin:2px 0; padding:0;'>");
 				for(SubspeciesPreference preference : SubspeciesPreference.values()) {
-					sb.append("<div id='MASCULINE_SPAWN_"+preference+"_"+s+"' class='square-button small"+(!s.isSpawnPreferencesEnabled()?" disabled":"")
+					sb.append("<div id='MASCULINE_SPAWN_"+preference+"_"+subspeciesId+"' class='square-button small"+(!s.isSpawnPreferencesEnabled()?" disabled":"")
 								+(Main.getProperties().getSubspeciesMasculinePreferencesMap().get(s)==preference && s.isSpawnPreferencesEnabled()
 									?" selected' style='"+baseStyle+" border-color:"+PresetColour.MASCULINE_PLUS.toWebHexString()+";'><div class='square-button-content'>"+preference.getSVGImage(false)+"</div></div>"
 									:"' style='"+baseStyle+"'><div class='square-button-content'>"+preference.getSVGImage(true)+"</div></div>"));
@@ -1830,7 +1834,9 @@ public class OptionsDialogue {
 				
 			sb.append("</div>");
 
-			sb.append("<div class='title-button no-select' id='SUBSPECIES_PREFERNCE_INFO_"+s+"' style='position:absolute; margin:0; padding:0; left:1%; right:auto; top:auto; bottom:auto;'>"+SVGImages.SVG_IMAGE_PROVIDER.getInformationIcon()+"</div>");
+			sb.append("<div class='title-button no-select' id='SUBSPECIES_PREFERNCE_INFO_"+subspeciesId+"' style='position:absolute; margin:0; padding:0; left:1%; right:auto; top:auto; bottom:auto;'>"
+							+SVGImages.SVG_IMAGE_PROVIDER.getInformationIcon()
+						+"</div>");
 		sb.append("</div>");
 		
 		return sb.toString();
@@ -2001,13 +2007,6 @@ public class OptionsDialogue {
 				UtilText.nodeContentSB.append("</div></div>");
 			}
 			
-			UtilText.nodeContentSB.append(getContentPreferenceDiv(ContentOptionsPage.GAMEPLAY,
-							"AUTO_SEX_CLOTHING_MANAGEMENT",
-							PresetColour.BASE_BLUE_STEEL,
-							"Post-sex clothing replacement",
-							"Enables equipped clothing to be automatically pulled back into their pre-sex states after sex scenes.",
-							Main.getProperties().hasValue(PropertyValue.autoSexClothingManagement)));
-			
 			UtilText.nodeContentSB.append(getContentPreferenceDiv(ContentOptionsPage.BODIES,
 							"AGE",
 							PresetColour.AGE_TWENTIES,
@@ -2064,13 +2063,18 @@ public class OptionsDialogue {
 							"This makes random attacks more likely when you're high on lust, low on health, covered in fluids, exposed, or drunk.",
 							Main.game.isOpportunisticAttackersEnabled()));
 			
-			UtilText.nodeContentSB.append(getContentPreferenceDiv(ContentOptionsPage.GAMEPLAY,
-							"BYPASS_SEX_ACTIONS",
-							PresetColour.BASE_PINK,
-							"Sex action bypass",
-							"If disabled, action requirements during sex may no longer be bypassed. (i.e. All 'Corruptive' actions will be unavailable.)",
-							Main.getProperties().hasValue(PropertyValue.bypassSexActions)));
-			
+			if(contentOptionsPage==ContentOptionsPage.GAMEPLAY) {
+				UtilText.nodeContentSB.append(getCustomContentPreferenceDivStart(PresetColour.BASE_PINK, "Sex action bypass", "If this is enabled, sex action corruption requirements may be bypassed."));
+				for (int i=2; i>=0; i--) {
+					UtilText.nodeContentSB.append("<div id='BYPASS_SEX_ACTIONS_" + i + "' class='normal-button" + (Main.getProperties().bypassSexActions == i ? " selected" : "") + "' style='width:calc(33% - 8px); margin-right:8px; text-align:center; float:right;'>"
+							+ (Main.getProperties().bypassSexActions == i
+							? "[style.boldGood("
+							: "[style.colourDisabled(")
+							+ com.lilithsthrone.game.Properties.bypassSexActionsLabels[i] + ")]</div>");
+				}
+				UtilText.nodeContentSB.append("</div></div>");
+			}
+
 			UtilText.nodeContentSB.append(getContentPreferenceDiv(ContentOptionsPage.SEX,
 							"VOLUNTARY_NTR",
 							PresetColour.GENERIC_MINOR_BAD,
@@ -2150,6 +2154,34 @@ public class OptionsDialogue {
 							"When disabled, removes all foot-related actions from being available during sex.",
 							Main.getProperties().hasValue(PropertyValue.footContent)));
 			
+			UtilText.nodeContentSB.append(getContentPreferenceDiv(ContentOptionsPage.SEX,
+							"FURRY_TAIL_PENETRATION",
+							PresetColour.BASE_MAGENTA,
+							"Furry tail penetrations",
+							"This enables furry tails to engage in penetrative actions in sex.",
+							Main.getProperties().hasValue(PropertyValue.furryTailPenetrationContent)));
+					
+			UtilText.nodeContentSB.append(getContentPreferenceDiv(ContentOptionsPage.SEX,
+							"INFLATION_CONTENT",
+							PresetColour.CUM,
+							"Cum Inflation",
+							"This enables cum inflation mechanics.",
+							Main.getProperties().hasValue(PropertyValue.inflationContent)));
+			
+			UtilText.nodeContentSB.append(getContentPreferenceDiv(ContentOptionsPage.SEX,
+							"AUTO_SEX_CLOTHING_MANAGEMENT",
+							PresetColour.BASE_BLUE_STEEL,
+							"Post-sex clothing replacement",
+							"Enables equipped clothing to be automatically pulled back into their pre-sex states after sex scenes.",
+							Main.getProperties().hasValue(PropertyValue.autoSexClothingManagement)));
+
+			UtilText.nodeContentSB.append(getContentPreferenceDiv(ContentOptionsPage.SEX,
+							"AUTO_SEX_CLOTHING_STRIP",
+							PresetColour.BASE_PINK_LIGHT,
+							"Automatic stripping",
+							"When enabled, all characters which you are allowed to strip during sex (including yourself) will start sex naked.",
+							Main.getProperties().hasValue(PropertyValue.autoSexStrip)));
+			
 			UtilText.nodeContentSB.append(getContentPreferenceDiv(ContentOptionsPage.BODIES,
 							"FUTA_BALLS",
 							PresetColour.BASE_PINK,
@@ -2179,8 +2211,8 @@ public class OptionsDialogue {
 				
 				UtilText.nodeContentSB.append(getCustomContentPreferenceDivStart(PresetColour.NIPPLES_CROTCH, "Crotch-boobs & Udders", "Choose how you want the game to handle udders and crotch-boobs."));
 				for(int i=2; i>=0; i--) {
-					UtilText.nodeContentSB.append("<div id='UDDER_PREFERENCE_"+i+"' class='normal-button"+(Main.getProperties().udders==i?" selected":"")+"' style='width:calc(33% - 8px); margin-right:8px; text-align:center; float:right;'>"
-							+(Main.getProperties().udders==i
+					UtilText.nodeContentSB.append("<div id='UDDER_PREFERENCE_"+i+"' class='normal-button"+(Main.getProperties().getUddersLevel()==i?" selected":"")+"' style='width:calc(33% - 8px); margin-right:8px; text-align:center; float:right;'>"
+							+(Main.getProperties().getUddersLevel()==i
 								?(i==0?"[style.boldBad(":"[style.boldGood(")
 								:"[style.colourDisabled(")
 							+com.lilithsthrone.game.Properties.uddersLabels[i]+")]</div>");
@@ -2392,20 +2424,6 @@ public class OptionsDialogue {
 					"Enable the ability to add slaves or friendly occupants as your companion."
 						+ "<br/>[style.boldBad(Warning:)] This is an experimental feature, and support for companions was dropped in v0.3.9, so there will be no special dialogue or actions involving your companions outside of Dominion.",
 					Main.getProperties().hasValue(PropertyValue.companionContent)));
-			
-			UtilText.nodeContentSB.append(getContentPreferenceDiv(ContentOptionsPage.SEX,
-							"FURRY_TAIL_PENETRATION",
-							PresetColour.BASE_MAGENTA,
-							"Furry tail penetrations",
-							"This enables furry tails to engage in penetrative actions in sex.",
-							Main.getProperties().hasValue(PropertyValue.furryTailPenetrationContent)));
-					
-			UtilText.nodeContentSB.append(getContentPreferenceDiv(ContentOptionsPage.SEX,
-							"INFLATION_CONTENT",
-							PresetColour.CUM,
-							"Cum Inflation",
-							"This enables cum inflation mechanics.",
-							Main.getProperties().hasValue(PropertyValue.inflationContent)));
 
 			if(contentOptionsPage==ContentOptionsPage.BODIES) {
 				UtilText.nodeContentSB.append(getBreastsContentPreferenceVariableDiv(
@@ -2745,11 +2763,13 @@ public class OptionsDialogue {
 
 			UtilText.nodeContentSB.append("<br/>"
 					+ "Contributors:</br>" // In alphabetical order:
+					+ "<b style='color:#21bfc5;'>AceXP</b></br>"
 					+ "<b style='color:#21bfc5;'>DJ Addi</b></br>"
 					+ "<b style='color:#21bfc5;'>DSG</b></br>"
 					+ "<b style='color:#21bfc5;'>Irbynx</b></br>"
 					+ "<b style='color:#21bfc5;'>Nnxx</b></br>"
 					+ "<b style='color:#21bfc5;'>Norin</b></br>"
+					+ "<b style='color:#21bfc5;'>NoStepOnSnek</b></br>"
 					+ "<b style='color:#21bfc5;'>Phlarx</b></br>"
 					+ "<b style='color:#21bfc5;'>Pimgd</b></br>"
 					+ "<b style='color:#21bfc5;'>Rfpnj</b></br>"

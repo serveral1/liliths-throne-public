@@ -7,9 +7,12 @@ package com.lilithsthrone.game.dialogue;
  */
 public enum DialogueFlagValue {
 	
-	quickTrade,
-	stormTextUpdateRequired,
-	hasSnowedThisWinter,
+	
+	// Main quest:
+	firstReactionLiberate,
+	firstReactionUsurp,
+	firstReactionJoin,
+	firstReactionNothing,
 	
 	
 	// Essence reactions:
@@ -20,6 +23,10 @@ public enum DialogueFlagValue {
 
 	
 	// Misc.:
+	quickTrade,
+	stormTextUpdateRequired,
+	hasSnowedThisWinter,
+	
 	foundHappiness,
 	visitedSubmission,
 	mommyFound,
@@ -48,6 +55,7 @@ public enum DialogueFlagValue {
 	ashleyIntroduced,
 	ralphIntroduced,
 	nyanIntroduced,
+	nyanmumIntroduced,
 	kateIntroduced,
 	vickyIntroduced,
 	vanessaIntroduced,
@@ -65,6 +73,8 @@ public enum DialogueFlagValue {
 
 	
 	// City hall:
+	cityHallLodgerBoardSeen,
+	
 	vanessaHelped,
 	vanessaDailyHelped,
 	vanessaDailyMassage,
@@ -78,22 +88,37 @@ public enum DialogueFlagValue {
 	ralphAskedAboutHundredKisses,
 	ralphDailyBred(true),
 	
-	nyanTalkedTo(true),
-	nyanComplimented(true),
-	nyanFlirtedWith(true),
-	nyanKissed(true),
-	nyanMakeOut(true),
-	nyanSex(true),
-	nyanGift(true),
-	
-	supplierDepotDoorUnlocked,
-	suppliersEncountered,
-	suppliersTriedConvincing,
-	
 	ashleySexToysDiscovered,
 	ashleyAttitude,
 	
 	reactedToKatePregnancy,
+	
+	// Nyan:
+	nyanHiding,
+	nyanDating,
+	nyanFirstKissed,
+	nyanRestaurantDateRequested,
+	nyanRestaurantDateCompleted,
+	nyanmumInterviewPassed,
+	nyanmumDateCompleted,
+	nyanWeekendDated, // Reset every Monday in Nyan's dailyUpdate() method
+	nyanmumGirlfriend,
+	nyanApologised, // Apologise for her mum's behaviour
+	nyanCreampied,
+	nyanmumCreampied,
+	nyanAnalTalk,
+	nyanmumAnalTalk,
+	
+	nyanTalkedTo(true),
+	nyanComplimented(true),
+	nyanFlirtedWith(true),
+	nyanHeadPatted(true),
+	nyanKissed(true),
+	nyanTummyRubbed(true),
+	nyanWalked(true),
+	nyanMakeOut(true),
+	nyanSex(true),
+	nyanGift(true),
 	
 	// Lilaya's Home:
 	knowsDate,
@@ -108,6 +133,7 @@ public enum DialogueFlagValue {
 	roseToldOnYou,
 	lilayaReactedToPlayerAsDemon,
 	lilayaHug(true),
+	obtainedScientistClothing,
 	
 	readBook1,
 	readBook2,
@@ -142,6 +168,8 @@ public enum DialogueFlagValue {
 	
 	// Slaver Alley:
 	finchIntroduced,
+	finchFreedomTalk,
+	
 	seanIntroduced,
 	seanSeenBrax,
 	statueTruthRevealed,
@@ -157,6 +185,16 @@ public enum DialogueFlagValue {
 	slaverAlleyCompanionAcceptedDeal,
 	slaverAlleyTwoPartners,
 	slaverAlleySlavesFreed, // Reset every day at midnight (as part of stocks reset method)
+	
+	// Wes:
+	wesQuestLilayaHelp,
+	wesQuestMet(true),
+	wesQuestRefused,
+
+	wesQuestTalked(true),
+	wesQuestTalkedAlt(true),
+	wesQuestFlirted(true),
+	wesQuestSex(true),
 	
 	// Helena (romance quest):
 	helenaCheapPaint,
@@ -201,6 +239,23 @@ public enum DialogueFlagValue {
 	natalyaDailySexAsSub(true),
 	natalyaDailySexAsDom(true),
 	
+	// Kay:
+	kayTalkedTo(true),
+	kayFlirtedWith(true),
+	kaySubmitted,
+	kayPreviouslyFeminised,
+	kayFeminised,
+
+	kayDommed(true),
+	
+	kayCratesSearched(true),
+	dobermannDefeatPaid,
+	dobermannDefeatEnforcer,
+	dobermannDefeatDemon,
+	dobermannDefeatSeduced,
+	dobermannDefeatCombat,
+	supplierDepotDoorUnlocked, // Named 'suppliers' from old quest structure, refers to dobermanns
+	suppliersEncountered,
 	
 	// Zaranix:
 	zaranixDiscoveredHome,
@@ -250,6 +305,7 @@ public enum DialogueFlagValue {
 	playedPregnancyRouletteAsBreeder,
 	
 	eponaMurkOwnerIntroduced,
+	eponaMurkSeen,
 	eponaMurkSubmitted,
 	
 	// Nightlife:
@@ -317,6 +373,7 @@ public enum DialogueFlagValue {
 	ratWarrensEntranceGuardsFight,
 	ratWarrensSeenMilkers,
 	ratWarrensMilkersBackground,
+	ratWarrensMilkersFreeAttempt,
 	ratWarrensSilenceIntroduced,
 	
 	ratWarrensClearedLeft,
@@ -346,7 +403,8 @@ public enum DialogueFlagValue {
 	ratWarrensCaptiveFuta,
 	ratWarrensCaptiveMasculine,
 	ratWarrensCaptiveSissy,
-	
+
+	murkCaptiveBlowjob,
 	murkMaster,
 	
 	ratWarrensCaptiveCalledOut,
@@ -355,7 +413,10 @@ public enum DialogueFlagValue {
 	ratWarrensCaptiveCompanionGivenBirth(true),
 	ratWarrensCaptiveOwnerSex(true),
 	ratWarrensCaptiveOwnerCompanionSex(true),
-	ratWarrensCaptiveDailyTransformed(true)
+	ratWarrensCaptiveDailyTransformed(true),
+
+	murkLectured(true),
+	murkSpanked(true),
 	;
 	
 	boolean dailyReset;

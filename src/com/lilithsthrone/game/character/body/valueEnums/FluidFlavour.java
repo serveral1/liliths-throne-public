@@ -41,7 +41,7 @@ public enum FluidFlavour {
 					"sweet",
 					"vanilla-flavoured")),
 	
-	STRAWBERRY("strawberries", PresetColour.BASE_CRIMSON,
+	STRAWBERRY("strawberry", PresetColour.BASE_CRIMSON,
 			Util.newArrayListOfValues(
 					"sweet",
 					"strawberry-flavoured")),
@@ -72,7 +72,7 @@ public enum FluidFlavour {
 					"sweet",
 					"cherry-flavoured")),
 	
-	// ------ Icons for these made by 'Charisma is my Stat Dump': ------ //
+	// ------ Icons for these made by 'Charisma is my Dump Stat': ------ //
 	
 	COFFEE("coffee", PresetColour.BASE_BROWN_DARK,
 			Util.newArrayListOfValues(
@@ -117,7 +117,7 @@ public enum FluidFlavour {
 			Util.newArrayListOfValues(
 					"coconut-flavoured")),
 	
-	BLUEBERRY("blueberries", PresetColour.BASE_BLUE_DARK,
+	BLUEBERRY("blueberry", PresetColour.BASE_BLUE_DARK,
 			Util.newArrayListOfValues(
 					"blueberry-flavoured"))
 	

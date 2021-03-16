@@ -15,10 +15,11 @@ import com.lilithsthrone.game.character.body.CoverableArea;
 import com.lilithsthrone.game.character.fetishes.Fetish;
 import com.lilithsthrone.game.character.npc.NPC;
 import com.lilithsthrone.game.character.race.AbstractRace;
-import com.lilithsthrone.game.character.race.Subspecies;
+import com.lilithsthrone.game.character.race.AbstractSubspecies;
 import com.lilithsthrone.game.dialogue.utils.UtilText;
 import com.lilithsthrone.game.inventory.InventorySlot;
 import com.lilithsthrone.game.inventory.clothing.AbstractClothing;
+import com.lilithsthrone.game.sex.ImmobilisationType;
 import com.lilithsthrone.game.sex.LubricationType;
 import com.lilithsthrone.game.sex.OrgasmCumTarget;
 import com.lilithsthrone.game.sex.SexAreaInterface;
@@ -62,7 +63,8 @@ public interface SexManagerInterface {
 	public boolean isAbleToSkipSexScene();
 
 	/**
-	 * @return The SexPace that this character should have at the start of this sex scene. Unlike the <i>getForcedSexPace(character)</i> method, this method does <b>not</b> lock the character into the specified sex pace for the duration of this sex scene.
+	 * @return The SexPace that this character should have at the start of this sex scene.
+	 *  Unlike the <i>getForcedSexPace(character)</i> method, this method does <b>not</b> lock the character into the specified sex pace for the duration of this sex scene.
 	 */
 	public default SexPace getStartingSexPaceModifier(GameCharacter character) {
 		return null;
@@ -75,8 +77,8 @@ public interface SexManagerInterface {
 		return null;
 	}
 	
-	public default Set<GameCharacter> getCharactersSealed() {
-		return new HashSet<>();
+	public default Map<ImmobilisationType, Map<GameCharacter, Set<GameCharacter>>> getStartingCharactersImmobilised() {
+		return new HashMap<>();
 	}
 	
 	public default boolean isPlayerDom() {
@@ -106,6 +108,15 @@ public interface SexManagerInterface {
 	public default boolean isWashingScene() {
 		return false;
 	}
+
+	/**
+	 * Being hidden restricts the character's ability to end sex, and they can only use 'self' sex actions.<br/>
+	 * <b>This should only ever be applied to spectators, as it makes no sense otherwise.</b>
+	 * @return true if the character is considered to be out of sight and hidden in this sex scene.
+	 */
+	public default boolean isHidden(GameCharacter character) {
+		return false;
+	}
 	
 	public default SexType getForeplayPreference(GameCharacter character, GameCharacter targetedCharacter) {
 		return character.getForeplayPreference(targetedCharacter);
@@ -116,6 +127,12 @@ public interface SexManagerInterface {
 	}
 
 	public default SexControl getSexControl(GameCharacter character) {
+		if(isHidden(character)) {
+			return SexControl.SELF;
+		}
+		if(Main.sex.isCharacterImmobilised(character)) {
+			return SexControl.NONE;
+		}
 		if(Main.sex.isDom(character)) {
 			return SexControl.FULL;
 		} else {
@@ -143,7 +160,7 @@ public interface SexManagerInterface {
 		return false;
 	}
 	
-	public default boolean isSlotAvailable(SexSlot slot) {
+	public default boolean isSlotAvailable(GameCharacter character, SexSlot slot) {
 		return true;
 	}
 	
@@ -199,7 +216,7 @@ public interface SexManagerInterface {
 		}
 		
 		for(GameCharacter character : Main.sex.getDominantParticipants(false).keySet()) {
-			if(Main.sex.getNumberOfOrgasms(character)<character.getOrgasmsBeforeSatisfied() && Main.sex.getSexPositionSlot(character)!=SexSlotGeneric.MISC_WATCHING) {
+			if(!Main.sex.isSatisfiedFromOrgasms(character, true) && Main.sex.getSexPositionSlot(character)!=SexSlotGeneric.MISC_WATCHING) {
 				domsSatisfied = false;
 			}
 		}
@@ -208,7 +225,7 @@ public interface SexManagerInterface {
 			if(Main.sex.getSexPace(character)!=SexPace.SUB_RESISTING && Main.sex.getSexPositionSlot(character)!=SexSlotGeneric.MISC_WATCHING) {
 				subsResisting = false;
 			}
-			if(Main.sex.getNumberOfOrgasms(character)<character.getOrgasmsBeforeSatisfied() && Main.sex.getSexPositionSlot(character)!=SexSlotGeneric.MISC_WATCHING) {
+			if(!Main.sex.isSatisfiedFromOrgasms(character, true) && Main.sex.getSexPositionSlot(character)!=SexSlotGeneric.MISC_WATCHING) {
 				subsSatisfied = false;
 			}
 			if(Main.sex.getNumberOfDeniedOrgasms(character)==0) {
@@ -334,13 +351,12 @@ public interface SexManagerInterface {
 	}
 	
 	public default List<CoverableArea> getAdditionalAreasToExposeDuringSex(GameCharacter performer, GameCharacter target) {
-		if(performer.equals(target)) {
+		if((performer.equals(target) || Main.sex.isConsensual())
+				&& (target.hasBreasts() || target.isFeminine())
+				&& (!target.isFeral() || target.getFeralAttributes().isBreastsPresent())) {
 			return Util.newArrayListOfValues(CoverableArea.NIPPLES);
-		} else {
-			if(Main.sex.isConsensual() || target.hasBreasts()) {
-				return Util.newArrayListOfValues(CoverableArea.NIPPLES);
-			}
 		}
+		
 		return new ArrayList<>();
 	}
 	
@@ -351,14 +367,27 @@ public interface SexManagerInterface {
 	public default boolean isPartnerUsingForeplayActions() {
 		return true;
 	}
+
+	public default boolean isForceCreampieAllowed(GameCharacter characterOrgasming, GameCharacter characterRecevingCreampie) {
+		return true;
+	}
 	
 	/**
-	 * @return The OrgasmBehaviour for this character. Normally returns DEFAULT, but can also return CREAMPIE or PULL_OUT, in which case the character will ignore requests and treat associated orgasm actions as having a SexActionPriority of UNIQUE_MAX.
+	 * @return The OrgasmBehaviour for this character.
+	 *  Normally returns DEFAULT, but can also return CREAMPIE or PULL_OUT, in which case the character will ignore requests and treat associated orgasm actions as having a SexActionPriority of UNIQUE_MAX.
 	 */
 	public default OrgasmBehaviour getCharacterOrgasmBehaviour(GameCharacter character) {
 		return OrgasmBehaviour.DEFAULT;
 	}
 
+	/**
+	 * @return The OrgasmBehaviour for this character when reacting to the characterOrgasming orgasming in the characterPenetrated.
+	 *  Normally returns DEFAULT, but can also return NO_ENCOURAGE, CREAMPIE, or PULL_OUT, in which case the character will use GENERIC_PREPARATION_PREPARE, GENERIC_PREPARATION_ENCOURAGE_CREAMPIE, or GENERIC_PREPARATION_ENCOURAGE_PULL_OUT, respectively.
+	 */
+	public default OrgasmEncourageBehaviour getCharacterOrgasmEncourageBehaviour(GameCharacter character, GameCharacter characterOrgasming, GameCharacter characterPenetrated) {
+		return OrgasmEncourageBehaviour.DEFAULT;
+	}
+	
 	/**
 	 * @return The OrgasmCumTarget for when this character is orgasming in an interaction with the target. Determines where they want to cum <b>only if they choose to pull out</b>, with a return of null signifying that there are no special targeting priorities.
 	 */
@@ -381,13 +410,13 @@ public interface SexManagerInterface {
 	}
 
 	public default String getPublicSexStartingDescription() {
-		Set<Subspecies> subspeciesSet = new HashSet<>();
+		Set<AbstractSubspecies> subspeciesSet = new HashSet<>();
 		for(Population pop : Main.game.getPlayer().getLocationPlace().getPlaceType().getPopulation()) {
 			subspeciesSet.addAll(pop.getSpecies().keySet());
 		}
 		if(!subspeciesSet.isEmpty()) {
 			List<AbstractRace> racesPresent = new ArrayList<>();
-			for(Subspecies species : subspeciesSet) {
+			for(AbstractSubspecies species : subspeciesSet) {
 				if(!racesPresent.contains(species.getRace())) {
 					racesPresent.add(species.getRace());
 				}
@@ -395,7 +424,7 @@ public interface SexManagerInterface {
 			Collections.shuffle(racesPresent);
 			List<String> raceNames = new ArrayList<>();
 			for(int i=0; i<racesPresent.size() && i<3;i++) {
-				raceNames.add(Subspecies.getMainSubspeciesOfRace(racesPresent.get(i)).getNamePlural(null));
+				raceNames.add(AbstractSubspecies.getMainSubspeciesOfRace(racesPresent.get(i)).getNamePlural(null));
 			}
 			if(raceNames.size() < racesPresent.size()) {
 				raceNames.add("many other races");

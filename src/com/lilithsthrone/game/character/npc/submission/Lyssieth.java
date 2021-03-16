@@ -14,13 +14,13 @@ import com.lilithsthrone.game.PropertyValue;
 import com.lilithsthrone.game.character.CharacterImportSetting;
 import com.lilithsthrone.game.character.EquipClothingSetting;
 import com.lilithsthrone.game.character.GameCharacter;
-import com.lilithsthrone.game.character.body.Covering;
 import com.lilithsthrone.game.character.body.Leg;
 import com.lilithsthrone.game.character.body.Tail;
 import com.lilithsthrone.game.character.body.abstractTypes.AbstractPenisType;
+import com.lilithsthrone.game.character.body.coverings.BodyCoveringType;
+import com.lilithsthrone.game.character.body.coverings.Covering;
 import com.lilithsthrone.game.character.body.types.ArmType;
 import com.lilithsthrone.game.character.body.types.AssType;
-import com.lilithsthrone.game.character.body.types.BodyCoveringType;
 import com.lilithsthrone.game.character.body.types.BreastType;
 import com.lilithsthrone.game.character.body.types.EarType;
 import com.lilithsthrone.game.character.body.types.EyeType;
@@ -140,18 +140,6 @@ public class Lyssieth extends NPC {
 			this.setStartingBody(true);
 			this.equipClothing(EquipClothingSetting.getAllClothingSettings());
 		}
-		if(Main.isVersionOlderThan(Game.loadingVersion, "0.3.2.1")) {
-			this.setPiercedEar(true);
-			AbstractClothing earrings = null;
-			for(Entry<AbstractClothing, Integer> c : this.getAllClothingInInventory().entrySet()) {
-				if(c.getKey().getClothingType().equals(ClothingType.getClothingTypeFromId("innoxia_piercing_ear_ring"))) {
-					earrings = c.getKey();
-				}
-			}
-			if(earrings!=null) {
-				this.equipClothingFromInventory(earrings, true, this, this);
-			}
-		}
 		if(Main.isVersionOlderThan(Game.loadingVersion, "0.3.3.6")) {
 			this.setLevel(1000);
 			this.setHistory(Occupation.NPC_ELDER_LILIN);
@@ -164,7 +152,7 @@ public class Lyssieth extends NPC {
 					PersonalityTrait.LEWD);
 		}
 		if(Main.isVersionOlderThan(Game.loadingVersion, "0.3.6")) {
-			this.setTailGirth(PenetrationGirth.FOUR_THICK);
+			this.setTailGirth(PenetrationGirth.FOUR_GIRTHY);
 		}
 		if(Main.isVersionOlderThan(Game.loadingVersion, "0.3.8.5")) {
 			this.setTesticleCount(2);
@@ -218,13 +206,24 @@ public class Lyssieth extends NPC {
 		
 		this.setBody(Gender.F_V_B_FEMALE, Subspecies.HUMAN, RaceStage.GREATER, false);
 		
+		this.setPiercedEar(true);
+		AbstractClothing earrings = null;
+		for(Entry<AbstractClothing, Integer> c : this.getAllClothingInInventory().entrySet()) {
+			if(c.getKey().getClothingType().equals(ClothingType.getClothingTypeFromId("innoxia_piercing_ear_ring"))) {
+				earrings = c.getKey();
+			}
+		}
+		if(earrings!=null) {
+			this.equipClothingFromInventory(earrings, true, this, this);
+		}
+		
 		// Body:
 		this.setSubspeciesOverride(Subspecies.ELDER_LILIN);
 		this.setAgeAppearanceDifferenceToAppearAsAge(45);
 //		this.setTailType(TailType.DEMON_COMMON);
 //		this.setWingType(WingType.DEMON_COMMON);
 //		this.setHornType(HornType.CURLED);
-		this.setTailGirth(PenetrationGirth.FOUR_THICK);
+		this.setTailGirth(PenetrationGirth.FOUR_GIRTHY);
 
 		// Core:
 		this.setHeight(184);
@@ -343,12 +342,12 @@ public class Lyssieth extends NPC {
 		return true;
 	}
 	
-	@Override
-	public void turnUpdate() {
-		if(!Main.game.getCharactersPresent().contains(this)) {
-			this.setStartingBody(false);
-		}
-	}
+//	@Override
+//	public void turnUpdate() {
+//		if(!Main.game.getCharactersPresent().contains(this)) {
+//			this.setStartingBody(false);
+//		}
+//	}
 	
 	@Override
 	protected Set<GameCharacter> getChildren() {
@@ -400,7 +399,7 @@ public class Lyssieth extends NPC {
 		Main.game.getPlayer().setSkinCovering(new Covering(BodyCoveringType.DEMON_COMMON, PresetColour.SKIN_RED), true);
 		
 		Main.game.getPlayer().setTailType(TailType.DEMON_COMMON);
-		Main.game.getPlayer().setTailGirth(PenetrationGirth.FOUR_THICK);
+		Main.game.getPlayer().setTailGirth(PenetrationGirth.FOUR_GIRTHY);
 		Main.game.getPlayer().setHornType(HornType.SWEPT_BACK);
 		Main.game.getPlayer().setHornLength(HornLength.ONE_SMALL.getMedianValue());
 		Main.game.getPlayer().setMinimumHornsPerRow(2);
@@ -842,12 +841,12 @@ public class Lyssieth extends NPC {
 		this.setPenisType(type);
 		this.setPenisVirgin(false);
 		if(type.getRace()==Race.HUMAN) {
-			this.setPenisGirth(PenetrationGirth.FOUR_THICK);
+			this.setPenisGirth(PenetrationGirth.FOUR_GIRTHY);
 			this.setPenisSize(18);
 			this.setTesticleSize(TesticleSize.THREE_LARGE);
 			this.setPenisCumStorage(500);
 		} else {
-			this.setPenisGirth(PenetrationGirth.FIVE_FAT);
+			this.setPenisGirth(PenetrationGirth.FIVE_THICK);
 			this.setPenisSize(30);
 			this.setTesticleSize(TesticleSize.FOUR_HUGE);
 			this.setPenisCumStorage(2500);
@@ -873,7 +872,7 @@ public class Lyssieth extends NPC {
 		this.setSubspeciesOverride(Subspecies.ELDER_LILIN);
 		this.setAgeAppearanceDifferenceToAppearAsAge(45);
 		this.setTailType(TailType.DEMON_COMMON);
-		this.setTailGirth(PenetrationGirth.FOUR_THICK);
+		this.setTailGirth(PenetrationGirth.FOUR_GIRTHY);
 		this.setWingType(WingType.DEMON_COMMON);
 		this.setWingSize(WingSize.FOUR_HUGE.getValue());
 		this.setHornType(HornType.SWEPT_BACK);
@@ -979,7 +978,7 @@ public class Lyssieth extends NPC {
 	@Override
 	public String getDirtyTalkVaginaPenetrated(GameCharacter target, boolean isPlayerDom){
 		if(!isPlayersMommy()) {
-			return super.getDirtyTalkMouthPenetrated(target, isPlayerDom);
+			return super.getDirtyTalkVaginaPenetrated(target, isPlayerDom);
 		}
 		String returnedLine = "";
 		
@@ -1023,8 +1022,8 @@ public class Lyssieth extends NPC {
 		if(returnedLine.isEmpty()) {
 			return null;
 		}
-		
-		return UtilText.parse(this, target, returnedLine);
+
+		return UtilText.parse(this, target, "[npc.speech("+returnedLine+")]");
 	}
 
 	@Override
@@ -1072,7 +1071,8 @@ public class Lyssieth extends NPC {
 		if(returnedLine.isEmpty()) {
 			return null;
 		}
-		return UtilText.parse(this, target, returnedLine);
+		
+		return UtilText.parse(this, target, "[npc.speech("+returnedLine+")]");
 	}
 
 	@Override
@@ -1106,7 +1106,7 @@ public class Lyssieth extends NPC {
 						availableLines.add(UtilText.returnStringAtRandom(
 								"Yes! Keep sucking mommy's cock, like a good [npc2.girl]! Just like that!",
 								"Oh yes! Wrap those lips of yours around mommy's cock! Keep going!",
-								"Keep sucking mommy's cock! Yes! Good [npc2girl]!"));
+								"Keep sucking mommy's cock! Yes! Good [npc2.girl]!"));
 						break;
 					case NIPPLE:
 						availableLines.add(UtilText.returnStringAtRandom(
@@ -1128,6 +1128,12 @@ public class Lyssieth extends NPC {
 								"Good [npc2.girl]! Take mommy's cock deep in your little pussy!",
 								"Oh yes! Let mommy fill your pussy with her cock! Good [npc2.girl]!"));
 						break;
+					case SPINNERET:
+						availableLines.add(UtilText.returnStringAtRandom(
+								"Yes! Take mommy's cock! Your spinneret belongs to me!",
+								"Good [npc2.girl]! Take mommy's cock deep in your little spinneret!",
+								"Oh yes! Let mommy fill your spinneret with her cock! Good [npc2.girl]!"));
+						break;
 				}
 			}
 		}
@@ -1135,7 +1141,9 @@ public class Lyssieth extends NPC {
 		if(availableLines.isEmpty()) {
 			return null;
 		}
-		return UtilText.parse(this, target, availableLines.get(Util.random.nextInt(availableLines.size())));
+		
+		String returnedLine = Util.randomItemFrom(availableLines);
+		return UtilText.parse(this, target, "[npc.speech("+returnedLine+")]");
 	}
 
 	@Override
@@ -1190,6 +1198,12 @@ public class Lyssieth extends NPC {
 								"Oh yes! Let mommy eat you out! Yes, yes, yes!",
 								"Oh yes! Mommy loves the taste of your pussy! Feel her [npc1.tongue] getting in nice and deep!"));
 						break;
+					case SPINNERET:
+						availableLines.add(UtilText.returnStringAtRandom(
+								"Yes! Mommy loves servicing your spinneret! Good [npc2.girl]!",
+								"Oh yes! Let mommy eat out your spinneret! Yes, yes, yes!",
+								"Oh yes! Mommy loves the taste of your spinneret! Feel her [npc1.tongue] getting in nice and deep!"));
+						break;
 				}
 			}
 		}
@@ -1197,6 +1211,8 @@ public class Lyssieth extends NPC {
 		if(availableLines.isEmpty()) {
 			return null;
 		}
-		return UtilText.parse(this, target, availableLines.get(Util.random.nextInt(availableLines.size())));
+		
+		String returnedLine = Util.randomItemFrom(availableLines);
+		return UtilText.parse(this, target, "[npc.speech("+returnedLine+")]");
 	}
 }

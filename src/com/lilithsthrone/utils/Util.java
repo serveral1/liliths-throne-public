@@ -26,10 +26,12 @@ import java.util.function.Function;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
+import org.w3c.dom.Document;
+
 import com.lilithsthrone.controller.xmlParsing.Element;
 import com.lilithsthrone.game.character.GameCharacter;
 import com.lilithsthrone.game.character.body.CoverableArea;
-import com.lilithsthrone.game.character.race.Subspecies;
+import com.lilithsthrone.game.character.race.AbstractSubspecies;
 import com.lilithsthrone.game.dialogue.utils.UtilText;
 import com.lilithsthrone.game.inventory.InventorySlot;
 import com.lilithsthrone.game.inventory.clothing.AbstractClothing;
@@ -44,8 +46,8 @@ import javafx.scene.paint.Color;
  * This is just a big mess of utility classes that I wanted to throw somewhere.
  * 
  * @since 0.1.0
- * @version 0.3.1
- * @author Innoxia
+ * @version 0.4.0
+ * @author Innoxia, CognitiveMist
  */
 public class Util {
 	
@@ -186,6 +188,125 @@ public class Util {
 		}
 	}
 
+	/**
+	 * @param containingFolderId To be in the format: <b>"/statusEffects"</b>
+	 * @return A map of Files with the author as the key, mapped to a map of ids to files (id is based on file name and folder path).
+	 */
+	public static Map<String, Map<String, File>> getExternalModFilesById(String containingFolderId) {
+		return getExternalModFilesById(containingFolderId, null, null);
+	}
+	
+	/**
+	 * @param containingFolderId To be in the format: <b>"/statusEffects"</b>
+	 * @param filterFolderName If a non-null String is passed in, only files within folders with that String as their name will be added to the returned map.
+	 * @param filterPathName If a non-null String is passed in, only files with that String as their name will be added to the returned map.
+	 * @return A map of Files with the author as the key, mapped to a map of ids to files (id is based on file name and folder path).
+	 */
+	public static Map<String, Map<String, File>> getExternalModFilesById(String containingFolderId, String filterFolderName, String filterPathName) {
+		File dir = new File("res/mods");
+		Map<String, Map<String, File>> returnMap = new HashMap<>();
+		
+		if(dir.exists() && dir.isDirectory()) {
+			File[] directoryListing = dir.listFiles();
+			if(directoryListing != null) {
+				for(File directory : directoryListing) {
+					String modAuthorName = directory.getName();
+					returnMap.putIfAbsent(modAuthorName, new HashMap<>());
+					File modAuthorDirectory = new File(directory.getAbsolutePath()+containingFolderId);
+					
+					populateMapFiles(modAuthorName, directory.getName()+"_", modAuthorDirectory, returnMap, filterFolderName, filterPathName);
+				}
+			}
+		}
+		
+		return returnMap;
+	}
+
+	/**
+	 * @param containingFolderId To be in the format: <b>"res/statusEffects"</b>
+	 * @return A map of Files with the author as the key, mapped to a map of ids to files (id is based on file name and folder path).
+	 */
+	public static Map<String, Map<String, File>> getExternalFilesById(String containingFolderId) {
+		return getExternalFilesById(containingFolderId, null, null);
+	}
+	
+	/**
+	 * @param containingFolderId To be in the format: <b>"res/statusEffects"</b>
+	 * @param filterFolderName If a non-null String is passed in, only files within folders with that String as their name will be added to the returned map.
+	 * @param filterPathName If a non-null String is passed in, only files with that String as their name will be added to the returned map.
+	 * @return A map of Files with the author as the key, mapped to a map of ids to files (id is based on file name and folder path).
+	 */
+	public static Map<String, Map<String, File>> getExternalFilesById(String containingFolderId, String filterFolderName, String filterPathName) {
+		File dir = new File(containingFolderId);
+		Map<String, Map<String, File>> returnMap = new HashMap<>();
+		
+		if(dir.exists() && dir.isDirectory()) {
+			File[] authorDirectoriesListing = dir.listFiles();
+			if(authorDirectoriesListing != null) {
+				for(File authorDirectory : authorDirectoriesListing) {
+					if(authorDirectory.isDirectory()){
+						String authorName = authorDirectory.getName();
+						returnMap.putIfAbsent(authorName, new HashMap<>());
+						
+						populateMapFiles(authorName, authorDirectory.getName()+"_", authorDirectory, returnMap, filterFolderName, filterPathName);
+					}
+				}
+			}
+		}
+		
+		return returnMap;
+	}
+	
+	private static Map<String, Map<String, File>> populateMapFiles(String modAuthorName, String idPrefix, File directory, Map<String, Map<String, File>> returnMap, String filterFolderName, String filterPathName) {
+		if(filterFolderName==null || filterFolderName.equalsIgnoreCase(directory.getName())) {
+			File[] innerDirectoryListing = directory.listFiles((path, filename) -> filename.toLowerCase().endsWith(".xml"));
+			
+			if(innerDirectoryListing != null) {
+				for(File innerChild : innerDirectoryListing) {
+					if(filterPathName==null || filterPathName.equalsIgnoreCase(innerChild.getName().split("\\.")[0])) {
+						try {
+							String id = (idPrefix!=null?idPrefix:"")+innerChild.getName().split("\\.")[0];
+							returnMap.get(modAuthorName).put(id, innerChild);
+						} catch(Exception ex) {
+							System.err.println("Loading external mod files failed at Util.getExternalModFilesById()");
+							System.err.println("File path: "+innerChild.getAbsolutePath());
+							ex.printStackTrace();
+						}
+					}
+				}
+			}
+		}
+		
+		File[] additionalDirectories =  directory.listFiles();
+
+		if(additionalDirectories != null) {
+			for(File f : additionalDirectories) {
+				if(f.isDirectory()) {
+					populateMapFiles(modAuthorName, (idPrefix!=null?idPrefix:"")+f.getName()+"_", f, returnMap, filterFolderName, filterPathName);
+				}
+			}
+		}
+		
+		return returnMap;
+	}
+	
+	public static String getXmlRootElementName(File XMLFile) {
+		try {
+			Document doc = Main.getDocBuilder().parse(XMLFile);
+
+			// Cast magic:
+			doc.getDocumentElement().normalize();
+			
+			Element coreElement = Element.getDocumentRootElement(XMLFile); // Loads the document and returns the root element - in statusEffect files it's <statusEffect>
+			
+			return coreElement.getTagName();
+			
+		} catch(Exception ex) {
+			ex.printStackTrace(System.err);
+			return "";
+		}
+	}
+	
 	public static class Value<T, S> {
 		private T key;
 		private S value;
@@ -753,7 +874,6 @@ public class Util {
 	 *            modified sentence
 	 */
 	private static String insertIntoSentences(String sentence, int frequency, String[] inserts, boolean middle) {
-
 		StringBuilder modifiedSentence = new StringBuilder();
 		int openingCurly = 0;
 		int closingCurly = 0;
@@ -1001,6 +1121,12 @@ public class Util {
 
 		slovenlySpeechReplacementMap.put("You'd", "You's");
 		slovenlySpeechReplacementMap.put("you'd", "you's");
+
+		slovenlySpeechReplacementMap.put("Her", "'Er");
+		slovenlySpeechReplacementMap.put("her", "'er");
+
+		slovenlySpeechReplacementMap.put("His", "'Is");
+		slovenlySpeechReplacementMap.put("his", "'is");
 		
 		slovenlySpeechReplacementMap.put("Going to", "Gonna");
 		slovenlySpeechReplacementMap.put("going to", "gonna");
@@ -1018,6 +1144,9 @@ public class Util {
 
 		slovenlySpeechReplacementMap.put("They", "Dey");
 		slovenlySpeechReplacementMap.put("they", "dey");
+
+		slovenlySpeechReplacementMap.put("These", "Dese");
+		slovenlySpeechReplacementMap.put("these", "dese");
 		
 		slovenlySpeechReplacementMap.put("And", "'An");
 		slovenlySpeechReplacementMap.put("and", "an'");
@@ -1087,6 +1216,9 @@ public class Util {
 		
 		slovenlySpeechReplacementMap.put("Yes", "Yeah");
 		slovenlySpeechReplacementMap.put("yes", "yeah");
+		
+		slovenlySpeechReplacementMap.put("Hurry", "'Urry");
+		slovenlySpeechReplacementMap.put("hurry", "'urry");
 	}
 	/**
 	 * Replaces words in the sentence to give the impression that the speaker is talking in a slovenly manner. The replacements are:
@@ -1096,10 +1228,13 @@ public class Util {
 			<br/>You -> Ya
 			<br/>Yourself - Yerself
 			<br/>You'd -> You's
+			<br/>Her -> 'Er
+			<br/>His -> 'Is
 			<br/>To -> Ta
 			<br/>Into -> inta
 			<br/>The -> Da
 			<br/>Them -> Dem
+			<br/>These -> Dese
 			<br/>And -> An'
 			<br/>Of -> 'O
 			<br/>Who -> 'O
@@ -1125,6 +1260,7 @@ public class Util {
 			<br/>Here -> 'ere
 			<br/>Very -> Real
 			<br/>Yes -> Yeah
+			<br/>Hurry -> 'Urry
 	 *
 	 * @param sentence The speech to which the lisp should be applied.
 	 * @return The modified sentence.
@@ -1133,9 +1269,9 @@ public class Util {
 		//Use non-letter regex replacement ([^A-Za-z0-9]) 
 		String modifiedSentence = sentence;
 		for(Entry<String, String> entry : slovenlySpeechReplacementMap.entrySet()) {
-			modifiedSentence = modifiedSentence.replaceAll("([^A-Za-z0-9]|^)"+entry.getKey()+"([^A-Za-z0-9])", "$1"+entry.getValue()+"$2");
+			modifiedSentence = modifiedSentence.replaceAll("([^A-Za-z0-9\\.]|^)"+entry.getKey()+"([^A-Za-z0-9\\]])", "$1"+entry.getValue()+"$2");
 		}
-		modifiedSentence = modifiedSentence.replaceAll("ing([^A-Za-z0-9])", "in'$1");
+		modifiedSentence = modifiedSentence.replaceAll("ing([^A-Za-z0-9\\]])", "in'$1");
 		return modifiedSentence;
 	}
 	
@@ -1228,9 +1364,9 @@ public class Util {
 		return utilitiesStringBuilder.toString();
 	}
 
-	public static String subspeciesToStringList(Collection<Subspecies> subspecies, boolean capitalise) {
+	public static String subspeciesToStringList(Collection<AbstractSubspecies> subspecies, boolean capitalise) {
 		return Util.toStringList(subspecies,
-				(Subspecies o) -> 
+				(AbstractSubspecies o) -> 
 				"<span style='color:"+o.getColour(null).toWebHexString()+";'>"
 					+(capitalise
 							?Util.capitaliseSentence(o.getNamePlural(null))
@@ -1298,9 +1434,20 @@ public class Util {
 	public static int randomItemFrom(int[] array) {
 		return array[Util.random.nextInt(array.length)];
 	}
-	
+
+	/**
+	 * This method will determine the closest string in {@code choices} to the given {@code input}.
+	 * The Levenshtein edit distance metric is used for this calculation.
+	 *
+	 * @param input String for which to find the closest match.
+	 * @param choices Collection of valid Strings, among which the closest match to {@code input}
+	 *                   will be found.
+	 * @return The closest match.
+	 */
 	public static String getClosestStringMatch(String input, Collection<String> choices) {
-		if (choices.contains(input)) {
+		// If input is empty, just return the empty string. It would make no sense to guess, so hopefully
+		// the caller will handle the case correctly.
+		if (input.isEmpty() || choices.contains(input)) {
 			return input;
 		}
 		int distance = Integer.MAX_VALUE;
@@ -1312,7 +1459,107 @@ public class Util {
 				distance = newDistance;
 			}
 		}
-		System.err.println("Warning: getClosestStringMatch() did not find an exact match for '"+input+"'; returning '"+closestString+"' instead.");
+		if(distance>0) { // Only show error message if difference is more than just capitalisation differences
+			System.err.println("Warning: getClosestStringMatch() did not find an exact match for '"+input+"'; returning '"+closestString+"' instead. (Distance: "+distance+")");
+		}
+//		new IllegalArgumentException().printStackTrace(System.err);
+		return closestString;
+	}
+
+	private static String unordered(String input, int prefix) {
+		// TODO This could be improved if, by some method, the non-prefix words were left as an
+		//      unordered set, rather than rejoining them in alphabetical order, since typos can
+		//      occur in the first letter, too. However, this would require
+		//      com.lilithsthrone.utils.Util.getLevenshteinDistance to handle java.util.Set<E>.
+		//      A harder problem is how to handle the omission or addition of an underscore, for
+		//      which two words should match with one, or vice-versa.
+		String p = "";
+		String r = input;
+		int prefixLen = 0;
+		for (int i = 0; i < prefix; i++) {
+			int idx = input.indexOf('_', prefixLen);
+			if (idx < 0) {
+				// we've ran out of words, the whole thing is prefix
+				p = input;
+				r = "";
+				break;
+			}
+			prefixLen = idx+1;
+			p = input.substring(0, prefixLen);
+			r = input.substring(prefixLen);
+			//System.out.println("len: "+prefixLen+", "+p+"|"+r);
+		}
+		return p + Arrays.stream(r.split("_")).sorted().collect(Collectors.joining("_"));
+	}
+
+	/**
+	 * This method will determine the closest string in {@code choices} to the given {@code input}.
+	 * All strings will be treated as underscore-delimited words that have no order.
+	 * The Levenshtein edit distance metric is used for this calculation.
+	 *
+	 * @param input String for which to find the closest match.
+	 * @param choices Collection of valid Strings, among which the closest match to {@code input}
+	 *                   will be found.
+	 * @return The closest match.
+	 */
+	public static String getClosestStringMatchUnordered(String input, Collection<String> choices) {
+		return getClosestStringMatchUnordered(input, 0, choices);
+	}
+
+	/**
+	 * This method will determine the closest string in {@code choices} to the given {@code input}.
+	 * The first {@code prefix} underscore-delimited words of each string will be preserved, but
+	 * all words after that will be treated as having no order.
+	 * The Levenshtein edit distance metric is used for this calculation.
+	 *
+	 * @param input String for which to find the closest match.
+	 * @param prefix Number of underscore-delimited words for which the ordering should be
+	 *               preserved. If zero or less, the whole string is considered unordered. If it
+	 *               is the number of words or more, the whole string is considered ordered.
+	 * @param choices Collection of valid Strings, among which the closest match to {@code input}
+	 *                will be found.
+	 * @return The closest match.
+	 */
+	public static String getClosestStringMatchUnordered(String inputRaw, int prefix, Collection<String> choices) {
+		// If inputRaw is empty, just return the empty string. It would make no sense to guess, so hopefully
+		// the caller will handle the case correctly.
+		if (inputRaw.isEmpty() || choices.contains(inputRaw)) {
+			return inputRaw;
+		}
+
+		// Util.unordered expects words to be underscore-delimited. However, some misbehaving
+		// mods uses spaces or hyphens instead. We'll fix that for them here, to try to get more
+		// accurate matches. We assume all values in choices are well-behaved.
+		String input = inputRaw.replaceAll("[ -]", "_");
+
+		if (choices.contains(input)) {
+			System.err.println("Warning: getClosestStringMatchUnordered() did not find an exact match for '"+inputRaw+"'; returning '"+input+"' instead. (Invalid word delimiter)");
+			return input;
+		}
+
+		Map<String,String> unorderedChoices = choices.stream().collect(Collectors
+				.toMap(s -> Util.unordered(s, prefix), Function.identity(), (a,b) -> {
+					System.err.println("Warning: keeping " + a + " and discarding " + b + "!");
+					return a;
+				}));
+		String unorderedInput = unordered(input, prefix);
+		if (unorderedChoices.containsKey(unorderedInput)) {
+			String unorderedMatch = unorderedChoices.get(unorderedInput);
+			System.err.println("Warning: getClosestStringMatchUnordered() did not find an exact match for '"+inputRaw+"'; returning '"+unorderedMatch+"' instead. (Reordered words)");
+			return unorderedMatch;
+		}
+		int distance = Integer.MAX_VALUE;
+		String closestString = input;
+		for(String unorderedChoice : unorderedChoices.keySet()) {
+			int newDistance = getLevenshteinDistance(unorderedInput, unorderedChoice);
+			if(newDistance < distance) {
+				closestString = unorderedChoices.get(unorderedChoice);
+				distance = newDistance;
+			}
+		}
+		if(distance>0) { // Only show error message if difference is more than just capitalisation differences
+			System.err.println("Warning: getClosestStringMatchUnordered() did not find an exact match for '"+inputRaw+"'; returning '"+closestString+"' instead. (Distance: "+distance+")");
+		}
 //		throw new IllegalArgumentException();
 		return closestString;
 	}

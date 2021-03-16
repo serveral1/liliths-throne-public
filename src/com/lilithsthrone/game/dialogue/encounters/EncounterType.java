@@ -2,7 +2,7 @@ package com.lilithsthrone.game.dialogue.encounters;
 
 /**
  * @since 0.1.69.9
- * @version 0.3.8.3
+ * @version 0.3.9.4
  * @author Innoxia
  */
 public enum EncounterType {
@@ -10,6 +10,7 @@ public enum EncounterType {
 	SPECIAL_DOMINION_CULTIST,
 	
 	SLAVE_USES_YOU(true),
+	SLAVE_USING_OTHER_SLAVE(false),
 	
 	// Dominion:
 	
@@ -26,6 +27,8 @@ public enum EncounterType {
 	DOMINION_STORM_ATTACK(true),
 	
 	DOMINION_EXPRESS_CENTAUR,
+	
+	WES_QUEST_START,
 	
 	
 	// Harpy nests:
@@ -56,12 +59,15 @@ public enum EncounterType {
 	VENGAR_CAPTIVE_ROOM_BARRED
 	;
 
-	EncounterType() {}
+	private boolean opportunistic;
+	
+	EncounterType() {
+		opportunistic = false;
+	}
+	
 	EncounterType(boolean opportunistic) {
 		this.opportunistic = opportunistic;
 	}
-
-	private boolean opportunistic = false;
 
 	public boolean isOpportunistic() {
 		return opportunistic;

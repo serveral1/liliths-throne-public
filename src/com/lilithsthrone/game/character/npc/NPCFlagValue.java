@@ -5,7 +5,7 @@ import java.util.List;
 
 /**
  * @since 0.1.89
- * @version 0.3.7.8
+ * @version 0.4
  * @author Innoxia
  */
 public enum NPCFlagValue {
@@ -33,6 +33,8 @@ public enum NPCFlagValue {
 	occupantTalkJob,
 	occupantTalkLilaya,
 	occupantTalkSlaves,
+	occupantHugged,
+	occupantPet,
 	
 	occupantHasNewJob,
 	
@@ -40,7 +42,9 @@ public enum NPCFlagValue {
 	flagOffspringApartmentIntroduced,
 	flagOffspringFightApologyNeeded,
 	flagOffspringRapeApologyNeeded,
-	fightOffspringInApartment;
+	fightOffspringInApartment,
+	
+	elementalStayDirty;
 	
 	private static List<NPCFlagValue> slaveFlags = new ArrayList<>();
 	private static List<NPCFlagValue> occupantFlags = new ArrayList<>();
@@ -59,6 +63,8 @@ public enum NPCFlagValue {
 		occupantFlags.add(occupantTalkJob);
 		occupantFlags.add(occupantTalkLilaya);
 		occupantFlags.add(occupantTalkSlaves);
+		occupantFlags.add(occupantHugged);
+		occupantFlags.add(occupantPet);
 	}
 
 	public static List<NPCFlagValue> getSlaveFlags() {

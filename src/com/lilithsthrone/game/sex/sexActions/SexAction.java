@@ -62,7 +62,6 @@ public abstract class SexAction implements SexActionInterface {
 			CorruptionLevel minimumCorruptionNeeded,
 			Map<SexAreaInterface, SexAreaInterface> sexAreaInteractions,
 			SexParticipantType participantType) {
-		
 		this(sexActionType,
 				selfArousalGain,
 				targetArousalGain,
@@ -368,7 +367,7 @@ public abstract class SexAction implements SexActionInterface {
 				characterFetishesForPartner.get(characterPerformingAction).add(Fetish.FETISH_CUM_ADDICT);
 				for(CoverableArea area : cummedOnList) {
 					switch(area) {
-						case NONE:
+						case NONE: case TAIL:
 							break;
 						case ANUS: case ASS:
 							characterFetishes.get(characterPerformingAction).add(Fetish.FETISH_ANAL_GIVING);
@@ -432,7 +431,7 @@ public abstract class SexAction implements SexActionInterface {
 				
 				for(CoverableArea area : cummedOnList) {
 					switch(area) {
-						case NONE:
+						case NONE: case TAIL:
 							break;
 						case ANUS: case ASS:
 							characterFetishes.get(characterPerformingAction).add(Fetish.FETISH_ANAL_RECEIVING);
@@ -531,6 +530,7 @@ public abstract class SexAction implements SexActionInterface {
 								characterFetishesForPartner.get(characterPerformingAction).add(Fetish.FETISH_VAGINAL_RECEIVING);
 								characterFetishesForPartner.get(characterPerformingAction).add(Fetish.FETISH_PREGNANCY);
 								break;
+							case SPINNERET:
 							case URETHRA_PENIS:
 							case URETHRA_VAGINA:
 								break;
@@ -614,6 +614,7 @@ public abstract class SexAction implements SexActionInterface {
 								characterFetishesForPartner.get(characterPerformingAction).add(Fetish.FETISH_VAGINAL_GIVING);
 								characterFetishesForPartner.get(characterPerformingAction).add(Fetish.FETISH_IMPREGNATION);
 								break;
+							case SPINNERET:
 							case URETHRA_PENIS:
 							case URETHRA_VAGINA:
 								break;
