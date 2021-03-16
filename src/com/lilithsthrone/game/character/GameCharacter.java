@@ -2390,23 +2390,7 @@ public abstract class GameCharacter implements XMLSaving {
 				int year = Integer.valueOf(((Element)familyElement.getElementsByTagName("yearOfConception").item(0)).getAttribute("value"));
 				
 				character.setConceptionDate(LocalDateTime.of(year, month, day, 12, 0));
-				
-				if(Main.isVersionOlderThan(Game.loadingVersion, "0.3.7.4") && !character.isPlayer()) { // Birthdays prior to v0.3.7.4 are loaded based on conception date, as a bug introduced in v0.3.7.3 caused birthdays to regress by 18 years:
-					if(year+18<=Main.game.getDateNow().getYear()) {
-						character.setBirthday(LocalDateTime.of(year+18, character.getBirthMonth(), character.getDayOfBirth(), 12, 0));
-						character.setConceptionDate(LocalDateTime.of(year+18, character.getBirthMonth(), character.getDayOfBirth(), 12, 0).minusDays(15+Util.random.nextInt(30)));
-					} else {
-						character.setBirthday(LocalDateTime.of(year, character.getBirthMonth(), character.getDayOfBirth(), 12, 0));
-					}
-					
-				} else if(Main.isVersionOlderThan(Game.loadingVersion, "0.3.7.7") && character.isPlayer()) { // Reverting the above change for player characters
-					int age = (int) ChronoUnit.YEARS.between(character.getBirthday(), Main.game.getDateNow());
-					if(age<18) {
-						character.setBirthday(LocalDateTime.of(character.getBirthday().getYear()-18, character.getBirthMonth(), character.getDayOfBirth(), 12, 0));
-						character.setConceptionDate(LocalDateTime.of(year-18, month, day, 12, 0));
-					}
-				}
-				
+								
 			} catch(Exception ex) {
 			}
 		}
@@ -3203,10 +3187,7 @@ public abstract class GameCharacter implements XMLSaving {
 				infoScreenSB.append(UtilText.parse(this, " [npc.She] [npc.was] born on the "+this.getBirthdayString()+","));
 			}
 			if(append) {
-				infoScreenSB.append(UtilText.parse(this,
-						" which"
-						+ (!this.isPlayer()?", due to the fact that everyone in this world starts out as being 18 from the date of their birth,":"")
-						+ " makes [npc.herHim] <span style='color:"+this.getAge().getColour().toWebHexString()+";'>"+Util.intToString(this.getAgeValue())+"</span> years old."));
+				infoScreenSB.append(UtilText.parse(this, " which makes [npc.herHim] <span style='color:"+this.getAge().getColour().toWebHexString()+";'>"+Util.intToString(this.getAgeValue())+"</span> years old."));
 			}
 			
 		} else {
@@ -3872,6 +3853,16 @@ public abstract class GameCharacter implements XMLSaving {
 
 	public void setBirthday(LocalDateTime birthday) {
 		this.birthday = birthday;
+		
+		if(this.isPlayer()) {
+			long age = ChronoUnit.YEARS.between(birthday, Main.game.getDateNow());
+			if(age<MINIMUM_AGE) {
+				this.birthday = (this.getBirthday().minusYears(MINIMUM_AGE-age));
+				
+			} else if(age>50) {
+				this.birthday = (this.getBirthday().plusYears(age-50));
+			}
+		}
 	}
 
 	public AgeCategory getAppearsAsAge() {
@@ -3888,11 +3879,12 @@ public abstract class GameCharacter implements XMLSaving {
 	
 	public int getAgeValue() {
 		int age = (int) ChronoUnit.YEARS.between(birthday, Main.game.getDateNow());
-		if(this.isPlayer()) {
-			return Math.max(MINIMUM_AGE, age);
-		} else { // All non-player characters start as 18.
+		
+		if(birthday.getYear()>=Main.game.getStartingDate().getYear()) {
 			return MINIMUM_AGE + age;
 		}
+		
+		return Math.max(MINIMUM_AGE, age);
 	}
 	
 	public int getAgeAppearanceDifference() {
