@@ -3,9 +3,12 @@ package com.lilithsthrone.game.dialogue.utils;
 import java.io.File;
 import java.time.DayOfWeek;
 import java.time.LocalDateTime;
+import java.time.LocalTime;
+import java.time.Month;
 import java.time.format.TextStyle;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.EnumMap;
 import java.util.HashMap;
@@ -18,6 +21,7 @@ import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import javax.script.CompiledScript;
 import javax.script.ScriptContext;
 import javax.script.ScriptEngine;
 import javax.script.ScriptException;
@@ -26,6 +30,7 @@ import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
 import com.lilithsthrone.game.PropertyValue;
+import com.lilithsthrone.game.character.EquipClothingSetting;
 import com.lilithsthrone.game.character.GameCharacter;
 import com.lilithsthrone.game.character.attributes.AbstractAttribute;
 import com.lilithsthrone.game.character.attributes.AffectionLevel;
@@ -91,6 +96,7 @@ import com.lilithsthrone.game.character.body.types.TongueType;
 import com.lilithsthrone.game.character.body.types.TorsoType;
 import com.lilithsthrone.game.character.body.types.VaginaType;
 import com.lilithsthrone.game.character.body.types.WingType;
+import com.lilithsthrone.game.character.body.valueEnums.BodyHair;
 import com.lilithsthrone.game.character.body.valueEnums.BodyMaterial;
 import com.lilithsthrone.game.character.body.valueEnums.BodyShape;
 import com.lilithsthrone.game.character.body.valueEnums.BodySize;
@@ -100,13 +106,18 @@ import com.lilithsthrone.game.character.body.valueEnums.CoveringModifier;
 import com.lilithsthrone.game.character.body.valueEnums.CoveringPattern;
 import com.lilithsthrone.game.character.body.valueEnums.CumProduction;
 import com.lilithsthrone.game.character.body.valueEnums.Femininity;
+import com.lilithsthrone.game.character.body.valueEnums.FluidFlavour;
+import com.lilithsthrone.game.character.body.valueEnums.FluidModifier;
 import com.lilithsthrone.game.character.body.valueEnums.FootStructure;
 import com.lilithsthrone.game.character.body.valueEnums.GenitalArrangement;
 import com.lilithsthrone.game.character.body.valueEnums.HornLength;
 import com.lilithsthrone.game.character.body.valueEnums.LegConfiguration;
 import com.lilithsthrone.game.character.body.valueEnums.Muscle;
 import com.lilithsthrone.game.character.body.valueEnums.NippleShape;
+import com.lilithsthrone.game.character.body.valueEnums.OrificeDepth;
+import com.lilithsthrone.game.character.body.valueEnums.OrificeElasticity;
 import com.lilithsthrone.game.character.body.valueEnums.OrificeModifier;
+import com.lilithsthrone.game.character.body.valueEnums.OrificePlasticity;
 import com.lilithsthrone.game.character.body.valueEnums.PenetrationGirth;
 import com.lilithsthrone.game.character.body.valueEnums.PenetrationModifier;
 import com.lilithsthrone.game.character.body.valueEnums.PenisLength;
@@ -115,14 +126,22 @@ import com.lilithsthrone.game.character.body.valueEnums.WingSize;
 import com.lilithsthrone.game.character.effects.AbstractPerk;
 import com.lilithsthrone.game.character.effects.AbstractStatusEffect;
 import com.lilithsthrone.game.character.effects.Perk;
+import com.lilithsthrone.game.character.effects.PerkCategory;
 import com.lilithsthrone.game.character.effects.StatusEffect;
+import com.lilithsthrone.game.character.fetishes.AbstractFetish;
 import com.lilithsthrone.game.character.fetishes.Fetish;
 import com.lilithsthrone.game.character.fetishes.FetishDesire;
 import com.lilithsthrone.game.character.gender.Gender;
 import com.lilithsthrone.game.character.gender.GenderPronoun;
 import com.lilithsthrone.game.character.gender.PronounType;
+import com.lilithsthrone.game.character.markings.AbstractTattooType;
+import com.lilithsthrone.game.character.markings.TattooCountType;
+import com.lilithsthrone.game.character.markings.TattooCounterType;
+import com.lilithsthrone.game.character.markings.TattooType;
+import com.lilithsthrone.game.character.markings.TattooWritingStyle;
 import com.lilithsthrone.game.character.npc.NPC;
 import com.lilithsthrone.game.character.npc.NPCFlagValue;
+import com.lilithsthrone.game.character.npc.NPCGenerationFlag;
 import com.lilithsthrone.game.character.npc.dominion.Brax;
 import com.lilithsthrone.game.character.npc.dominion.Lilaya;
 import com.lilithsthrone.game.character.npc.dominion.Nyan;
@@ -147,11 +166,18 @@ import com.lilithsthrone.game.character.race.RacialBody;
 import com.lilithsthrone.game.character.race.Subspecies;
 import com.lilithsthrone.game.combat.CombatBehaviour;
 import com.lilithsthrone.game.combat.DamageType;
+import com.lilithsthrone.game.combat.DamageVariance;
 import com.lilithsthrone.game.combat.spells.Spell;
 import com.lilithsthrone.game.combat.spells.SpellSchool;
 import com.lilithsthrone.game.combat.spells.SpellUpgrade;
+import com.lilithsthrone.game.dialogue.AbstractDialogueFlagValue;
 import com.lilithsthrone.game.dialogue.DialogueFlagValue;
+import com.lilithsthrone.game.dialogue.DialogueManager;
+import com.lilithsthrone.game.dialogue.DialogueNode;
+import com.lilithsthrone.game.dialogue.encounters.AbstractEncounter;
+import com.lilithsthrone.game.dialogue.encounters.Encounter;
 import com.lilithsthrone.game.inventory.AbstractSetBonus;
+import com.lilithsthrone.game.inventory.CharacterInventory;
 import com.lilithsthrone.game.inventory.InventorySlot;
 import com.lilithsthrone.game.inventory.ItemTag;
 import com.lilithsthrone.game.inventory.SetBonus;
@@ -160,16 +186,22 @@ import com.lilithsthrone.game.inventory.clothing.AbstractClothingType;
 import com.lilithsthrone.game.inventory.clothing.ClothingType;
 import com.lilithsthrone.game.inventory.item.AbstractItemType;
 import com.lilithsthrone.game.inventory.item.ItemType;
+import com.lilithsthrone.game.inventory.outfit.AbstractOutfit;
+import com.lilithsthrone.game.inventory.outfit.OutfitType;
 import com.lilithsthrone.game.inventory.weapon.AbstractWeaponType;
 import com.lilithsthrone.game.inventory.weapon.WeaponType;
+import com.lilithsthrone.game.occupantManagement.slave.SlavePermission;
 import com.lilithsthrone.game.occupantManagement.slave.SlavePermissionSetting;
 import com.lilithsthrone.game.settings.ForcedFetishTendency;
 import com.lilithsthrone.game.settings.ForcedTFTendency;
 import com.lilithsthrone.game.sex.GenericSexFlag;
+import com.lilithsthrone.game.sex.OrgasmCumTarget;
 import com.lilithsthrone.game.sex.SexAreaOrifice;
 import com.lilithsthrone.game.sex.SexAreaPenetration;
 import com.lilithsthrone.game.sex.SexPace;
 import com.lilithsthrone.game.sex.SexParticipantType;
+import com.lilithsthrone.game.sex.positions.slots.SexSlot;
+import com.lilithsthrone.game.sex.positions.slots.SexSlotManager;
 import com.lilithsthrone.game.sex.sexActions.baseActions.ToyVagina;
 import com.lilithsthrone.main.Main;
 import com.lilithsthrone.rendering.SVGImages;
@@ -180,6 +212,7 @@ import com.lilithsthrone.utils.colours.Colour;
 import com.lilithsthrone.utils.colours.PresetColour;
 import com.lilithsthrone.utils.time.DayPeriod;
 import com.lilithsthrone.world.AbstractWorldType;
+import com.lilithsthrone.world.Cell;
 import com.lilithsthrone.world.Season;
 import com.lilithsthrone.world.Weather;
 import com.lilithsthrone.world.WorldType;
@@ -188,12 +221,13 @@ import com.lilithsthrone.world.places.AbstractPlaceUpgrade;
 import com.lilithsthrone.world.places.PlaceType;
 import com.lilithsthrone.world.places.PlaceUpgrade;
 
+import jdk.nashorn.api.scripting.NashornScriptEngine;
 import jdk.nashorn.api.scripting.NashornScriptEngineFactory;
 
 /**
  * @since 0.1.0
  * @version 0.4
- * @author Innoxia, Pimvgd, AlacoGit
+ * @author Innoxia, Pimvgd, AlacoGit, Tad Unlikely
  */
 public class UtilText {
 
@@ -206,6 +240,7 @@ public class UtilText {
 	private static AbstractClothingType clothingTypeForParsing;
 	private static Body body;
 	private static AbstractRace race;
+	private static CharacterInventory inventory;
 	
 //	private static List<GameCharacter> specialNPCList = new ArrayList<>();
 	private static boolean parseCapitalise;
@@ -220,14 +255,14 @@ public class UtilText {
 	private static Map<String, String> americanEnglishConversions = Util.newHashMapOfValues(
 			// -our to -or:
 			new Value<>("armour", "armor"),
-			new Value<>("armoury", "armoury"),
+			new Value<>("armoury", "armory"),
 			new Value<>("behaviour", "behavior"),
 			new Value<>("candour", "candor"),
 			new Value<>("clamour", "clamor"),
 			new Value<>("colour", "color"),
 			new Value<>("demeanour", "demeanor"),
 			new Value<>("endeavour", "endeavor"),
-			new Value<>("favourite", "favourite"),
+			new Value<>("favourite", "favorite"),
 			new Value<>("flavour", "flavor"),
 			new Value<>("glamour", "glamor"),
 			new Value<>("harbour", "harbor"),
@@ -236,12 +271,13 @@ public class UtilText {
 			new Value<>("labour", "labor"),
 			new Value<>("neighbour", "neighbor"),
 			new Value<>("odour", "odor"),
+			new Value<>("parlour", "parlor"),
 			new Value<>("rancour", "rancor"),
 			new Value<>("rigour", "rigor"),
 			new Value<>("rumour", "rumor"),
 			new Value<>("saviour", "savior"),
 			new Value<>("savour", "savor"),
-			new Value<>("savoury", "savoury"),
+			new Value<>("savoury", "savory"),
 			new Value<>("splendour", "splendor"),
 			new Value<>("valour", "valor"),
 			new Value<>("vapour", "vapor"),
@@ -257,7 +293,7 @@ public class UtilText {
 			new Value<>("litre", "liter"),
 			new Value<>("louvre", "louver"),
 			new Value<>("lustre", "luster"),
-			new Value<>("manoeuvre", "manoeuver"),
+			new Value<>("manoeuvre", "maneuver"),
 			new Value<>("meagre", "meager"),
 			new Value<>("metre", "meter"),
 			new Value<>("millimetre", "millimeter"),
@@ -306,10 +342,10 @@ public class UtilText {
 
 			// -ae and -oe words change to -e:
 			new Value<>("diarrhoea", "diarrhea"),
-			new Value<>("oestrogen", "oestrgen"),
+			new Value<>("oestrogen", "estrogen"),
 			new Value<>("foetus", "fetus"),
-			new Value<>("manoeuvre", "maneuvre"),
-			new Value<>("mementoes", "mementes"),
+			//new Value<>("manoeuvre", "maneuver"),
+			new Value<>("mementoes", "mementos"),
 			new Value<>("anaemia", "anemia"),
 			new Value<>("caesarean", "cesarean"),
 			new Value<>("gynaecology", "gynecology"),
@@ -319,6 +355,7 @@ public class UtilText {
 			new Value<>("paediatric", "pediatric"),
 
 			// -ise words change to -ize:
+			new Value<>("apologise", "apologize"),
 			new Value<>("appetiser", "appetizer"),
 			new Value<>("authorise", "authorize"),
 			new Value<>("capitalise", "capitalize"),
@@ -377,7 +414,8 @@ public class UtilText {
 			new Value<>("pyjamas", "pajamas"),
 			new Value<>("sceptic", "skeptic"),
 			new Value<>("phial", "vial"),
-			new Value<>("whisky", "whiskey")
+			new Value<>("whisky", "whiskey"),
+			new Value<>("queue", "line")
 			);
 	
 	/**
@@ -433,13 +471,16 @@ public class UtilText {
 	}
 
 	public static String parseSpeech(String text, GameCharacter target, boolean includePersonalityEffects, boolean includeExtraEffects) {
+		return parseSpeech(text, target, includePersonalityEffects, includeExtraEffects, true);
+	}
+	public static String parseSpeech(String text, GameCharacter target, boolean includePersonalityEffects, boolean includeExtraEffects, boolean canBeMuted) {
 		modifiedSentence = text.trim();
 		
 		String[] splitOnConditional = modifiedSentence.split("#THEN");
 		
 		modifiedSentence = UtilText.parse(parsingCharactersForSpeech, splitOnConditional[splitOnConditional.length-1]);
 		
-		if(target.hasPersonalityTrait(PersonalityTrait.MUTE)) {
+		if(target.hasPersonalityTrait(PersonalityTrait.MUTE) && canBeMuted) {
 			modifiedSentence = Util.replaceWithMute(modifiedSentence, Main.game.isInSex() && Main.sex.getAllParticipants().contains(target));
 			
 		} else if(includeExtraEffects
@@ -529,9 +570,13 @@ public class UtilText {
 	}
 	
 	public static String parseThought(String text, GameCharacter target) {
-		return "<i>"+parseSpeech(text, target, true, false).replaceAll("class='speech'", "class='thoughts'")+"</i>";
+		return "<i>"+parseSpeech(text, target, true, false, false).replaceAll("class='speech'", "class='thoughts'")+"</i>";
 	}
 
+	public static String parseNPCThought(String text, Femininity femininity) {
+		return "<i>"+parseNPCSpeech(text, femininity, false, false).replaceAll("class='speech'", "class='thoughts'")+"</i>";
+	}
+	
 	public static String parseNPCSpeech(String text, Femininity femininity) {
 		return parseNPCSpeech(text, femininity, false, false);
 	}
@@ -544,7 +589,7 @@ public class UtilText {
 		if (stutter) {
 			modifiedSentence = Util.addStutter(modifiedSentence, 4);
 		}
-		return "<span class='speech' style='color:" + femininity.getColour().toWebHexString() + ";'>" + modifiedSentence + "</span>";
+		return "<span class='speech' style='color:" + femininity.getSpeechColour().toWebHexString() + ";'>" + modifiedSentence + "</span>";
 	}
 	
 	public static String getDisabledResponse(String label) {
@@ -621,10 +666,17 @@ public class UtilText {
 		return "&#9930;";
 	}
 
+	public static String getBasicInfinitySymbol() {
+		return "<span style='font-weight:normal; font-family:sans-serif; font-size:1.5em;'>&#8734;</span>";
+	}
+
+	/**
+	 * The infinity symbol really, really sucks in the default LT font.
+	 */
 	public static String getInfinitySymbol(boolean largerFont) {
 		//"&#9854;";
 //		return "<span style='font-family:serif; font-weight:normal; font-size:1.25em;'>&#8734;</span>";
-		return "<span style='font-weight:normal; color:"+PresetColour.GENERIC_EXCELLENT.toWebHexString()+"; "+(largerFont?"font-size:28px;":"")+"'>&#8734;</span>";
+		return "<span style='font-weight:normal; font-family:sans-serif; color:"+PresetColour.GENERIC_EXCELLENT.toWebHexString()+"; "+(largerFont?"font-size:28px;":"")+"'>&#8734;</span>";
 	}
 
 	public static String applyGlow(String input) {
@@ -679,6 +731,10 @@ public class UtilText {
 	}
 	
 	public static String formatAsMoneyUncoloured(int money, String tag) {
+		return formatAsMoney(money, tag, null);
+	}
+
+	public static String formatAsMoneyUncoloured(String money, String tag) {
 		return formatAsMoney(money, tag, null);
 	}
 	
@@ -1254,7 +1310,27 @@ public class UtilText {
 			}
 			
 			if (startIndex != 0) {
-				System.err.println("Error in parsing: StartIndex:"+startIndex+" ("+target+", "+command+") - "+input.substring(startIndex, Math.min(input.length()-1, startIndex+20)));
+				StringBuilder errMsg = new StringBuilder("Error in parsing: ");
+				switch(input.charAt(startIndex)) {
+					case '#':
+						errMsg.append("Missing #ENDIF for #IF at ");
+						break;
+					case '[':
+						errMsg.append("Missing ] for [ at ");
+						break;
+					default:
+						errMsg.append("Non-fatal error at ");
+						break;
+				}
+				errMsg.append(startIndex);
+				if(target != null) {
+					errMsg.append(" Target: "+target);
+				}
+				if(command != null) {
+					errMsg.append(" Command: "+command);
+				}
+				errMsg.append(" "+input.substring(startIndex, Math.min(input.length()-1, startIndex+20)));
+				System.err.println(errMsg);
 				parsingCharactersForSpeech = parsingCharactersForSpeechSaved;
 				return input;
 			}
@@ -1305,6 +1381,32 @@ public class UtilText {
 	static{
 
 		// Parsing:
+
+		commandsList.add(new ParserCommand(
+				Util.newArrayListOfValues("wall"),
+				true,
+				true,
+				"",
+				"Returns the name of what kind of wall is in the character's area (for having sex against)."){
+			@Override
+			public String parse(List<GameCharacter> specialNPCs, String command, String arguments, String target, GameCharacter character) {
+				Cell cell = character.getCell();
+				return cell.getWallName();
+			}
+		});
+
+		commandsList.add(new ParserCommand(
+				Util.newArrayListOfValues("desk"),
+				true,
+				true,
+				"",
+				"Returns the name of what kind of desk is in the character's area (for having sex over)."){
+			@Override
+			public String parse(List<GameCharacter> specialNPCs, String command, String arguments, String target, GameCharacter character) {
+				Cell cell = character.getCell();
+				return cell.getDeskName();
+			}
+		});
 		
 		commandsList.add(new ParserCommand(
 				Util.newArrayListOfValues("moneyFormat"),
@@ -1315,6 +1417,21 @@ public class UtilText {
 			@Override
 			public String parse(List<GameCharacter> specialNPCs, String command, String arguments, String target, GameCharacter character) {
 				return UtilText.formatAsMoney(arguments.split(", ")[0], arguments.split(", ")[1]);
+			}
+		});
+
+		commandsList.add(new ParserCommand(
+				Util.newArrayListOfValues(
+						"intFormat",
+						"intToString",
+						"parseInt"),
+				false,
+				false,
+				"(integer)",
+				"Formats the passed integer argument as a String.") {
+			@Override
+			public String parse(List<GameCharacter> specialNPCs, String command, String arguments, String target, GameCharacter character) {
+				return Util.intToString(Integer.valueOf(UtilText.parse(arguments)));
 			}
 		});
 		
@@ -1330,7 +1447,7 @@ public class UtilText {
 				"Formats the supplied number as money, using the tag as the html tag."){
 			@Override
 			public String parse(List<GameCharacter> specialNPCs, String command, String arguments, String target, GameCharacter character) {
-				return UtilText.formatAsMoneyUncoloured(Integer.valueOf(arguments.split(", ")[0]), arguments.split(", ")[1]);
+				return UtilText.formatAsMoneyUncoloured(arguments.split(", ")[0], arguments.split(", ")[1]);
 			}
 		});
 		
@@ -1359,7 +1476,11 @@ public class UtilText {
 			public String parse(List<GameCharacter> specialNPCs, String command, String arguments, String target, GameCharacter character) {
 				List<String> strings = new ArrayList<>();
 				for(String s : arguments.split("\\|")) {
-					strings.add(s);
+					strings.add(UtilText.parse(s.trim()));
+				}
+				strings.removeIf(s->s.trim().isEmpty());
+				if(strings.isEmpty()) {
+					return "";
 				}
 				return Util.randomItemFrom(strings);
 			}
@@ -1755,7 +1876,7 @@ public class UtilText {
 				"Returns the pet name that this character prefers to call the target by. Target argument should be a parsing target tag, such as 'pc', 'npc2', 'lilaya', etc."){
 			@Override
 			public String parse(List<GameCharacter> specialNPCs, String command, String arguments, String target, GameCharacter character) {
-				ParserTarget parserTarget = findParserTargetWithTag(arguments.replaceAll("\u200b", ""));
+				AbstractParserTarget parserTarget = findParserTargetWithTag(arguments.replaceAll("\u200b", ""));
 //				System.out.println(target+" | "+arguments);
 				if (parserTarget == null) {
 					return "petName INVALID_TARGET_NAME("+arguments+")";
@@ -1859,6 +1980,36 @@ public class UtilText {
 			@Override
 			public String parse(List<GameCharacter> specialNPCs, String command, String arguments, String target, GameCharacter character) {
 				return String.valueOf(character.getHistory().getWorkHourEnd());
+			}
+		});
+		
+		commandsList.add(new ParserCommand(
+				Util.newArrayListOfValues(
+						"jobTimeStart",
+						"jobStartTime"),
+				true,
+				true,
+				"",
+				"Returns the locale-adapted start time for this character's job. Does not work for slave jobs."){
+			@Override
+			public String parse(List<GameCharacter> specialNPCs, String command, String arguments, String target, GameCharacter character) {
+				return Units.time(LocalTime.of(character.getHistory().getWorkHourStart(), 0, 0));
+			}
+		});
+		
+		commandsList.add(new ParserCommand(
+				Util.newArrayListOfValues(
+						"jobTimeEnd",
+						"jobEndTime",
+						"jobTimeFinish",
+						"jobFinishTime"),
+				true,
+				true,
+				"",
+				"Returns the locale-adapted end time for this character's job. Does not work for slave jobs."){
+			@Override
+			public String parse(List<GameCharacter> specialNPCs, String command, String arguments, String target, GameCharacter character) {
+				return Units.time(LocalTime.of(character.getHistory().getWorkHourEnd(), 0, 0));
 			}
 		});
 		
@@ -1968,7 +2119,7 @@ public class UtilText {
 				"Prints out the name of this character's affection towards the target. e.g. lilaya.affection(pc) would print 'likes' by default"){
 			@Override
 			public String parse(List<GameCharacter> specialNPCs, String command, String arguments, String target, GameCharacter character) {
-				ParserTarget parserTarget = findParserTargetWithTag(arguments.replaceAll("\u200b", ""));
+				AbstractParserTarget parserTarget = findParserTargetWithTag(arguments.replaceAll("\u200b", ""));
 				try {
 					GameCharacter targetedCharacter = parserTarget.getCharacter(arguments.toLowerCase(), null);
 					return character.getAffectionLevel(targetedCharacter).getDescriptor();
@@ -2021,7 +2172,7 @@ public class UtilText {
 				"Prints out the most important name of this character's relation towards the target (it will cut off multiple relation names). e.g. blaze.relation(crystal) would print 'brother'"){
 			@Override
 			public String parse(List<GameCharacter> specialNPCs, String command, String arguments, String target, GameCharacter character) {
-				ParserTarget parserTarget = findParserTargetWithTag(arguments.replaceAll("\u200b", ""));
+				AbstractParserTarget parserTarget = findParserTargetWithTag(arguments.replaceAll("\u200b", ""));
 				try {
 					GameCharacter targetedCharacter = parserTarget.getCharacter(arguments.toLowerCase(), specialNPCs);
 					Set<Relationship> set = character.getRelationshipsTo(targetedCharacter);
@@ -2049,7 +2200,7 @@ public class UtilText {
 				"Prints out all of this character's relations towards the target. e.g. lilaya.relation(pc) might print 'half-sister and aunt'"){
 			@Override
 			public String parse(List<GameCharacter> specialNPCs, String command, String arguments, String target, GameCharacter character) {
-				ParserTarget parserTarget = findParserTargetWithTag(arguments.replaceAll("\u200b", ""));
+				AbstractParserTarget parserTarget = findParserTargetWithTag(arguments.replaceAll("\u200b", ""));
 				try {
 					GameCharacter targetedCharacter = parserTarget.getCharacter(arguments.toLowerCase(), specialNPCs);
 					return character.getRelationshipStrTo(targetedCharacter);
@@ -2205,6 +2356,24 @@ public class UtilText {
 					return "ma'am";
 				} else {
 					return "sir";
+				}
+			}
+		});
+		
+		commandsList.add(new ParserCommand(
+				Util.newArrayListOfValues(
+						"lord",
+						"lady"),
+				true,
+				true,
+				"",
+				"Returns either 'lord' or 'lady' based on the character's femininity."){
+			@Override
+			public String parse(List<GameCharacter> specialNPCs, String command, String arguments, String target, GameCharacter character) {
+				if(character.isFeminine()) {
+					return "lady";
+				} else {
+					return "lord";
 				}
 			}
 		});
@@ -2443,14 +2612,14 @@ public class UtilText {
 				if(arguments!=null && Boolean.valueOf(arguments)) {
 					boolean pronoun = parseAddPronoun;
 					parseAddPronoun = false;
-					String name = character.isRaceConcealed()?"unknown race":character.getSubspecies().getFeralName(character);
+					String name = character.isRaceConcealed()?"unknown race":character.getSubspecies().getFeralName(character.getBody());
 					return "<span style='color:"+(character.isRaceConcealed()?PresetColour.TEXT_GREY:character.getSubspecies().getColour(character)).toWebHexString()+";'>"
 							+ (parseCapitalise
 									?Util.capitaliseSentence((pronoun?UtilText.generateSingularDeterminer(name)+" ":"")+name)
 									:(pronoun?UtilText.generateSingularDeterminer(name)+" ":"")+name)
 							+"</span>";
 				}
-				return character.getSubspecies().getFeralName(character);
+				return character.getSubspecies().getFeralName(character.getBody());
 			}
 		});
 
@@ -2471,7 +2640,7 @@ public class UtilText {
 				Elemental elemental = ((Elemental)character);
 				String name = elemental.getPassiveForm()==null
 						?"wisp"
-						:elemental.getPassiveForm().getFeralName(elemental);
+						:elemental.getPassiveForm().getFeralName(elemental.getBody());
 				if(arguments!=null && Boolean.valueOf(arguments)) {
 					boolean pronoun = parseAddPronoun;
 					parseAddPronoun = false;
@@ -3139,7 +3308,7 @@ public class UtilText {
 				"Returns 'down' if this character is taller than the target, or 'up' if they are smaller than them."){
 			@Override
 			public String parse(List<GameCharacter> specialNPCs, String command, String arguments, String target, GameCharacter character) {
-				ParserTarget parserTarget = findParserTargetWithTag(arguments.replaceAll("\u200b", ""));
+				AbstractParserTarget parserTarget = findParserTargetWithTag(arguments.replaceAll("\u200b", ""));
 				try {
 					GameCharacter targetedCharacter = parserTarget.getCharacter(arguments.toLowerCase(), null);
 					if(targetedCharacter.getHeightValue()<character.getHeightValue()) {
@@ -3329,6 +3498,104 @@ public class UtilText {
 					return parseThought(arguments, character);
 				} else {
 					return parseThought("...", character);
+				}
+			}
+		});
+		
+		commandsList.add(new ParserCommand(
+				Util.newArrayListOfValues(
+						"thoughtMasculine",
+						"masculineThought"),
+				false,
+				false,
+				"(thought content)",
+				"Parses the containing dialogue as though a generic, masculine character is saying it."){
+			@Override
+			public String parse(List<GameCharacter> specialNPCs, String command, String arguments, String target, GameCharacter character) {
+				if(arguments!=null) {
+					return parseNPCThought(arguments, Femininity.MASCULINE);
+				} else {
+					return parseNPCThought("...", Femininity.MASCULINE);
+				}
+			}
+		});
+		
+		commandsList.add(new ParserCommand(
+				Util.newArrayListOfValues(
+						"thoughtMasculineStrong",
+						"thoughtMasculineHeavy",
+						"thoughtMasculinePlus",
+						"masculineStrongThought",
+						"masculineHeavyThought",
+						"masculinePlusThought"),
+				false,
+				false,
+				"(thought content)",
+				"Parses the containing dialogue as though a generic, very masculine character is saying it."){
+			@Override
+			public String parse(List<GameCharacter> specialNPCs, String command, String arguments, String target, GameCharacter character) {
+				if(arguments!=null) {
+					return parseNPCThought(arguments, Femininity.MASCULINE_STRONG);
+				} else {
+					return parseNPCThought("...", Femininity.MASCULINE_STRONG);
+				}
+			}
+		});
+		
+		commandsList.add(new ParserCommand(
+				Util.newArrayListOfValues(
+						"thoughtAndrogynous",
+						"androgynousThought"),
+				false,
+				false,
+				"(thought content)",
+				"Parses the containing dialogue as though a generic, androgynous character is saying it."){
+			@Override
+			public String parse(List<GameCharacter> specialNPCs, String command, String arguments, String target, GameCharacter character) {
+				if(arguments!=null) {
+					return parseNPCThought(arguments, Femininity.ANDROGYNOUS);
+				} else {
+					return parseNPCThought("...", Femininity.ANDROGYNOUS);
+				}
+			}
+		});
+		
+		commandsList.add(new ParserCommand(
+				Util.newArrayListOfValues(
+						"thoughtFeminine",
+						"feminineThought"),
+				false,
+				false,
+				"(thought content)",
+				"Parses the containing dialogue as though a generic, feminine character is saying it."){
+			@Override
+			public String parse(List<GameCharacter> specialNPCs, String command, String arguments, String target, GameCharacter character) {
+				if(arguments!=null) {
+					return parseNPCThought(arguments, Femininity.FEMININE);
+				} else {
+					return parseNPCThought("...", Femininity.FEMININE);
+				}
+			}
+		});
+		
+		commandsList.add(new ParserCommand(
+				Util.newArrayListOfValues(
+						"thoughtFeminineStrong",
+						"thoughtFeminineHeavy",
+						"thoughtFemininePlus",
+						"feminineStrongThought",
+						"feminineHeavyThought",
+						"femininePlusThought"),
+				false,
+				false,
+				"(thought content)",
+				"Parses the containing dialogue as though a generic, very feminine character is saying it."){
+			@Override
+			public String parse(List<GameCharacter> specialNPCs, String command, String arguments, String target, GameCharacter character) {
+				if(arguments!=null) {
+					return parseNPCThought(arguments, Femininity.FEMININE_STRONG);
+				} else {
+					return parseNPCThought("...", Femininity.FEMININE_STRONG);
 				}
 			}
 		});
@@ -4169,7 +4436,7 @@ public class UtilText {
 				true,
 				"(real pronoun)",
 				"Returns the correct pronoun for this character (you, him, her). By default, returns 'you' for player character."
-				+ " If you need the regular third-person player character pronoun, passin 'true' as an argument."){
+				+ " If you need the regular third-person player character pronoun, pass in 'true' as an argument."){
 			@Override
 			public String parse(List<GameCharacter> specialNPCs, String command, String arguments, String target, GameCharacter character) {
 				if(arguments==null && isPlayer(target, character)) {
@@ -4840,7 +5107,7 @@ public class UtilText {
 				true,
 				false,
 				"(hours to convert)",
-				"Returns the converted hours into a time reading.") {
+				"Returns the converted hours into a time reading. Decimal places correspond to fraction of hour as minutes (i.e. 6.5 is parsed as 06:30).") {
 			@Override
 			public String parse(List<GameCharacter> specialNPCs, String command, String arguments, String target, GameCharacter character) {
 				if (arguments == null || arguments.isEmpty()) {
@@ -5236,7 +5503,7 @@ public class UtilText {
 				true,
 				true,
 				"",
-				"Returns the descriptor of the length of this cahracter's antennae.",
+				"Returns the descriptor of the length of this character's antennae.",
 				BodyPartType.ANTENNA){
 			@Override
 			public String parse(List<GameCharacter> specialNPCs, String command, String arguments, String target, GameCharacter character) {
@@ -5291,6 +5558,112 @@ public class UtilText {
 		
 		
 		// Arm:
+
+		commandsList.add(new ParserCommand(
+				Util.newArrayListOfValues(
+						"armpit",
+						"underarm"),
+				true,
+				true,
+				"",
+				"Returns the name of the character's armpit. Will almost always simply be 'armpit' or 'underarm'.",
+				BodyPartType.LEG){
+			@Override
+			public String parse(List<GameCharacter> specialNPCs, String command, String arguments, String target, GameCharacter character) {
+				return UtilText.returnStringAtRandom("armpit", "underarm");
+			}
+		});
+		
+		commandsList.add(new ParserCommand(
+				Util.newArrayListOfValues(
+						"armpit+",
+						"armpitD",
+						"underarm+",
+						"underarmD"),
+				true,
+				true,
+				"",
+				"Returns the name of the character's armpit, with a descriptive word appended to the front of it, based on underarm hair, arm furriness, and femininity.",
+				BodyPartType.LEG){
+			@Override
+			public String parse(List<GameCharacter> specialNPCs, String command, String arguments, String target, GameCharacter character) {
+				List<String> descriptors = new ArrayList<>();
+				if(character.getCovering(character.getArmCovering()).getModifier().isFurryModifier()) {
+					descriptors.add("furry");
+				} else {
+					if(Main.game.isBodyHairEnabled() && character.getUnderarmHair()!=BodyHair.ZERO_NONE) {
+						descriptors.add("hairy");
+					} else {
+						descriptors.add("smooth");
+					}
+				}
+				if(character.isFeminine()) {
+					descriptors.add("feminine");
+					descriptors.add("sexy");
+					descriptors.add("hot");
+				} else {
+					descriptors.add("masculine");
+				}
+				if(character.getMuscleValue()>=Muscle.THREE_MUSCULAR.getMinimumValue()) {
+					descriptors.add("muscular");
+				} else if(character.getMuscleValue()<Muscle.ONE_LIGHTLY_MUSCLED.getMinimumValue() && character.getBodySizeValue()>=BodySize.THREE_LARGE.getMinimumValue()){
+					descriptors.add("chubby");
+				}
+				return applyDescriptor(
+						Util.randomItemFrom(descriptors),
+						UtilText.returnStringAtRandom("armpit", "underarm"));
+			}
+		});
+
+		commandsList.add(new ParserCommand(
+				Util.newArrayListOfValues(
+						"armpits",
+						"underarms"),
+				true,
+				true,
+				"",
+				"Returns the name of the character's armpits. Will almost always simply be 'armpits' or 'underarms'.",
+				BodyPartType.LEG){
+			@Override
+			public String parse(List<GameCharacter> specialNPCs, String command, String arguments, String target, GameCharacter character) {
+				return UtilText.returnStringAtRandom("armpits", "underarms");
+			}
+		});
+		
+		commandsList.add(new ParserCommand(
+				Util.newArrayListOfValues(
+						"armpits+",
+						"armpitsD",
+						"underarms+",
+						"underarmsD"),
+				true,
+				true,
+				"",
+				"Returns the name of the character's armpits, with a descriptive word appended to the front of it, based on underarm hair, arm furriness, and femininity.",
+				BodyPartType.LEG){
+			@Override
+			public String parse(List<GameCharacter> specialNPCs, String command, String arguments, String target, GameCharacter character) {
+				List<String> descriptors = new ArrayList<>();
+				if(character.getCovering(character.getArmCovering()).getModifier().isFurryModifier()) {
+					descriptors.add("furry");
+				} else {
+					if(character.getUnderarmHair()!=BodyHair.ZERO_NONE) {
+						descriptors.add("hairy");
+					} else {
+						descriptors.add("smooth");
+					}
+				}
+				if(character.isFeminine()) {
+					descriptors.add("feminine");
+					descriptors.add("sexy");
+				} else {
+					descriptors.add("masculine");
+				}
+				return applyDescriptor(
+						Util.randomItemFrom(descriptors),
+						UtilText.returnStringAtRandom("armpits", "underarms"));
+			}
+		});
 		
 		commandsList.add(new ParserCommand(
 				Util.newArrayListOfValues(
@@ -6517,11 +6890,11 @@ public class UtilText {
 				true,
 				true,
 				"",
-				"Returns the descriptor of the length of this cahracter's horns.",
+				"Returns the descriptor of the length of this character's horns.",
 				BodyPartType.HORN){
 			@Override
 			public String parse(List<GameCharacter> specialNPCs, String command, String arguments, String target, GameCharacter character) {
-				return HornLength.getLengthFromInt(character.getHornLength()).getDescriptor();
+				return HornLength.getLengthFromInt(character.getHornLengthValue()).getDescriptor();
 			}
 		});
 		
@@ -7276,7 +7649,7 @@ public class UtilText {
 				false,
 				false,
 				"(short)",
-				"Returns the localized, formatted size of the penis with long singular units ('centimetre'). Pass in true to return as short measurement ('cm').",
+				"Returns the localized, formatted size of the penis with long *singular* units ('centimetre'). Pass in true to return as short measurement ('cm').",
 				BodyPartType.PENIS) {
 			@Override
 			public String parse(List<GameCharacter> specialNPCs, String command, String arguments, String target, GameCharacter character) {
@@ -7284,6 +7657,26 @@ public class UtilText {
 					return Units.size(character.getPenisRawSizeValue(), Units.ValueType.NUMERIC, Units.UnitType.SHORT);
 				}
 				return Units.size(character.getPenisRawSizeValue(), Units.ValueType.NUMERIC, Units.UnitType.LONG_SINGULAR);
+			}
+		});
+
+		commandsList.add(new ParserCommand(
+				Util.newArrayListOfValues(
+						"cockValues",
+						"cockLengthValues",
+						"penisValues",
+						"penisLengthValues"),
+				false,
+				false,
+				"(short)",
+				"Returns the localized, formatted size of the penis with long *plural* units ('centimetres'). Pass in true to return as short measurement ('cm').",
+				BodyPartType.PENIS) {
+			@Override
+			public String parse(List<GameCharacter> specialNPCs, String command, String arguments, String target, GameCharacter character) {
+				if(arguments!=null && arguments.equalsIgnoreCase("true")) {
+					return Units.size(character.getPenisRawSizeValue(), Units.ValueType.NUMERIC, Units.UnitType.SHORT);
+				}
+				return Units.size(character.getPenisRawSizeValue(), Units.ValueType.NUMERIC, Units.UnitType.LONG);
 			}
 		});
 		
@@ -7682,7 +8075,7 @@ public class UtilText {
 				return applyDescriptor(character.getTailType().getTailTipDescriptor(character), character.getTailType().getTailTipNamePlural(character));
 			}
 		});
-		
+
 		commandsList.add(new ParserCommand(
 				Util.newArrayListOfValues(
 						"tailCount",
@@ -7697,7 +8090,22 @@ public class UtilText {
 				return Util.intToString(character.getTailCount());
 			}
 		});
-		
+
+		commandsList.add(new ParserCommand(
+				Util.newArrayListOfValues(
+						"tailMaxCount",
+						"tailsMaxCount"),
+				true,
+				false,
+				"",
+				"Returns the maximum number of (Youko) tails this character can have.",
+				BodyPartType.TAIL){
+			@Override
+			public String parse(List<GameCharacter> specialNPCs, String command, String arguments, String target, GameCharacter character) {
+				return Util.intToString(character.getMaxTailCount());
+			}
+		});
+
 		commandsList.add(new ParserCommand(
 				Util.newArrayListOfValues(
 						"tailGirth",
@@ -9089,12 +9497,26 @@ public class UtilText {
 				}
 			}
 			
+			// Companion parsing tags:
 			if(Main.game.isStarted() && Main.game.getPlayer().hasCompanions()) {
 				for(int i = 0; i<Main.game.getPlayer().getCompanions().size(); i++) {
 					if(i==0) {
 						engine.put("com", Main.game.getPlayer().getCompanions().get(i));
 					}
 					engine.put("com"+(i+1), Main.game.getPlayer().getCompanions().get(i));
+				}
+			}
+
+			// Non-companion parsing tags:
+			if(Main.game.isStarted()) {
+				List<NPC> npcs = new ArrayList<>(Main.game.getNonCompanionCharactersPresent());
+				npcs.removeIf(npc->npc.isUnique());
+				Collections.sort(npcs, (n1, n2)->n1.getId().compareTo(n2.getId()));
+				for(int i = 0; i<npcs.size(); i++) {
+					if(i==0) {
+						engine.put("ncom", npcs.get(i));
+					}
+					engine.put("ncom"+(i+1), npcs.get(i));
 				}
 			}
 			
@@ -9107,10 +9529,10 @@ public class UtilText {
 				commandWithVariableCalls.append(command);
 				
 				if(suppressOutput) {
-					engine.eval(commandWithVariableCalls.toString());
+					evaluate(commandWithVariableCalls.toString());
 					return "";
 				}
-				return String.valueOf(engine.eval(commandWithVariableCalls.toString()));
+				return String.valueOf(evaluate(commandWithVariableCalls.toString()));
 				
 			} catch (ScriptException e) {
 				System.err.println("Scripting parsing error: "+command);
@@ -9119,7 +9541,7 @@ public class UtilText {
 				return "<i style='color:"+PresetColour.GENERIC_BAD.toWebHexString()+";'>(Error in script parsing!)</i>";
 			}
 			
-		} else if(Main.game.isStarted()) { //TODO test:
+		} else if(Main.game!=null && Main.game.isStarted()) {
 			if(engine==null) {
 				initScriptEngine();
 			}
@@ -9137,7 +9559,8 @@ public class UtilText {
 //					System.err.println("Parsing error: Could not initialise npc 2");
 				}
 			}
-			
+
+			// Companion parsing tags:
 			if(Main.game.getPlayer().hasCompanions()) {
 				for(int i = 0; i<Main.game.getPlayer().getCompanions().size(); i++) {
 					if(i==0) {
@@ -9145,6 +9568,17 @@ public class UtilText {
 					}
 					engine.put("com"+(i+1), Main.game.getPlayer().getCompanions().get(i));
 				}
+			}
+			
+			// Non-companion parsing tags:
+			List<NPC> npcs = new ArrayList<>(Main.game.getNonCompanionCharactersPresent());
+			npcs.removeIf(npc->npc.isUnique());
+			Collections.sort(npcs, (n1, n2)->n1.getId().compareTo(n2.getId()));
+			for(int i = 0; i<npcs.size(); i++) {
+				if(i==0) {
+					engine.put("ncom", npcs.get(i));
+				}
+				engine.put("ncom"+(i+1), npcs.get(i));
 			}
 		}
 		
@@ -9164,7 +9598,7 @@ public class UtilText {
 			parseCapitalise = true;
 		}
 		
-		ParserTarget parserTarget = findParserTargetWithTag(target.replaceAll("\u200b", ""));
+		AbstractParserTarget parserTarget = findParserTargetWithTag(target.replaceAll("\u200b", ""));
 		if (parserTarget == null) {
 			return "INVALID_TARGET_NAME("+target+")";
 		}
@@ -9199,15 +9633,32 @@ public class UtilText {
 		return output;
 	}
 
-	private static ParserTarget findParserTargetWithTag(String target) {
-		for(ParserTarget parserTarget : ParserTarget.values()) {
+	private static AbstractParserTarget findParserTargetWithTag(String target) {
+		for(AbstractParserTarget parserTarget : ParserTarget.getAllParserTargets()) {
 			for(String s : parserTarget.getTags()) {
 				if(s.toLowerCase().equals(target.toLowerCase())) {
 					return parserTarget;
 				}
 			}
 		}
+		System.err.println("UtilText error: findParserTargetWithTag() could not find a character with the parser tag '"+target+"'");
 		return null;
+	}
+
+	public static GameCharacter findFirstCharacterFromParserTarget(String target) {
+		AbstractParserTarget parserTarget = findParserTargetWithTag(target);
+		
+		List<GameCharacter> specialNPCs = new ArrayList<>();
+		if(Main.game.getActiveNPC()!=null && Main.game.getCharactersPresent().contains(Main.game.getActiveNPC())) {
+			specialNPCs.add(Main.game.getActiveNPC()); // Make sure active NPC is in index 0 if they're also present
+		}
+		for(NPC gc : Main.game.getCharactersPresent()) {
+			if(!specialNPCs.contains(gc)) {
+				specialNPCs.add(gc);
+			}
+		}
+		
+		return parserTarget.getCharacter(target, specialNPCs);
 	}
 
 	private static ParserCommand findCommandWithTag(String command) {
@@ -9235,12 +9686,26 @@ public class UtilText {
 			clearSpecialParsingStrings();
 		}
 		specialParsingStrings.add(string);
-		initScriptEngine();
+//		initScriptEngine();
 		return specialParsingStrings.size();
 	}
 	
 	public static void clearSpecialParsingStrings() {
 		specialParsingStrings = new ArrayList<>();
+	}
+	
+	/**
+	 * Adds the key/value pair tag/target to the engine.
+	 */
+	public static void addNewParserTarget(String tag, GameCharacter target) {
+		engine.put(tag, target);
+	}
+
+	/**
+	 * Sets the key/value pair tag/null to the engine.
+	 */
+	public static void removeParserTarget(String tag) {
+		engine.put(tag, null);
 	}
 	
 	public static void initScriptEngine() {
@@ -9259,11 +9724,13 @@ public class UtilText {
 		
 //		ScriptEngineManager manager = new ScriptEngineManager();
 //		engine = manager.getEngineByName("javascript");
+
+		engine.put("RND", Util.random);
 		
 		// Parser targets:
 		if(Main.game.isStarted()) {
-			for(ParserTarget target : ParserTarget.values()) {
-				if(target!=ParserTarget.STYLE && target!=ParserTarget.UNIT && target!=ParserTarget.NPC && target!=ParserTarget.COMPANION) {
+			for(AbstractParserTarget target : ParserTarget.getAllParserTargets()) {
+				if(target!=ParserTarget.STYLE && target!=ParserTarget.UNIT && target!=ParserTarget.NPC && target!=ParserTarget.COMPANION && target!=ParserTarget.NON_COMPANION) {
 					for(String tag : target.getTags()) {
 						engine.put(tag, target.getCharacter(tag, null));
 					}
@@ -9279,10 +9746,14 @@ public class UtilText {
 		engine.put("sex", Main.sex);
 		engine.put("combat", Main.combat);
 		engine.put("properties", Main.getProperties());
-		engine.put("RND", Util.random);
 		engine.put("itemGen", Main.game.getItemGen());
+		engine.put("flags", Main.game.getDialogueFlags());
+		engine.put("dialogueManager", Main.game.getDialogueManager());
 		
 		// Java classes:
+		for(Month month : Month.values()) {
+			engine.put("MONTH_"+month, month);
+		}
 		for(DayOfWeek dayOfWeek : DayOfWeek.values()) {
 			engine.put("DOW_"+dayOfWeek, dayOfWeek);
 		}
@@ -9301,19 +9772,48 @@ public class UtilText {
 		for(AbstractSetBonus setBonus : SetBonus.getAllSetBonuses()) {
 			engine.put("SET_BONUS_"+SetBonus.getIdFromSetBonus(setBonus), setBonus);
 		}
+		for(AbstractOutfit outfit : OutfitType.getAllOutfits()) {
+			engine.put("OUTFIT_"+OutfitType.getIdFromOutfitType(outfit), outfit);
+		}
+		for(OutfitType outfitType : OutfitType.values()) {
+			engine.put("OUTFIT_TYPE_"+outfitType.toString(), outfitType);
+		}
 		for(ItemTag it : ItemTag.values()) {
 			engine.put("ITEM_TAG_"+it.toString(), it);
 		}
 		for(CoverableArea ca : CoverableArea.values()) {
+			engine.put("COVERABLE_AREA_"+ca.toString(), ca);
 			engine.put("CA_"+ca.toString(), ca);
 		}
 		for(InventorySlot is : InventorySlot.values()) {
+			engine.put("INV_SLOT_"+is.toString(), is);
 			engine.put("IS_"+is.toString(), is);
+		}
+		for(EquipClothingSetting ecs : EquipClothingSetting.values()) {
+			engine.put("EQUIP_CLOTHING_SETTING_"+ecs.toString(), ecs);
+			engine.put("ECS_"+ecs.toString(), ecs);
+		}
+		
+		// Tattoos:
+		for(AbstractTattooType tattooType : TattooType.getAllTattooTypes()) {
+			engine.put("TATTOO_"+TattooType.getIdFromTattooType(tattooType), tattooType);
+		}
+		for(TattooCounterType tattooCounterType : TattooCounterType.values()) {
+			engine.put("TATTOO_COUNTER_"+tattooCounterType.toString(), tattooCounterType);
+		}
+		for(TattooCountType tattooCountType : TattooCountType.values()) {
+			engine.put("TATTOO_COUNT_"+tattooCountType.toString(), tattooCountType);
+		}
+		for(TattooWritingStyle tattooWritingStyle : TattooWritingStyle.values()) {
+			engine.put("TATTOO_WRITING_STYLE_"+tattooWritingStyle.toString(), tattooWritingStyle);
 		}
 		
 		// Misc.:
 		for(Colour colour : PresetColour.getAllPresetColours()) {
 			engine.put("COLOUR_"+PresetColour.getIdFromColour(colour), colour);
+		}
+		for(Entry<DialogueNode, String> dn: DialogueManager.getDialogueToIdMap().entrySet()) {
+			engine.put("DN_"+dn.getValue(), dn.getKey());
 		}
 		
 		// Bodies:
@@ -9329,6 +9829,9 @@ public class UtilText {
 		for(AbstractSubspecies subspecies : Subspecies.getAllSubspecies()) {
 			engine.put("SUBSPECIES_"+Subspecies.getIdFromSubspecies(subspecies), subspecies);
 		}
+		for(Gender gender : Gender.values()) {
+			engine.put("GENDER_"+gender.toString(), gender);
+		}
 		for(LegConfiguration legConf : LegConfiguration.values()) {
 			engine.put("LEG_CONFIGURATION_"+legConf.toString(), legConf);
 		}
@@ -9337,6 +9840,9 @@ public class UtilText {
 		}
 		for(GenitalArrangement genArrangement : GenitalArrangement.values()) {
 			engine.put("GENITALS_"+genArrangement.toString(), genArrangement);
+		}
+		for(PenisLength penisLength : PenisLength.values()) {
+			engine.put("PENIS_LENGTH_"+penisLength.toString(), penisLength);
 		}
 		for(BodyMaterial material : BodyMaterial.values()) {
 			engine.put("BODY_MATERIAL_"+material.toString(), material);
@@ -9359,9 +9865,19 @@ public class UtilText {
 		for(CumProduction cumProduction : CumProduction.values()) {
 			engine.put("CUM_PRODUCTION_"+cumProduction.toString(), cumProduction);
 		}
+		for(FluidModifier fluidModifier : FluidModifier.values()) {
+			engine.put("FLUID_MODIFIER_"+fluidModifier.toString(), fluidModifier);
+		}
+		for(FluidFlavour fluidFlavour : FluidFlavour.values()) {
+			engine.put("FLUID_FLAVOUR_"+fluidFlavour.toString(), fluidFlavour);
+		}
 		for(BodyPartTag bpt : BodyPartTag.values()) {
 			engine.put("BODY_PART_TAG_"+bpt.toString(), bpt);
 		}
+		// Spelling errors which were corrected in PR#1603 but which now need correct parser references for old mod version support:
+		engine.put("BODY_PART_TAG_TAIL_SUTABLE_FOR_PENETRATION", BodyPartTag.TAIL_SUITABLE_FOR_PENETRATION);
+		engine.put("BODY_PART_TAG_TAIL_NEVER_SUTABLE_FOR_PENETRATION", BodyPartTag.TAIL_NEVER_SUITABLE_FOR_PENETRATION);
+		
 		for(PenetrationModifier penMod : PenetrationModifier.values()) {
 			engine.put("PENETRATION_MODIFIER_"+penMod.toString(), penMod);
 		}
@@ -9379,6 +9895,18 @@ public class UtilText {
 		}
 		for(BodyShape bodyShape : BodyShape.values()) {
 			engine.put("BODY_SHAPE_"+bodyShape.toString(), bodyShape);
+		}
+		for(Capacity capacity : Capacity.values()) {
+			engine.put("CAPACITY_"+capacity.toString(), capacity);
+		}
+		for(OrificeDepth depth : OrificeDepth.values()) {
+			engine.put("DEPTH_"+depth.toString(), depth);
+		}
+		for(OrificeElasticity elasticity : OrificeElasticity.values()) {
+			engine.put("ELASTICITY_"+elasticity.toString(), elasticity);
+		}
+		for(OrificePlasticity plasticity : OrificePlasticity.values()) {
+			engine.put("PLASTICITY_"+plasticity.toString(), plasticity);
 		}
 		// Types:
 		for(AbstractFluidType fluidType : FluidType.getAllFluidTypes()) {
@@ -9456,8 +9984,8 @@ public class UtilText {
 		
 		
 		// Effects & persona:
-		for(Fetish f : Fetish.values()) {
-			engine.put(f.toString(), f);
+		for(AbstractFetish f : Fetish.getAllFetishes()) {
+			engine.put(Fetish.getIdFromFetish(f), f);
 		}
 		for(FetishDesire fetishDesire : FetishDesire.values()) {
 			engine.put("FETISH_DESIRE_"+fetishDesire.toString(), fetishDesire);
@@ -9474,16 +10002,27 @@ public class UtilText {
 		for(AbstractPerk p : Perk.getAllPerks()) {
 			engine.put("PERK_"+Perk.getIdFromPerk(p), p);
 		}
+		for(PerkCategory pk : PerkCategory.values()) {
+			engine.put("PERK_CATEGORY_"+pk.toString(), pk);
+		}
 		for(AbstractStatusEffect sa : StatusEffect.getAllStatusEffects()) {
+			engine.put("STATUS_EFFECT_"+StatusEffect.getIdFromStatusEffect(sa), sa);
 			engine.put("SE_"+StatusEffect.getIdFromStatusEffect(sa), sa);
 		}
 		for(AbstractAttribute att : Attribute.getAllAttributes()) {
 			engine.put("ATTRIBUTE_"+Attribute.getIdFromAttribute(att), att);
 		}
+		for(CorruptionLevel corruption : CorruptionLevel.values()) {
+			engine.put("CORRUPTION_LEVEL_"+corruption.toString(), corruption);
+		}
+		
 		
 		// Combat:
 		for(DamageType damageType : DamageType.values()) {
 			engine.put("DAMAGE_TYPE_"+damageType.toString(), damageType);
+		}
+		for(DamageVariance damageVariance : DamageVariance.values()) {
+			engine.put("DAMAGE_VARIANCE_"+damageVariance.toString(), damageVariance);
 		}
 		for(SpellSchool spellSchool : SpellSchool.values()) {
 			engine.put("SPELL_SCHOOL_"+spellSchool.toString(), spellSchool);
@@ -9511,6 +10050,16 @@ public class UtilText {
 		for(GenericSexFlag flag : GenericSexFlag.values()) {
 			engine.put("SEX_FLAG_"+flag.toString(), flag);
 		}
+		for(SexPace pace : SexPace.values()) {
+			engine.put("SEX_PACE_"+pace.toString(), pace);
+		}
+		for(OrgasmCumTarget oct : OrgasmCumTarget.values()) {
+			engine.put("OCT_"+oct.toString(), oct);
+		}
+		for(Entry<String, SexSlot> slot : SexSlotManager.getIdToSexSlotMap().entrySet()) {
+			engine.put("SEX_SLOT_"+slot.getKey(), slot.getValue());
+		}
+		
 		
 		// Other:
 		for(Season season : Season.values()) {
@@ -9522,11 +10071,17 @@ public class UtilText {
 		for(DayPeriod dayPeriod : DayPeriod.values()) {
 			engine.put("DAY_PERIOD_"+dayPeriod.toString(), dayPeriod);
 		}
-		for(DialogueFlagValue flag : DialogueFlagValue.values()) {
-			engine.put("FLAG_"+flag.toString(), flag);
+		for(AbstractDialogueFlagValue flag : DialogueFlagValue.getAllDialogueFlagValues()) {
+			engine.put("FLAG_"+flag.getId(), flag);
 		}
 		for(NPCFlagValue flag : NPCFlagValue.values()) {
 			engine.put("NPC_FLAG_"+flag.toString(), flag);
+		}
+		for(NPCGenerationFlag flag : NPCGenerationFlag.values()) {
+			engine.put("NPC_GEN_FLAG_"+flag.toString(), flag);
+		}
+		for(SlavePermission permission : SlavePermission.values()) {
+			engine.put("SLAVE_PERMISSION_"+permission.toString(), permission);
 		}
 		for(SlavePermissionSetting permission : SlavePermissionSetting.values()) {
 			engine.put("SLAVE_PERMISSION_SETTING_"+permission.toString(), permission);
@@ -9576,12 +10131,18 @@ public class UtilText {
 		for(AbstractPlaceUpgrade upgrade : PlaceUpgrade.getAllPlaceUpgrades()) {
 			engine.put("PLACE_UPGRADE_"+PlaceUpgrade.getIdFromPlaceUpgrade(upgrade), upgrade);
 		}
-
+		for(AbstractEncounter encounter : Encounter.getAllEncounters()) {
+			engine.put("ENCOUNTER_"+Encounter.getIdFromEncounter(encounter), encounter);
+		}
+		for(InventoryInteraction interaction : InventoryInteraction.values()) {
+			engine.put("INVENTORY_INTERACTION_"+interaction.toString(), interaction);
+		}
+		
 		
 		
 		// static methods don't work unless initialised like so:
 //		try {
-//			engine.eval("var sex = Java.type('com.lilithsthrone.game.sex.Sex');");
+//			evaluate("var sex = Java.type('com.lilithsthrone.game.sex.Sex');");
 //		} catch (ScriptException e) {
 //			e.printStackTrace();
 //		}
@@ -9639,7 +10200,8 @@ public class UtilText {
 	//				System.err.println("Parsing error 2: Could not initialise npc");
 				}
 			}
-			
+
+			// Companion parsing tags:
 			if(Main.game.getPlayer().hasCompanions()) {
 				for(int i = 0; i<Main.game.getPlayer().getCompanions().size(); i++) {
 					if(i==0) {
@@ -9647,6 +10209,17 @@ public class UtilText {
 					}
 					engine.put("com"+(i+1), Main.game.getPlayer().getCompanions().get(i));
 				}
+			}
+			
+			// Non-companion parsing tags:
+			List<NPC> npcs = new ArrayList<>(Main.game.getNonCompanionCharactersPresent());
+			npcs.removeIf(npc->npc.isUnique());
+			Collections.sort(npcs, (n1, n2)->n1.getId().compareTo(n2.getId()));
+			for(int i = 0; i<npcs.size(); i++) {
+				if(i==0) {
+					engine.put("ncom", npcs.get(i));
+				}
+				engine.put("ncom"+(i+1), npcs.get(i));
 			}
 		}
 		
@@ -9659,7 +10232,7 @@ public class UtilText {
 		}
 		conditionalStatementWithVariables.append(conditionalStatement);
 		
-		return (boolean)engine.eval(conditionalStatementWithVariables.toString());
+		return (boolean)evaluate(conditionalStatementWithVariables.toString());
 	}
 	
 	
@@ -9687,7 +10260,7 @@ public class UtilText {
 			@Override
 			public String parse(List<GameCharacter> specialNPCs, String command, String arguments, String target, GameCharacter character) {
 				try {
-					return getBodyPartFromType(bodyPart,character).getType().getRace().getName(character, getBodyPartFromType(bodyPart, character).isFeral(character));
+					return getBodyPartFromType(bodyPart,character).getType().getRace().getName(character.getBody(), getBodyPartFromType(bodyPart, character).isFeral(character));
 				} catch(Exception ex) {
 					return "null_body_part";
 				}
@@ -10127,9 +10700,9 @@ public class UtilText {
 		}
 		
 		if (character.isFeminine()) {
-			return subspecies.getSingularFemaleName(character);
+			return subspecies.getSingularFemaleName(character.getBody());
 		} else {
-			return subspecies.getSingularMaleName(character);
+			return subspecies.getSingularMaleName(character.getBody());
 		}
 	}
 	
@@ -10137,9 +10710,9 @@ public class UtilText {
 		if(race==null)
 			return "";
 		if (character.isFeminine()) {
-			return race.getPluralFemaleName(character);
+			return race.getPluralFemaleName(character.getBody());
 		} else {
-			return race.getPluralMaleName(character);
+			return race.getPluralMaleName(character.getBody());
 		}
 	}
 	
@@ -10241,5 +10814,58 @@ public class UtilText {
 		}
 		engine.put(tag, getRaceForParsing());
 	}
+
+	public static CharacterInventory getInventoryForParsing() {
+		return inventory;
+	}
 	
+	public static void setInventoryForParsing(String tag, CharacterInventory inventory) {
+		UtilText.inventory = inventory;
+		if(engine==null) {
+			initScriptEngine();
+		}
+		engine.put(tag, getInventoryForParsing());
+	}
+	
+	
+	// Memoization improvement attempts follow from here:
+	
+//	private static final Map<String, CompiledScript> memo = new HashMap<>();
+//	private static final int memo_limit = 500;
+	// NOTE: This was causing a bug where upon loading a saved game, the player's race wasn't being recalculated properly for some reason.
+	// It seems to have been fixed by changing return script.eval(); to return script.eval(((NashornScriptEngine)engine).getContext());
+	/**
+	 * Added in PR#1442 to increase performance by adding a memoization cache to compile scripting engine scripts.
+	 * <br/>- Adds a cache intended to hold compiled forms of script engine scripts.
+	 * <br/>- Cache capacity set to 500, and will stop adding new entries at that limit (tests did not exceed 100, but mods affect this).
+	 * <br/>- Tests showed scripting engine calls take 50% less time on average.
+	 * <br/>- WARNING: adds one more nashorn warning.
+	 * @param command
+	 * @return
+	 * @throws ScriptException
+	 */
+	private static Object evaluate(String command) throws ScriptException {
+		// Commented out in 0.4.0.10 as it was continuing to throw parsing errors
+		// Unable to reliably replicate the bug - sometimes everything worked fine, sometimes the #VAR parsing sections would fail to parse completely
+		
+//		CompiledScript script;
+//		if (!memo.containsKey(command)) {
+//			script = ((NashornScriptEngine)engine).compile(command);
+//			if (memo.size() < memo_limit) {
+//				memo.put(command, script);
+//				if (memo.size() == memo_limit) {
+//					System.err.println("Memo has reached capacity! Additional script commands will not be memoized.");
+//				}
+//			}
+//		} else {
+//			script = memo.get(command);
+//		}
+//		return script.eval(((NashornScriptEngine)engine).getContext());
+//		//return script.eval();
+		
+		
+		// This is the old code which works but is slow:
+		CompiledScript script = ((NashornScriptEngine)engine).compile(command);
+		return script.eval();
+	}
 }

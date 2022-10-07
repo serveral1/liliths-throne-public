@@ -50,7 +50,7 @@ public class StocksSex {
 		@Override
 		public String getDescription() {
 			return "Deciding that [npc.she] [npc.verb(want)] to fuck [npc2.name] while [npc2.sheIs] locked in the stocks,"
-						+ " [npc.name] [npc.verb(step)] up behind [npc2.herHim] and [npc.verb(start)] grinding [npc.her] groin up against [npc2.her] [npc2.ass+]."
+						+ " [npc.name] #IF(npc.isPlayer())[npc.step]#ELSE[npc.steps]#ENDIF up behind [npc2.herHim] and [npc.verb(start)] grinding [npc.her] groin up against [npc2.her] [npc2.ass+]."
 					+ " Taking hold of [npc2.her] [npc2.hips+], [npc.she] [npc.moanVerb], "
 					+ "[npc.speech(Be a good [npc2.girl] and hold still while I fuck you!)]";
 		}
@@ -58,9 +58,9 @@ public class StocksSex {
 		@Override
 		public void applyEffects() {
 			Main.sex.setSexManager(new SMStocks(
-					!Main.sex.getSexManager().getAreasBannedMap().get(Main.sex.getCharacterTargetedForSexAction(this)).contains(SexAreaOrifice.VAGINA),
-					!Main.sex.getSexManager().getAreasBannedMap().get(Main.sex.getCharacterTargetedForSexAction(this)).contains(SexAreaOrifice.ANUS),
-					!Main.sex.getSexManager().getAreasBannedMap().get(Main.sex.getCharacterTargetedForSexAction(this)).contains(SexAreaOrifice.MOUTH),
+					!Main.sex.getInitialSexManager().getAreasBannedMap().get(Main.sex.getCharacterTargetedForSexAction(this)).contains(SexAreaOrifice.VAGINA),
+					!Main.sex.getInitialSexManager().getAreasBannedMap().get(Main.sex.getCharacterTargetedForSexAction(this)).contains(SexAreaOrifice.ANUS),
+					!Main.sex.getInitialSexManager().getAreasBannedMap().get(Main.sex.getCharacterTargetedForSexAction(this)).contains(SexAreaOrifice.MOUTH),
 					Util.newHashMapOfValues(new Value<>(Main.sex.getCharacterPerformingAction(), SexSlotStocks.BEHIND_STOCKS)),
 					Util.newHashMapOfValues(new Value<>(Main.sex.getCharacterTargetedForSexAction(this), SexSlotStocks.LOCKED_IN_STOCKS))));
 		}
@@ -104,9 +104,9 @@ public class StocksSex {
 		@Override
 		public void applyEffects() {
 			Main.sex.setSexManager(new SMStocks(
-					!Main.sex.getSexManager().getAreasBannedMap().get(Main.sex.getCharacterTargetedForSexAction(this)).contains(SexAreaOrifice.VAGINA),
-					!Main.sex.getSexManager().getAreasBannedMap().get(Main.sex.getCharacterTargetedForSexAction(this)).contains(SexAreaOrifice.ANUS),
-					!Main.sex.getSexManager().getAreasBannedMap().get(Main.sex.getCharacterTargetedForSexAction(this)).contains(SexAreaOrifice.MOUTH),
+					!Main.sex.getInitialSexManager().getAreasBannedMap().get(Main.sex.getCharacterTargetedForSexAction(this)).contains(SexAreaOrifice.VAGINA),
+					!Main.sex.getInitialSexManager().getAreasBannedMap().get(Main.sex.getCharacterTargetedForSexAction(this)).contains(SexAreaOrifice.ANUS),
+					!Main.sex.getInitialSexManager().getAreasBannedMap().get(Main.sex.getCharacterTargetedForSexAction(this)).contains(SexAreaOrifice.MOUTH),
 					Util.newHashMapOfValues(new Value<>(Main.sex.getCharacterPerformingAction(), SexSlotStocks.BENEATH_STOCKS)),
 					Util.newHashMapOfValues(new Value<>(Main.sex.getCharacterTargetedForSexAction(this), SexSlotStocks.LOCKED_IN_STOCKS))));
 		}
@@ -149,9 +149,9 @@ public class StocksSex {
 		@Override
 		public void applyEffects() {
 			Main.sex.setSexManager(new SMStocks(
-					!Main.sex.getSexManager().getAreasBannedMap().get(Main.sex.getCharacterTargetedForSexAction(this)).contains(SexAreaOrifice.VAGINA),
-					!Main.sex.getSexManager().getAreasBannedMap().get(Main.sex.getCharacterTargetedForSexAction(this)).contains(SexAreaOrifice.ANUS),
-					!Main.sex.getSexManager().getAreasBannedMap().get(Main.sex.getCharacterTargetedForSexAction(this)).contains(SexAreaOrifice.MOUTH),
+					!Main.sex.getInitialSexManager().getAreasBannedMap().get(Main.sex.getCharacterTargetedForSexAction(this)).contains(SexAreaOrifice.VAGINA),
+					!Main.sex.getInitialSexManager().getAreasBannedMap().get(Main.sex.getCharacterTargetedForSexAction(this)).contains(SexAreaOrifice.ANUS),
+					!Main.sex.getInitialSexManager().getAreasBannedMap().get(Main.sex.getCharacterTargetedForSexAction(this)).contains(SexAreaOrifice.MOUTH),
 					Util.newHashMapOfValues(new Value<>(Main.sex.getCharacterPerformingAction(), SexSlotStocks.PERFORMING_ORAL)),
 					Util.newHashMapOfValues(new Value<>(Main.sex.getCharacterTargetedForSexAction(this), SexSlotStocks.LOCKED_IN_STOCKS))));
 		}
@@ -186,7 +186,7 @@ public class StocksSex {
 
 		@Override
 		public String getDescription() {
-			return "Deciding that [npc.she] [npc.verb(want)] to use [npc2.namePos] mouth, [npc.name] [npc.verb(step)] back, before moving around in front of [npc2.her] [npc2.face]."
+			return "Deciding that [npc.she] [npc.verb(want)] to use [npc2.namePos] mouth, [npc.name] #IF(npc.isPlayer())[npc.step]#ELSE[npc.steps]#ENDIF back, before moving around in front of [npc2.her] [npc2.face]."
 					+ " Bringing [npc.her] groin up to [npc2.her] mouth, [npc.she] [npc.moanVerb],"
 					+ " [npc.speech(You're going to love this!)]";
 		}
@@ -194,9 +194,9 @@ public class StocksSex {
 		@Override
 		public void applyEffects() {
 			Main.sex.setSexManager(new SMStocks(
-					!Main.sex.getSexManager().getAreasBannedMap().get(Main.sex.getCharacterTargetedForSexAction(this)).contains(SexAreaOrifice.VAGINA),
-					!Main.sex.getSexManager().getAreasBannedMap().get(Main.sex.getCharacterTargetedForSexAction(this)).contains(SexAreaOrifice.ANUS),
-					!Main.sex.getSexManager().getAreasBannedMap().get(Main.sex.getCharacterTargetedForSexAction(this)).contains(SexAreaOrifice.MOUTH),
+					!Main.sex.getInitialSexManager().getAreasBannedMap().get(Main.sex.getCharacterTargetedForSexAction(this)).contains(SexAreaOrifice.VAGINA),
+					!Main.sex.getInitialSexManager().getAreasBannedMap().get(Main.sex.getCharacterTargetedForSexAction(this)).contains(SexAreaOrifice.ANUS),
+					!Main.sex.getInitialSexManager().getAreasBannedMap().get(Main.sex.getCharacterTargetedForSexAction(this)).contains(SexAreaOrifice.MOUTH),
 					Util.newHashMapOfValues(new Value<>(Main.sex.getCharacterPerformingAction(), SexSlotStocks.RECEIVING_ORAL)),
 					Util.newHashMapOfValues(new Value<>(Main.sex.getCharacterTargetedForSexAction(this), SexSlotStocks.LOCKED_IN_STOCKS))));
 		}

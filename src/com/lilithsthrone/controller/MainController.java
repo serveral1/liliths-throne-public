@@ -45,8 +45,8 @@ import com.lilithsthrone.game.character.body.CoverableArea;
 import com.lilithsthrone.game.character.effects.AbstractPerk;
 import com.lilithsthrone.game.character.effects.AbstractStatusEffect;
 import com.lilithsthrone.game.character.effects.Perk;
-import com.lilithsthrone.game.character.effects.PerkCategory;
 import com.lilithsthrone.game.character.effects.StatusEffect;
+import com.lilithsthrone.game.character.fetishes.AbstractFetish;
 import com.lilithsthrone.game.character.fetishes.Fetish;
 import com.lilithsthrone.game.character.gender.GenderNames;
 import com.lilithsthrone.game.character.gender.GenderPronoun;
@@ -72,6 +72,7 @@ import com.lilithsthrone.game.dialogue.story.CharacterCreation;
 import com.lilithsthrone.game.dialogue.utils.BodyChanging;
 import com.lilithsthrone.game.dialogue.utils.CharacterModificationUtils;
 import com.lilithsthrone.game.dialogue.utils.CharactersPresentDialogue;
+import com.lilithsthrone.game.dialogue.utils.CosmeticsDialogue;
 import com.lilithsthrone.game.dialogue.utils.DebugDialogue;
 import com.lilithsthrone.game.dialogue.utils.EnchantmentDialogue;
 import com.lilithsthrone.game.dialogue.utils.InventoryDialogue;
@@ -114,6 +115,7 @@ import com.lilithsthrone.utils.time.DayPeriod;
 import com.lilithsthrone.utils.time.SolarElevationAngle;
 import com.lilithsthrone.world.AbstractWorldType;
 import com.lilithsthrone.world.Cell;
+import com.lilithsthrone.world.WorldType;
 import com.lilithsthrone.world.places.PlaceType;
 import com.lilithsthrone.world.population.Population;
 
@@ -496,9 +498,67 @@ public class MainController implements Initializable {
 						checkLastKeys();
 						
 						if(event.getCode()==KeyCode.END && Main.DEBUG){
-							Main.game.getPlayer().incrementPerkCategoryPoints(PerkCategory.PHYSICAL, 1);
-							Main.game.getPlayer().incrementPerkCategoryPoints(PerkCategory.ARCANE, 1);
-							Main.game.getPlayer().incrementPerkCategoryPoints(PerkCategory.LUST, 1);
+
+							Main.game.getCharactersPresent().get(0).incrementAttribute(Attribute.MAJOR_CORRUPTION, 100);
+							Main.game.getCharactersPresent().get(0).addFetish(Fetish.FETISH_BONDAGE_APPLIER);
+							
+//							Main.game.getCharactersPresent().get(0).addClothing(Main.game.getItemGen().generateClothing("innoxia_penis_condom", PresetColour.CLOTHING_PINK, false), 2, false, false);
+//							Main.game.getCharactersPresent().get(0).removeFetish(Fetish.FETISH_CUM_STUD);
+//							Main.game.getCharactersPresent().get(0).setFetishDesire(Fetish.FETISH_CUM_STUD, FetishDesire.TWO_NEUTRAL);
+							
+//							Main.game.getPlayer().incrementFetishExperience(Fetish.FETISH_DOMINANT, 200);
+//							if(Main.game.isInSex()) {
+//								for(GameCharacter c : Main.sex.getSubmissiveSpectators()) {
+//									c.setArousal(98);
+//									c.setLust(98);
+//								}
+//							}
+//							System.out.println("START");
+//							Util.addDrunkSlur(Util.addMuffle(Util.addBimbo(
+//									"Hello, my name is [rose.name], would you like to see my [rose.hands(true)]? #IF(nyan.isFeminine())Or my [rose.breasts+]?#ENDIF Or should I call [lilaya.name]? Answer me now.",
+//									4), 4), 4);
+//							System.out.println("END");
+							
+//							System.out.println("-----");
+//							for(NameTriplet nameTriplet : Name.getAllNameTriplets(Subspecies.getSubspeciesFromId("innoxia_hyena_subspecies_spotted"))) {
+//								System.out.println(nameTriplet.getMasculine()+", "+nameTriplet.getAndrogynous()+", "+nameTriplet.getFeminine());
+//							}
+//							System.out.println("-----");
+//							for(NameTriplet nameTriplet : Name.getAllNameTriplets(Subspecies.getSubspeciesFromId("innoxia_hyena_subspecies_striped"))) {
+//								System.out.println(nameTriplet.getMasculine()+", "+nameTriplet.getAndrogynous()+", "+nameTriplet.getFeminine());
+//							}
+							
+//							System.out.println("------");
+//							for(AbstractCombatMove move : Main.game.getPlayer().getEquippedMoves()) {
+//								System.out.println(move.getName(0, Main.game.getPlayer()));
+//							}
+							
+//							System.out.println("--- Penis diameters ---");
+//							for(int i=10; i<75; i+=5) {
+//								System.out.println(i+" : "+Penis.getGenericDiameter(i, PenetrationGirth.THREE_AVERAGE));
+//							}
+							
+//							if(Main.game.isInSex()) {
+//								System.out.println("----");
+//								for(GameCharacter character : Main.sex.getAllParticipants()) {
+//									System.out.println(character.getName()+" -> "+Main.sex.getTargetedPartner(character).getName());
+//								}
+//							}
+							
+//							for(NPC npc : Main.game.getAllNPCs()) {
+//								if(npc.isUnique() && !npc.hasArtwork()
+////										&& (npc.getWorldLocation().getWorldRegion()==WorldRegion.DOMINION)
+////										&& npc.isFeminine()
+//										&& npc.getFaceType().getBodyCoveringType(npc).getCategory()!=BodyCoveringCategory.MAIN_SKIN
+//										&& (npc.getClass().getName().contains("dominion.") || npc.getClass().getName().contains("submission."))
+//										) {
+//									System.out.println(npc.getNameIgnoresPlayerKnowledge() + " "+npc.getClass().getName().split(".npc.")[1]);// + " " + npc.getSurname());
+//								}
+//							}
+							
+//							Main.game.getPlayer().incrementPerkCategoryPoints(PerkCategory.PHYSICAL, 1);
+//							Main.game.getPlayer().incrementPerkCategoryPoints(PerkCategory.ARCANE, 1);
+//							Main.game.getPlayer().incrementPerkCategoryPoints(PerkCategory.LUST, 1);
 //							for(NPC npc : Main.game.getCharactersTreatingCellAsHome()) {
 //								System.out.println(npc.getNameIgnoresPlayerKnowledge()+npc.getClass().getName());
 //							}
@@ -658,9 +718,21 @@ public class MainController implements Initializable {
 								}
 							}
 						}
+						if(Main.game.getCurrentDialogueNode() == BodyChanging.BODY_CHANGING_SAVE_LOAD){
+							if((boolean) Main.mainController.getWebEngine().executeScript("document.getElementById('new_save_name') === document.activeElement")) {
+								allowInput = false;
+								if (event.getCode() == KeyCode.ENTER) {
+									enterConsumed = true;
+									Main.mainController.getWebEngine().executeScript("document.getElementById('hiddenPField').innerHTML=document.getElementById('new_save_name').value;");
+									BodyChanging.saveBody(Main.mainController.getWebEngine().getDocument().getElementById("hiddenPField").getTextContent(), false);
+									Main.game.setContent(new Response("Save", "", Main.game.getCurrentDialogueNode()));
+								}
+							}
+						}
 						if(Main.game.getCurrentDialogueNode() == SuccubisSecrets.SHOP_BEAUTY_SALON_TATTOOS_ADD
 								|| Main.game.getCurrentDialogueNode() == CompanionManagement.SLAVE_MANAGEMENT_TATTOOS_ADD
-								|| Main.game.getCurrentDialogueNode() == CharacterCreation.CHOOSE_ADVANCED_APPEARANCE_TATTOOS_ADD){
+								|| Main.game.getCurrentDialogueNode() == CharacterCreation.CHOOSE_ADVANCED_APPEARANCE_TATTOOS_ADD
+								|| Main.game.getCurrentDialogueNode() == CosmeticsDialogue.BEAUTICIAN_TATTOOS_ADD){
 							if((boolean) Main.mainController.getWebEngine().executeScript("document.getElementById('tattoo_name') === document.activeElement")) {
 								allowInput = false;
 								if (event.getCode() == KeyCode.ENTER) {
@@ -674,13 +746,16 @@ public class MainController implements Initializable {
 						}
 						if(Main.game.getCurrentDialogueNode() == CompanionManagement.OCCUPANT_CHOOSE_NAME
 								|| Main.game.getCurrentDialogueNode() == ScarlettsShop.HELENAS_SHOP_CUSTOM_SLAVE_PERSONALITY
-								|| Main.game.getCurrentDialogueNode() == KaysWarehouse.KAY_OFFICE_DOMINATE_NAMING) {
+								|| Main.game.getCurrentDialogueNode() == KaysWarehouse.KAY_OFFICE_DOMINATE_NAMING
+								|| Main.game.getCurrentDialogueNode() == ElementalDialogue.ELEMENTAL_CHOOSE_NAME) {
 							
 							GameCharacter slave = Main.game.getDialogueFlags().getManagementCompanion();
 							if(Main.game.getCurrentDialogueNode() == ScarlettsShop.HELENAS_SHOP_CUSTOM_SLAVE_PERSONALITY) {
 								slave = BodyChanging.getTarget();
 							} else if(Main.game.getCurrentDialogueNode() == KaysWarehouse.KAY_OFFICE_DOMINATE_NAMING) {
 								slave = Main.game.getNpc(Kay.class);
+							} else if(Main.game.getCurrentDialogueNode() == ElementalDialogue.ELEMENTAL_CHOOSE_NAME) {
+								slave = Main.game.getPlayer().getElemental();
 							}
 							GameCharacter slaveFinal = slave;
 							
@@ -841,6 +916,12 @@ public class MainController implements Initializable {
 									|| (boolean) Main.mainController.getWebEngine().executeScript("document.getElementById('xmlTest') === document.activeElement")) {
 								allowInput = false;
 							}
+						}
+
+						// Allow users to type in slave metadata without getting whisked away.
+						if((boolean) Main.mainController.getWebEngine().executeScript("document.getElementById('SET_SLAVE_NOTES') === document.activeElement")
+						|| (boolean) Main.mainController.getWebEngine().executeScript("document.getElementById('SET_SLAVE_CATEGORY') === document.activeElement")) {
+							allowInput = false;
 						}
 						
 						if(allowInput){
@@ -1568,9 +1649,9 @@ public class MainController implements Initializable {
 
 			MainController.addEventListener(documentButtonsRight, id, "mouseenter", new TooltipInformationEventListener().setInformation(
 					Main.game.getCurrentDialogueNode().getLabel() == "" || Main.game.getCurrentDialogueNode().getLabel() == null ? "-" : Main.game.getCurrentDialogueNode().getLabel(),
-					"Click to copy the currently displayed dialogue to your clipboard.<br/>"
+					"Click to copy the currently displayed dialogue to your clipboard. You can then paste the output into a text editor, save it as a <i>.html</i> file, then open that file in a browser to retain the game's formatting.<br/>"
 					+ "This scene was written by: <b>"+Main.game.getCurrentDialogueNode().getAuthor()+"</b>",
-					48), false);
+					80), false);
 			
 		}
 		
@@ -1696,33 +1777,45 @@ public class MainController implements Initializable {
 		id = "DATE_DISPLAY_TOGGLE";
 		if (((EventTarget) documentAttributes.getElementById(id)) != null) {
 			((EventTarget) documentAttributes.getElementById(id)).addEventListener("click", e -> {
-				Main.getProperties().setValue(PropertyValue.calendarDisplay, !Main.getProperties().hasValue(PropertyValue.calendarDisplay));
-				Main.saveProperties();
-				MainController.updateUI();
+				if(!Main.game.isBadEnd()) {
+					Main.getProperties().setValue(PropertyValue.calendarDisplay, !Main.getProperties().hasValue(PropertyValue.calendarDisplay));
+					Main.saveProperties();
+					MainController.updateUI();
+				}
 			}, false);
 			
 			addEventListener(documentAttributes, id, "mousemove", moveTooltipListener, false);
 			addEventListener(documentAttributes, id, "mouseleave", hideTooltipListener, false);
 			String day = Main.game.getDateNow().getDayOfWeek().getDisplayName(TextStyle.FULL, Locale.ENGLISH);
+			StringBuilder dateSB = new StringBuilder();
+			if(Main.game.isBadEnd()) {
+				dateSB.append("[style.italicsBad(Given your current situation, you've lost track of what day it is...)]");
+			} else {
+				if(!dateKnown) {
+					dateSB.append("[style.italicsMinorBad(Look at the calendar in your room to reveal the date!)]");
+				} else {
+					dateSB.append("The current date is: [style.colourGood("+ Main.game.getDisplayDate(true)+")]");
+				}
+				dateSB.append("<br/>");
+				dateSB.append("It is currently "+UtilText.generateSingularDeterminer(day)+" [style.colourBlueLight("+day+")].<br/>"
+						+ "You've been in this new world for: [style.colourExcellent("+Main.game.getDayNumber()+" day"+(Main.game.getDayNumber()>1?"s":"")+")]");
+				dateSB.append("<br/><i>Click to toggle between a date and day count.</i>");
+			}
 			TooltipInformationEventListener el2 = new TooltipInformationEventListener().setInformation("Toggle Calendar Display",
-						(!dateKnown
-							?"[style.italicsMinorBad(Look at the calendar in your room to reveal the date!)]"
-							:"The current date is: [style.colourGood("+ Main.game.getDisplayDate(true)+")]")
-						+ "<br/>"
-						+ "It is currently "+UtilText.generateSingularDeterminer(day)+" [style.colourBlueLight("+day+")].<br/>"
-						+ "You've been in this new world for: [style.colourExcellent("+Main.game.getDayNumber()+" day"+(Main.game.getDayNumber()>1?"s":"")+")]"
-						+"<br/><i>Click to toggle between a date and day count.</i>");
+						dateSB.toString());
 			addEventListener(documentAttributes, id, "mouseenter", el2, false);
 		}
 		
 		id = "TWENTY_FOUR_HOUR_TIME_TOGGLE";
 		if (((EventTarget) documentAttributes.getElementById(id)) != null) {
 			((EventTarget) documentAttributes.getElementById(id)).addEventListener("click", e -> {
-			    overrideAutoLocale();
-				Main.getProperties().setValue(PropertyValue.twentyFourHourTime, !Main.getProperties().hasValue(PropertyValue.twentyFourHourTime));
-				Main.saveProperties();
-				Units.FORMATTER.updateTimeFormat(Main.getProperties().hasValue(PropertyValue.autoLocale));
-				MainController.updateUI();
+				if(!Main.game.isBadEnd()) {
+				    overrideAutoLocale();
+					Main.getProperties().setValue(PropertyValue.twentyFourHourTime, !Main.getProperties().hasValue(PropertyValue.twentyFourHourTime));
+					Main.saveProperties();
+					Units.FORMATTER.updateTimeFormat(Main.getProperties().hasValue(PropertyValue.autoLocale));
+					MainController.updateUI();
+				}
 			}, false);
 			
 			DayPeriod dp = DateAndTime.getDayPeriod(Main.game.getDateNow(), Game.DOMINION_LATITUDE, Game.DOMINION_LONGITUDE);
@@ -1731,12 +1824,18 @@ public class MainController implements Initializable {
 			
 			addEventListener(documentAttributes, id, "mousemove", moveTooltipListener, false);
 			addEventListener(documentAttributes, id, "mouseleave", hideTooltipListener, false);
-			TooltipInformationEventListener el2 = new TooltipInformationEventListener().setInformation(
-					(Main.game.isDayTime()?"Day-time":"Night-time"),
-					"Current time: "+Units.time(Main.game.getDateNow())+" (<span style='color:"+dp.getColour().toWebHexString()+";'>"+Util.capitaliseSentence(dp.getName())+"</span>)<br/>"
+			StringBuilder timeSB = new StringBuilder();
+			if(Main.game.isBadEnd()) {
+				timeSB.append("[style.italicsBad(Given your current situation, you've lost track of what time it is...)]");
+			} else {
+				timeSB.append("Current time: "+Units.time(Main.game.getDateNow())+" (<span style='color:"+dp.getColour().toWebHexString()+";'>"+Util.capitaliseSentence(dp.getName())+"</span>)<br/>"
 					+ "Sunrise: "+(!dateKnown?"[style.colourMinorBad(??/??/??)] [style.colourYellow("+Units.time(ldt[0]):"[style.colourYellow("+Units.dateTime(ldt[0]))+")]<br/>"
 					+ "Sunset: "+(!dateKnown?"[style.colourMinorBad(??/??/??)] [style.colourOrange("+Units.time(ldt[1]):"[style.colourOrange("+Units.dateTime(ldt[1]))+")]<br/>"
 					+ "<i>Click to toggle the time display between a 24-hour and 12-hour clock.</i>");
+			}
+			TooltipInformationEventListener el2 = new TooltipInformationEventListener().setInformation(
+					(Main.game.isDayTime()?"Day-time":"Night-time"),
+					timeSB.toString());
 			addEventListener(documentAttributes, id, "mouseenter", el2, false);
 		}
 
@@ -1960,13 +2059,13 @@ public class MainController implements Initializable {
 					addEventListener(documentAttributes, id, "mouseenter", el, false);
 				}
 			}
-			for (Fetish f : character.getFetishes(true)) {
-				if (((EventTarget) documentAttributes.getElementById("FETISH_"+idModifier + f)) != null) {
-					addEventListener(documentAttributes, "FETISH_"+idModifier + f, "mousemove", moveTooltipListener, false);
-					addEventListener(documentAttributes, "FETISH_"+idModifier + f, "mouseleave", hideTooltipListener, false);
+			for (AbstractFetish f : character.getFetishes(true)) {
+				if (((EventTarget) documentAttributes.getElementById("FETISH_"+idModifier + Fetish.getIdFromFetish(f))) != null) {
+					addEventListener(documentAttributes, "FETISH_"+idModifier + Fetish.getIdFromFetish(f), "mousemove", moveTooltipListener, false);
+					addEventListener(documentAttributes, "FETISH_"+idModifier + Fetish.getIdFromFetish(f), "mouseleave", hideTooltipListener, false);
 
 					TooltipInformationEventListener el = new TooltipInformationEventListener().setFetish(f, character);
-					addEventListener(documentAttributes, "FETISH_"+idModifier + f, "mouseenter", el, false);
+					addEventListener(documentAttributes, "FETISH_"+idModifier + Fetish.getIdFromFetish(f), "mouseenter", el, false);
 				}
 			}
 			for (AbstractCombatMove combatMove : character.getAvailableMoves()) {
@@ -2313,13 +2412,13 @@ public class MainController implements Initializable {
 						addEventListener(documentRight, id, "mouseenter", el, false);
 					}
 				}
-				for (Fetish f : character.getFetishes(true)) {
-					if (((EventTarget) documentRight.getElementById("FETISH_NPC_"+idModifier + f)) != null) {
-						addEventListener(documentRight, "FETISH_NPC_"+idModifier + f, "mousemove", moveTooltipListener, false);
-						addEventListener(documentRight, "FETISH_NPC_"+idModifier + f, "mouseleave", hideTooltipListener, false);
+				for (AbstractFetish f : character.getFetishes(true)) {
+					if (((EventTarget) documentRight.getElementById("FETISH_NPC_"+idModifier + Fetish.getIdFromFetish(f))) != null) {
+						addEventListener(documentRight, "FETISH_NPC_"+idModifier + Fetish.getIdFromFetish(f), "mousemove", moveTooltipListener, false);
+						addEventListener(documentRight, "FETISH_NPC_"+idModifier + Fetish.getIdFromFetish(f), "mouseleave", hideTooltipListener, false);
 	
 						TooltipInformationEventListener el = new TooltipInformationEventListener().setFetish(f, character);
-						addEventListener(documentRight, "FETISH_NPC_"+idModifier + f, "mouseenter", el, false);
+						addEventListener(documentRight, "FETISH_NPC_"+idModifier + Fetish.getIdFromFetish(f), "mouseenter", el, false);
 					}
 				}
 				for (AbstractCombatMove combatMove : character.getAvailableMoves()) {
@@ -2371,16 +2470,44 @@ public class MainController implements Initializable {
 			webEngine.loadContent(content);
 		}
 	}
-	
-	public void setTooltipContent(String content) {
+
+	/**
+	 * Sets the tooltip content, and returns the pixel height
+	 * of the resultant tooltip content.
+	 * 
+	 * To calculate height, wraps the content in a #sizing-box
+	 * div, and checks that element's height.
+	 * 
+	 * This does not set the tooltip height, but only measures
+	 * the content height. The tooltip must be manually
+	 * resized as needed.
+	 * 
+	 * Additionally, this should be called before setting the
+	 * tooltip position, if that requires knowledge of the
+	 * final height.
+	 * 
+	 * @param content HTML content to display in the tooltip
+	 * @return the calculated height of the tooltip content
+	 */
+	public int setTooltipContent(String content) {
 		if (Main.getProperties().hasValue(PropertyValue.fadeInText)) {
 			content = "<div class='tooltip-animation' style='width: 100%;'>" + content + "</div>";
 		}
+		content = "<div id='sizing-box' style='width: 100%;'>" + content + "</div>";
 		if(useJavascriptToSetContent) {
 			setWebEngineContent(webEngineTooltip, content);
 		} else {
 			webEngineTooltip.loadContent(content);
 		}
+		int height = 0;
+		try {
+			// add 8 + 8 to account for the top + bottom margins
+			height = 16 + (int)Main.mainController.getWebEngineTooltip().executeScript("document.getElementById('sizing-box').scrollHeight");
+		} catch(Exception e) {
+			System.err.println("Failed to locate the tooltip sizing box!");
+			e.printStackTrace();
+		}
+		return height;
 	}
 	
 	public void setAttributePanelContent(String content) {
@@ -2675,6 +2802,8 @@ public class MainController implements Initializable {
 				} else {
 					if(Main.game.isInGlobalMap()) {
 						Main.game.getPlayer().setGlobalLocation(new Vector2i(location.getX() + xOffset, location.getY() + yOffset));
+					} else {
+						Main.game.getPlayer().setGlobalLocation(Main.game.getWorlds().get(WorldType.WORLD_MAP).getCell(Main.game.getPlayerCell().getType().getGlobalMapLocation()).getLocation());
 					}
 					Main.game.getPlayer().setLocation(new Vector2i(location.getX() + xOffset, location.getY() + yOffset));
 					

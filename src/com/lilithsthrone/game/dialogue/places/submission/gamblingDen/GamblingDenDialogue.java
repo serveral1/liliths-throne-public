@@ -905,7 +905,7 @@ public class GamblingDenDialogue {
 		@Override
 		public Response getResponse(int responseTab, int index) {
 			if(index==1) {
-				return new Response("Talk", "You're already talking to [axel.name].", null);
+				return new Response("Business", "You're already talking to [axel.name].", null);
 			}
 			return AXEL.getResponse(responseTab, index);
 		}
@@ -1502,7 +1502,7 @@ public class GamblingDenDialogue {
 						};
 						
 					} else {
-						return new Response("<span style='color:"+table.getColour().toWebHexString()+";'>"+gambler.getName(true)+"</span> ("+UtilText.formatAsMoney(buyIn, "span")+")",
+						return new Response(gambler.getName(true)+" ("+UtilText.formatAsMoneyUncoloured(buyIn, "span")+")",
 								"The buy-in amount is "+UtilText.formatAsMoney(table.getInitialBet(), "span")
 								+", but you'll also need "+UtilText.formatAsMoney(table.getRaiseAmount(), "span")+" for any raises. As a result, you don't have enough money to play at this table!",
 								null);

@@ -46,6 +46,7 @@ import com.lilithsthrone.game.character.effects.Perk;
 import com.lilithsthrone.game.character.effects.PerkCategory;
 import com.lilithsthrone.game.character.effects.PerkManager;
 import com.lilithsthrone.game.character.fetishes.Fetish;
+import com.lilithsthrone.game.character.fetishes.FetishDesire;
 import com.lilithsthrone.game.character.gender.Gender;
 import com.lilithsthrone.game.character.npc.NPC;
 import com.lilithsthrone.game.character.persona.NameTriplet;
@@ -105,7 +106,7 @@ public class Amber extends NPC {
 	}
 	
 	public Amber(boolean isImported) {
-		super(isImported, new NameTriplet("Amber"), "Acerbi",
+		super(isImported, new NameTriplet("Amber"), "Lireceamartu",
 				"The highest-ranking of Zaranix's maids, Amber is clearly outraged by the fact that you're wandering around her master's house unsupervised.",
 				39, Month.OCTOBER, 17,
 				15,
@@ -146,6 +147,9 @@ public class Amber extends NPC {
 		if(Main.isVersionOlderThan(Game.loadingVersion, "0.3.8.5")) {
 			this.setTesticleCount(2);
 		}
+		if(Main.isVersionOlderThan(Game.loadingVersion, "0.4.1")) {
+			this.setFetishDesire(Fetish.FETISH_BONDAGE_APPLIER, FetishDesire.THREE_LIKE);
+		}
 	}
 
 	@Override
@@ -179,6 +183,8 @@ public class Amber extends NPC {
 			this.addFetish(Fetish.FETISH_SADIST);
 			this.addFetish(Fetish.FETISH_DEFLOWERING);
 			this.addFetish(Fetish.FETISH_FOOT_GIVING);
+			
+			this.setFetishDesire(Fetish.FETISH_BONDAGE_APPLIER, FetishDesire.THREE_LIKE);
 		}
 		
 		// Body:
@@ -279,9 +285,9 @@ public class Amber extends NPC {
 		// Tattoos
 		// Scars
 
-		this.equipClothingFromNowhere(Main.game.getItemGen().generateClothing(ClothingType.GROIN_CROTCHLESS_THONG, PresetColour.CLOTHING_RED_DARK, false), true, this);
+		this.equipClothingFromNowhere(Main.game.getItemGen().generateClothing("innoxia_groin_crotchless_thong", PresetColour.CLOTHING_RED_DARK, false), true, this);
 		this.equipClothingFromNowhere(Main.game.getItemGen().generateClothing(ClothingType.CHEST_OPEN_CUP_BRA, PresetColour.CLOTHING_RED_DARK, false), true, this);
-		this.equipClothingFromNowhere(Main.game.getItemGen().generateClothing(ClothingType.STOMACH_UNDERBUST_CORSET, PresetColour.CLOTHING_BLACK, false), true, this);
+		this.equipClothingFromNowhere(Main.game.getItemGen().generateClothing("innoxia_stomach_underbust_corset", PresetColour.CLOTHING_BLACK, false), true, this);
 		this.equipClothingFromNowhere(Main.game.getItemGen().generateClothing(ClothingType.MAID_DRESS, PresetColour.CLOTHING_BLACK, false), true, this);
 		this.equipClothingFromNowhere(Main.game.getItemGen().generateClothing(ClothingType.MAID_HEADPIECE, PresetColour.CLOTHING_BLACK, false), true, this);
 		this.equipClothingFromNowhere(Main.game.getItemGen().generateClothing(ClothingType.MAID_STOCKINGS, PresetColour.CLOTHING_BLACK, false), true, this);
@@ -448,7 +454,7 @@ public class Amber extends NPC {
 				return new ResponseSex("Submit",
 						"Amber's fiery personality is seriously turning you on. You can't bring yourself to take the dominant role, but you <i>do</i> want to have sex with her. Perhaps if you submitted, she'd be willing to fuck you?",
 						Util.newArrayListOfValues(Fetish.FETISH_SUBMISSIVE), null, CorruptionLevel.THREE_DIRTY, null, null, null,
-						false, false,
+						true, false,
 						new SMGeneric(
 								Util.newArrayListOfValues(Main.game.getNpc(Amber.class)),
 								Util.newArrayListOfValues(Main.game.getPlayer()),

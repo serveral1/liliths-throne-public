@@ -67,6 +67,10 @@ public class Horn implements BodyPartInterface {
 		return type.getDescriptor(gc);
 	}
 
+	public void setType(AbstractHornType type) {
+		this.type = type;
+	}
+
 	public String setType(GameCharacter owner, AbstractHornType type) {
 		if(!Main.game.isStarted() || owner==null) {
 			this.type = type;
@@ -206,6 +210,10 @@ public class Horn implements BodyPartInterface {
 					+ "</p>");
 		}
 	}
+
+	public int getTotalHorns() {
+		return getHornRows() * getHornsPerRow();
+	}
 	
 	public HornLength getHornLength() {
 		return HornLength.getLengthFromInt(length);
@@ -213,6 +221,15 @@ public class Horn implements BodyPartInterface {
 	
 	public int getHornLengthValue() {
 		return length;
+	}
+
+	public void setHornLength(int length) {
+		this.length = Math.max(0, Math.min(length, HornLength.FOUR_MASSIVE.getMaximumValue()));
+	}
+
+	public void setTypeAndLength(AbstractHornType type, int length) {
+		setType(type);
+		setHornLength(length);
 	}
 
 	public String setHornLength(GameCharacter owner, int length) {
@@ -236,16 +253,16 @@ public class Horn implements BodyPartInterface {
 			return UtilText.parse(owner,
 					"<p>"
 						+ "[npc.Name] [npc.verb(let)] out a cry as [npc.she] [npc.verb(feel)] a strange tingling sensation running up through [npc.her] [npc.face] and into [npc.her] [npc.horns],"
-							+ " before they suddenly shrink down and [style.boldShrink(get noticeably shorter)].<br/>"
-						+ "[npc.Name] now [npc.has] [style.boldTfGeneric([npc.hornSize] [npc.horns])]!"
+							+ " before "+(getTotalHorns()==1?"it suddenly shrinks":"they suddenly shrink")+" down and [style.boldShrink("+(getTotalHorns()==1?"gets":"get")+" noticeably shorter)].<br/>"
+						+ "[npc.Name] now [npc.has] [style.boldTfGeneric("+(getTotalHorns()==1?"[npc.a_hornSize]":"[npc.hornSize]")+" [npc.horns])]!"
 					+ "</p>");
 			
 		} else {
 			return UtilText.parse(owner,
 					"<p>"
 						+ "[npc.Name] [npc.verb(let)] out a little cry as [npc.she] [npc.verb(feel)] a warm pulsating sensation running up through [npc.her] [npc.face] and into [npc.her] [npc.horns],"
-							+ " before they suddenly grow out and [style.boldGrow(get noticeably longer)].<br/>"
-						+ "[npc.Name] now [npc.has] [style.boldTfGeneric([npc.hornSize] [npc.horns])]!"
+							+ " before "+(getTotalHorns()==1?"it suddenly grows":"they suddenly grow")+" out and [style.boldGrow("+(getTotalHorns()==1?"gets":"get")+" noticeably longer)].<br/>"
+						+ "[npc.Name] now [npc.has] [style.boldTfGeneric("+(getTotalHorns()==1?"[npc.a_hornSize]":"[npc.hornSize]")+" [npc.horns])]!"
 					+ "</p>");
 		}
 	}

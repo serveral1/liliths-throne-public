@@ -80,7 +80,7 @@ import com.lilithsthrone.world.places.PlaceType;
 
 /**
  * @since 0.1.0
- * @version 0.3.9
+ * @version 0.4.4.1
  * @author Innoxia
  */
 public class Lilaya extends NPC {
@@ -298,7 +298,7 @@ public class Lilaya extends NPC {
 		this.unequipAllClothingIntoVoid(true, true);
 		this.setHairStyle(HairStyle.LOOSE);
 		
-		this.equipClothingFromNowhere(Main.game.getItemGen().generateClothing(ClothingType.GROIN_PANTIES, PresetColour.CLOTHING_BLACK, false), true, this);
+		this.equipClothingFromNowhere(Main.game.getItemGen().generateClothing("innoxia_groin_panties", PresetColour.CLOTHING_BLACK, false), true, this);
 		this.equipClothingFromNowhere(Main.game.getItemGen().generateClothing(ClothingType.CHEST_FULLCUP_BRA, PresetColour.CLOTHING_BLACK, false), true, this);
 		this.equipClothingFromNowhere(Main.game.getItemGen().generateClothing("innoxia_leg_pencil_skirt", PresetColour.CLOTHING_BLACK, false), true, this);
 		this.equipClothingFromNowhere(Main.game.getItemGen().generateClothing(ClothingType.getClothingTypeFromId("innoxia_torso_feminine_short_sleeve_shirt"), PresetColour.CLOTHING_WHITE, PresetColour.CLOTHING_GREY, PresetColour.CLOTHING_GREY, false), true, this);
@@ -319,9 +319,9 @@ public class Lilaya extends NPC {
 		Main.game.getNpc(Lilaya.class).resetInventory(false);
 		this.setHairStyle(HairStyle.LOOSE);
 		
-		this.equipClothingFromNowhere(Main.game.getItemGen().generateClothing(ClothingType.KIMONO_HAIR_KANZASHI, PresetColour.CLOTHING_PINK, PresetColour.CLOTHING_PINK_LIGHT, PresetColour.CLOTHING_PURPLE, false), true, this);
-		this.equipClothingFromNowhere(Main.game.getItemGen().generateClothing(ClothingType.KIMONO_DRESS, PresetColour.CLOTHING_PINK_LIGHT, PresetColour.CLOTHING_PURPLE, PresetColour.CLOTHING_PINK, false), true, this);
-		this.equipClothingFromNowhere(Main.game.getItemGen().generateClothing(ClothingType.KIMONO_GETA, PresetColour.CLOTHING_PINK_LIGHT, PresetColour.CLOTHING_PINK, null, false), true, this);
+		this.equipClothingFromNowhere(Main.game.getItemGen().generateClothing("innoxia_japanese_kanzashi", PresetColour.CLOTHING_PINK, PresetColour.CLOTHING_PINK_LIGHT, PresetColour.CLOTHING_PURPLE, false), true, this);
+		this.equipClothingFromNowhere(Main.game.getItemGen().generateClothing("innoxia_japanese_kimono", PresetColour.CLOTHING_PINK_LIGHT, PresetColour.CLOTHING_PURPLE, PresetColour.CLOTHING_PINK, false), true, this);
+		this.equipClothingFromNowhere(Main.game.getItemGen().generateClothing("innoxia_japanese_geta", PresetColour.CLOTHING_PINK_LIGHT, PresetColour.CLOTHING_PINK, null, false), true, this);
 		this.equipClothingFromNowhere(Main.game.getItemGen().generateClothing("innoxia_eye_glasses", PresetColour.CLOTHING_BLACK_STEEL, false), true, this);
 	}
 	
@@ -346,6 +346,10 @@ public class Lilaya extends NPC {
 
 	public boolean isCondomBroke() {
 		return Main.game.getDialogueFlags().hasFlag(DialogueFlagValue.lilayaCondomBroke);
+	}
+
+	public boolean isAmazonsSecretImpregnation() {
+		return Main.game.getDialogueFlags().hasFlag(DialogueFlagValue.lilayaAmazonsSecretImpregnation);
 	}
 	
 	@Override
@@ -441,6 +445,17 @@ public class Lilaya extends NPC {
 	@Override
 	public boolean isAbleToBeImpregnated() {
 		return true;
+	}
+	
+	public void growCock() {
+		this.setPenisType(PenisType.DEMON_COMMON);
+		this.setPenisVirgin(false);
+		this.setPenisGirth(PenetrationGirth.FOUR_GIRTHY);
+		this.setPenisSize(28);
+		this.setTesticleSize(TesticleSize.THREE_LARGE);
+		this.setInternalTesticles(false);
+		this.setPenisCumStorage(2000);
+		this.fillCumToMaxStorage();
 	}
 	
 	@Override

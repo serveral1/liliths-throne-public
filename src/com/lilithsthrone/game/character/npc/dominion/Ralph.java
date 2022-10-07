@@ -28,6 +28,7 @@ import com.lilithsthrone.game.character.gender.Gender;
 import com.lilithsthrone.game.character.npc.NPC;
 import com.lilithsthrone.game.character.persona.NameTriplet;
 import com.lilithsthrone.game.character.persona.Occupation;
+import com.lilithsthrone.game.character.persona.PersonalityTrait;
 import com.lilithsthrone.game.character.persona.SexualOrientation;
 import com.lilithsthrone.game.character.race.RaceStage;
 import com.lilithsthrone.game.character.race.Subspecies;
@@ -86,7 +87,6 @@ public class Ralph extends NPC {
 			
 			this.setAttribute(Attribute.MAJOR_CORRUPTION, 35);
 		}
-		
 	}
 	
 	@Override
@@ -104,6 +104,12 @@ public class Ralph extends NPC {
 		}
 		if(Main.isVersionOlderThan(Game.loadingVersion, "0.3.9.1")) {
 			this.setPenisCumStorage(250);
+		}
+		if(Main.isVersionOlderThan(Game.loadingVersion, "0.4.1.1")) {
+			this.setPersonalityTraits(
+					PersonalityTrait.CONFIDENT,
+					PersonalityTrait.SELFISH,
+					PersonalityTrait.LEWD);
 		}
 	}
 
@@ -123,6 +129,11 @@ public class Ralph extends NPC {
 	public void setStartingBody(boolean setPersona) {
 		// Persona:
 		if(setPersona) {
+			this.setPersonalityTraits(
+					PersonalityTrait.CONFIDENT,
+					PersonalityTrait.SELFISH,
+					PersonalityTrait.LEWD);
+			
 			this.setSexualOrientation(SexualOrientation.AMBIPHILIC);
 			
 			this.setHistory(Occupation.NPC_STORE_OWNER);
@@ -212,7 +223,7 @@ public class Ralph extends NPC {
 	public void equipClothing(List<EquipClothingSetting> settings) {
 		this.unequipAllClothingIntoVoid(true, true);
 
-		this.equipClothingFromNowhere(Main.game.getItemGen().generateClothing(ClothingType.GROIN_BOXERS, PresetColour.CLOTHING_BLACK, false), true, this);
+		this.equipClothingFromNowhere(Main.game.getItemGen().generateClothing("innoxia_groin_boxers", PresetColour.CLOTHING_BLACK, false), true, this);
 		this.equipClothingFromNowhere(Main.game.getItemGen().generateClothing("innoxia_leg_jeans", PresetColour.CLOTHING_BLACK, false), true, this);
 		this.equipClothingFromNowhere(Main.game.getItemGen().generateClothing("innoxia_torso_short_sleeved_shirt", PresetColour.CLOTHING_PINK_LIGHT, false), true, this);
 		this.equipClothingFromNowhere(Main.game.getItemGen().generateClothing(ClothingType.WRIST_MENS_WATCH, PresetColour.CLOTHING_GOLD, false), true, this);

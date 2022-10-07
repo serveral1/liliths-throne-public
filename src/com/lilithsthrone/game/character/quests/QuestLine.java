@@ -49,6 +49,10 @@ public enum QuestLine {
 			QuestType.SIDE,
 			QuestTree.hypnoWatchTree),
 
+	SIDE_ARCANE_LIGHTNING("Arcane Lightning", "Arthur was able to extract the secrets of arcane lightning from the globe which you gave to him, allowing you to learn two incredibly powerful spells.",
+			QuestType.SIDE,
+			QuestTree.arcaneLightningTree),
+	
 	SIDE_HARPY_PACIFICATION("Angry Harpies", "You managed to calm down all three of the harpy matriarchs, resulting in the Harpy Nests being safe to travel through!",
 			QuestType.SIDE,
 			QuestTree.angryHarpyTree),
@@ -73,9 +77,26 @@ public enum QuestLine {
 			QuestType.SIDE,
 			QuestTree.vengarTree),
 
+
 	SIDE_WES("The Rogue Enforcer", "You were able to successfully deal with the Enforcer Quartermaster.",
 			QuestType.SIDE,
 			QuestTree.wesTree),
+        
+    SIDE_REBEL_BASE("Grave Robbing", "You managed to escape the abandoned rebel hideout.",
+            QuestType.SIDE,
+            QuestTree.rebelBaseTree),
+    
+    SIDE_REBEL_BASE_FIREBOMBS("Spicy Meatballs", "You've gotten yourself a steady supply of Arcane Firebombs. At the usual premium, of course.",
+            QuestType.SIDE,
+            QuestTree.rebelBaseFirebombTree),
+
+	SIDE_OGLIX_BEER_BARRELS("Beer Bitch Bonanza", "You secured more barrels for Oglix, allowing you to send four criminals from the nearby alleyways to her to become new beer-bitches!",
+			QuestType.SIDE,
+			QuestTree.beerBarrelTree),
+
+	SIDE_LUNEXIS_ESCAPE("Serving Lunexis", "You obeyed your Mistress's orders and ensured that she was able to escape, thereby sealing your fate to become one of her personal cock-sleeves...",
+			QuestType.SIDE,
+			QuestTree.lunexisEscapeTree),
 	
 	// Romance quests:
 	
@@ -90,6 +111,10 @@ public enum QuestLine {
 	ROMANCE_NATALYA("Filly Training", "Having completed Mistress Natalya's training, you are now a qualified filly and are expected to sexually service Dominion Express's centaur slaves.",
 			QuestType.RELATIONSHIP,
 			QuestTree.natalyaTree),
+
+	ROMANCE_MONICA("Monica's Milker", "You successfully retrieved Monica's personalised Moo Milker, and as a result she is very grateful to you.",
+			QuestType.RELATIONSHIP,
+			QuestTree.monicaTree),
 	;
 
 	private String name, completedDescription;

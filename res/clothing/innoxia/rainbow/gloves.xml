@@ -10,11 +10,10 @@
 		<physicalResistance>0</physicalResistance> 
 		<femininity>FEMININE</femininity>
 		<slot>HAND</slot> 
-		<rarity>COMMON</rarity>
+		<rarity>EPIC</rarity>
 		<clothingSet>RAINBOW</clothingSet>
 		<imageName>gloves.svg</imageName> 
 		<imageEquippedName/> 
-		<enchantmentLimit/>
 		
 		<effects> 
             <effect itemEffectType="CLOTHING" limit="0" potency="BOOST" primaryModifier="CLOTHING_MAJOR_ATTRIBUTE" secondaryModifier="STRENGTH" timer="0"/>

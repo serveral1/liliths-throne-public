@@ -1,37 +1,16 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <bookText>
 	
-	<htmlContent tag="HYENA_BASIC"><![CDATA[
+	<!-- You can define an author name to be shown in-game by setting the 'author' attribute.
+		I advise using a lore-friendly name so as to not break immersion, although of course you're free to use whatever name you like in your mod. -->
+	<htmlContent tag="HYENA_BASIC" author="Professor Webster"><![CDATA[
 	<p>
 		Hyena-morphs are almost exclusively found in the savannah and desert in the south of Lilith's Realm, although the odd individual may sometimes be seen wandering the streets of Dominion. Rounded ears, predatory eyes, and their distinctive spotted or striped fur is usually enough to identify a person as a hyena-morph.
 	</p>
 	]]>
 	</htmlContent>
-
-	<!-- Old description -->
 	
-	<htmlContent tag="HYENA_ADVANCED_OLD"><![CDATA[
-	<p>
-		While the individual personalities of hyena-morphs vary greatly from one individual to another, they have a reputation for being both aggressive and opportunistic. Often choosing to group up into gangs, hyena-morphs can pose a significant threat to travellers who choose to venture off the main road that links Dominion to the desert city of Thinis.
-	</p>
-	<p>
-		Hyena-morphs are split into two distinct subspecies; the spotted hyena-morph and the striped hyena-morph. The most striking feature of spotted hyena-morphs is that their females typically have an extraordinarily large clitoris. They often choose to use this as a pseudo-penis in sexual intercourse, as well as to intimidate and belittle males whose penises are smaller than their clits.
-	</p>
-	<p>
-		Striped hyena-girls, on the other hand, have no such alarming characteristic. The most striking feature of this other subspecies is the the fact that the vast majority of both males and females style their fur-like hair into mohawks, which, combined with their natural striped patterning, makes them appear quite intimidating.
-	</p>
-	<p>
-		Like most other races, hyena-morphs get affected by arcane storms. However, due to the fact that most of them live far away from Dominion's epicentre of such storms, they typically only experience mild effects.
-	</p>
-	<p>
-		A hyena-morph's offspring will be a mixture of hyena-morphs and offspring of their partner's race.
-	</p>
-	]]>
-	</htmlContent>
-	
-	<!-- Ikin's descriptions -->
-	
-	<htmlContent tag="HYENA_ADVANCED"><![CDATA[
+	<htmlContent tag="HYENA_ADVANCED" author="Professor Webster"><![CDATA[
 	<p style='text-align:center;'>
 		[style.boldHyena(Spotted Hyenas)]
 	</p>
@@ -58,7 +37,7 @@
 		Striped hyena-morphs are a settled people among the wastes, who make their living through subsistence farming and herding. Their kind values the laws and proper behaviour of a civilized society so they are a far more common sight in Dominion than their spotted cousins. Unfortunately, their nature as homebodies means it is still rare that one will actually make the trek to the city. Although they are for the most part an independent people who value their privacy, they group up in large numbers to travel the wastes, due to the threat posed by their rival subspecies, spotted hyena-morphs.
 	</p>
 	<p>
-		Male and female striped hyenas tend to be of the same height to one another. Unlike spotted hyenas, they do not have any major deviations in genital arrangement and both are equally physically adept, that is to say, very. The pride of a striped hyena can easily be said to be their long, luxurious mohawks. Both males and females sport them and much personal pride is put into their appearance. Jewellery is not an uncommon feature among more affluent members of the race but the most common embellishment among is to simply dye it in colours which are important to the individual.
+		Male and female striped hyenas tend to be of the same height as one another. Unlike spotted hyenas, they do not have any major deviations in genital arrangement and both are equally physically adept, that is to say, very. The pride of a striped hyena can easily be said to be their long, luxurious mohawks. Both males and females sport them and much personal pride is put into their appearance. Jewellery is not an uncommon feature among more affluent members of the race but the most common embellishment among them is to simply dye it in colours which are important to the individual.
 	</p>
 	<p>
 		Being a society based on independence, their desire for privacy means they will often make their homes in the various rural communities that dot the savannah and desert. While not as physically intimidating as their spotted cousins, physical achievement is still highly prized in striped hyena society, and thus contact sports form the usual pastime in their communities. Their desire to cement their individuality often times expresses itself via an intense competitive spirit. Due to this, the striped hyenas within Dominion can often times can be found near a gym, especially the boxing ring.

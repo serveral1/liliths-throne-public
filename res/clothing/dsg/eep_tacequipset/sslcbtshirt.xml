@@ -30,8 +30,6 @@
 
 		<imageEquippedName/> 
 
-		<enchantmentLimit/>
-
 		<effects/> 
 
 		<blockedPartsList> 
@@ -45,7 +43,7 @@
 					<clothingAccess>HEAD</clothingAccess>
 				</clothingAccessRequired>
 
-				<blockedBodyParts/> 
+				<blockedBodyParts/>
 
 				<clothingAccessBlocked/> 
 
@@ -84,7 +82,7 @@
 		<secondaryColoursDye values="ALL"/>
 
 		<itemTags> 
-			<tag>FITS_HARPY_WINGS</tag>
+			<tag>FITS_ARM_WINGS</tag>
 			<tag>CONTRABAND_MEDIUM</tag>
 		</itemTags>
 	</coreAtributes>

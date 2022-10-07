@@ -44,7 +44,7 @@ import com.lilithsthrone.game.character.fetishes.Fetish;
 import com.lilithsthrone.game.character.fetishes.FetishDesire;
 import com.lilithsthrone.game.character.gender.Gender;
 import com.lilithsthrone.game.character.npc.NPC;
-import com.lilithsthrone.game.character.npc.NPCGenerationFlag;
+import com.lilithsthrone.game.character.npc.misc.SlaveForSale;
 import com.lilithsthrone.game.character.persona.NameTriplet;
 import com.lilithsthrone.game.character.persona.Occupation;
 import com.lilithsthrone.game.character.persona.PersonalityTrait;
@@ -75,8 +75,8 @@ import com.lilithsthrone.world.places.PlaceType;
 
 /**
  * @since 0.1.75
- * @version 0.3.7
- * @author Innoxia
+ * @version 0.4.2
+ * @author Innoxia, AceXP
  */
 public class Helena extends NPC {
 
@@ -283,7 +283,7 @@ public class Helena extends NPC {
 
 			this.equipClothingFromNowhere(Main.game.getItemGen().generateClothing("innoxia_head_tiara", PresetColour.CLOTHING_ROSE_GOLD, false), true, this);
 			
-			this.equipClothingFromNowhere(Main.game.getItemGen().generateClothing(ClothingType.GROIN_VSTRING, PresetColour.CLOTHING_WHITE, false), true, this);
+			this.equipClothingFromNowhere(Main.game.getItemGen().generateClothing("innoxia_groin_vstring", PresetColour.CLOTHING_WHITE, false), true, this);
 			this.equipClothingFromNowhere(Main.game.getItemGen().generateClothing(ClothingType.CHEST_PLUNGE_BRA, PresetColour.CLOTHING_WHITE, false), true, this);
 			
 			this.equipClothingFromNowhere(Main.game.getItemGen().generateClothing(ClothingType.TORSO_PLUNGE_DRESS, PresetColour.CLOTHING_WHITE, false), true, this);
@@ -319,7 +319,7 @@ public class Helena extends NPC {
 			}
 			// Catch for old version which had bugged slaves standing on Helena's tile:
 			for(GameCharacter character : new ArrayList<>(Main.game.getCharactersPresent(Main.game.getWorlds().get(WorldType.SLAVER_ALLEY).getCell(PlaceType.SLAVER_ALLEY_SCARLETTS_SHOP)))) {
-				if(character.isSlave() && !character.getOwner().isPlayer() && character instanceof DominionAlleywayAttacker) {
+				if(character.isSlave() && !character.getOwner().isPlayer() && (character instanceof DominionAlleywayAttacker || character instanceof SlaveForSale)) {
 					Main.game.banishNPC((NPC) character);
 				}
 			}
@@ -334,18 +334,17 @@ public class Helena extends NPC {
 			if(Main.game.getPlayer().isQuestProgressLessThan(QuestLine.ROMANCE_HELENA, Quest.ROMANCE_HELENA_3_A_EXTERIOR_DECORATOR)
 					&& !Main.game.getPlayer().hasItemType(ItemType.PAINT_CAN)
 					&& !Main.game.getPlayer().hasItemType(ItemType.PAINT_CAN_PREMIUM)) {
-				for(int i=0; i<2; i++) {
-					NPC newSlave = new DominionAlleywayAttacker(Gender.getGenderFromUserPreferences(false, false), false, NPCGenerationFlag.NO_CLOTHING_EQUIP);
+				for (int i=0; i<2; i++) {
+					NPC newSlave = new SlaveForSale(Gender.getGenderFromUserPreferences(false, false), false);
 					try {
 						Main.game.addNPC(newSlave, false, true);
 					} catch (Exception e) {
 						e.printStackTrace();
 					}
-					newSlave.setHistory(Occupation.NPC_SLAVE);
 					newSlave.setLocation(WorldType.SLAVER_ALLEY, PlaceType.SLAVER_ALLEY_SCARLETTS_SHOP, true);
 					addSlave(newSlave);
 					newSlave.resetInventory(true);
-					newSlave.equipClothingFromNowhere(Main.game.getItemGen().generateClothing("innoxia_bdsm_metal_collar", PresetColour.CLOTHING_BLACK_STEEL, false), true, Main.game.getNpc(Helena.class));
+					newSlave.equipClothingFromNowhere(Main.game.getItemGen().generateClothing("innoxia_bdsm_metal_collar", PresetColour.CLOTHING_PLATINUM, false), true, Main.game.getNpc(Helena.class));
 					newSlave.setPlayerKnowsName(true);
 				}
 			}
@@ -521,7 +520,7 @@ public class Helena extends NPC {
 			this.equipClothingFromNowhere(Main.game.getItemGen().generateClothing("innoxia_piercing_gemstone_barbell", PresetColour.CLOTHING_GOLD, PresetColour.CLOTHING_PURPLE_ROYAL, null, false), true, this);
 			this.equipClothingFromNowhere(Main.game.getItemGen().generateClothing("innoxia_piercing_nose_ring", PresetColour.CLOTHING_GOLD, false), true, this);
 			
-			this.equipClothingFromNowhere(Main.game.getItemGen().generateClothing(ClothingType.GROIN_CROTCHLESS_THONG, PresetColour.CLOTHING_BLACK, false), true, this);
+			this.equipClothingFromNowhere(Main.game.getItemGen().generateClothing("innoxia_groin_crotchless_thong", PresetColour.CLOTHING_BLACK, false), true, this);
 			this.equipClothingFromNowhere(Main.game.getItemGen().generateClothing(ClothingType.CHEST_OPEN_CUP_BRA, PresetColour.CLOTHING_BLACK, false), true, this);
 			
 		} else {
@@ -542,7 +541,7 @@ public class Helena extends NPC {
 	public void applyDressForMorning() {
 		this.unequipAllClothingIntoVoid(true, true);
 
-		this.equipClothingFromNowhere(Main.game.getItemGen().generateClothing(ClothingType.GROIN_SHIMAPAN, PresetColour.CLOTHING_PINK_HOT, PresetColour.CLOTHING_WHITE, null, false), true, this);
+		this.equipClothingFromNowhere(Main.game.getItemGen().generateClothing("innoxia_groin_shimapan", PresetColour.CLOTHING_PINK_HOT, PresetColour.CLOTHING_WHITE, null, false), true, this);
 		this.equipClothingFromNowhere(Main.game.getItemGen().generateClothing(ClothingType.CHEST_CHEMISE, PresetColour.CLOTHING_BLACK, false), true, this);
 	}
 

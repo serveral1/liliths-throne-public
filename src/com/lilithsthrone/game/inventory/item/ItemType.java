@@ -11,12 +11,16 @@ import java.util.Map;
 import java.util.Map.Entry;
 
 import com.lilithsthrone.game.character.GameCharacter;
+import com.lilithsthrone.game.character.attributes.AbstractAttribute;
 import com.lilithsthrone.game.character.attributes.Attribute;
 import com.lilithsthrone.game.character.attributes.CorruptionLevel;
 import com.lilithsthrone.game.character.attributes.IntelligenceLevel;
 import com.lilithsthrone.game.character.body.CoverableArea;
+import com.lilithsthrone.game.character.effects.AbstractStatusEffect;
+import com.lilithsthrone.game.character.effects.StatusEffect;
 import com.lilithsthrone.game.character.quests.QuestLine;
 import com.lilithsthrone.game.character.race.AbstractSubspecies;
+import com.lilithsthrone.game.character.race.Race;
 import com.lilithsthrone.game.character.race.Subspecies;
 import com.lilithsthrone.game.combat.spells.Spell;
 import com.lilithsthrone.game.combat.spells.SpellSchool;
@@ -394,7 +398,8 @@ public class ItemType {
 		
 	}
 	
-	public static AbstractItemType BOTTLED_ESSENCE_ARCANE = new AbstractItemType(40,
+	public static AbstractItemType BOTTLED_ESSENCE_ARCANE = new AbstractItemType(
+			40,
 			null,
 			false,
 			"Bottled Arcane Essence",
@@ -422,503 +427,7 @@ public class ItemType {
 		}
 	};
 	
-	public static AbstractItemType BOTTLED_ESSENCE_CAT_MORPH = new AbstractItemType(
-			50,
-			null,
-			false,
-			"Bottled Cat-morph Essence",
-			"Bottled Cat-morph Essences",
-			"A small glass bottle, with a little cork stopper wedged firmly in the top."
-					+ " Inside, the swirling "+PresetColour.RACE_CAT_MORPH.getName()+" glow of an arcane essence, imbued with the energy of a cat-morph, flickers and swirls about in a mesmerising, cyclical pattern.",
-			null,
-			PresetColour.RACE_CAT_MORPH,
-			null,
-			null,
-			Rarity.EPIC,
-			Util.newArrayListOfValues(new ItemEffect(ItemEffectType.BOTTLED_ESSENCE_CAT_MORPH)),
-			Util.newArrayListOfValues(ItemTag.ESSENCE)) {
-		@Override
-		public String getUseName() {
-			return "absorb";
-		}
-		@Override
-		public String getUseDescription(GameCharacter user, GameCharacter target) {
-			return getEssenceAbsorptionText(PresetColour.RACE_CAT_MORPH, user, target);
-		}
-		@Override
-		public String getSVGString() {
-			return getEssenceSvg(Subspecies.CAT_MORPH);
-		}
-	};
-	
 
-	public static AbstractItemType BOTTLED_ESSENCE_COW_MORPH = new AbstractItemType(
-			50,
-			null,
-			false,
-			"Bottled Cow-morph Essence",
-			"Bottled Cow-morph Essences",
-			"A small glass bottle, with a little cork stopper wedged firmly in the top."
-					+ " Inside, the swirling "+PresetColour.RACE_COW_MORPH.getName()+" glow of an arcane essence, imbued with the energy of a cow-morph, flickers and swirls about in a mesmerising, cyclical pattern.",
-			null,
-			PresetColour.RACE_COW_MORPH,
-			null,
-			null,
-			Rarity.EPIC,
-			Util.newArrayListOfValues(new ItemEffect(ItemEffectType.BOTTLED_ESSENCE_COW_MORPH)),
-			Util.newArrayListOfValues(ItemTag.ESSENCE)) {
-		@Override
-		public String getUseName() {
-			return "absorb";
-		}
-		@Override
-		public String getUseDescription(GameCharacter user, GameCharacter target) {
-			return getEssenceAbsorptionText(PresetColour.RACE_COW_MORPH, user, target);
-		}
-		@Override
-		public String getSVGString() {
-			return getEssenceSvg(Subspecies.COW_MORPH);
-		}
-	};
-	
-	public static AbstractItemType BOTTLED_ESSENCE_DEMON = new AbstractItemType(
-			75,
-			null,
-			false,
-			"Bottled Demon Essence",
-			"Bottled Demon Essences",
-			"A small glass bottle, with a little cork stopper wedged firmly in the top."
-					+ " Inside, the swirling "+PresetColour.RACE_DEMON.getName()+" glow of an arcane essence, imbued with the energy of a demon, flickers and swirls about in a mesmerising, cyclical pattern.",
-			null,
-			PresetColour.RACE_DEMON,
-			null,
-			null,
-			Rarity.EPIC,
-			Util.newArrayListOfValues(new ItemEffect(ItemEffectType.BOTTLED_ESSENCE_DEMON)),
-			Util.newArrayListOfValues(ItemTag.ESSENCE)) {
-		@Override
-		public String getUseName() {
-			return "absorb";
-		}
-		@Override
-		public String getUseDescription(GameCharacter user, GameCharacter target) {
-			return getEssenceAbsorptionText(PresetColour.RACE_DEMON, user, target);
-		}
-		@Override
-		public String getSVGString() {
-			return getEssenceSvg(Subspecies.DEMON);
-		}
-	};
-
-	public static AbstractItemType BOTTLED_ESSENCE_IMP = new AbstractItemType(
-			40,
-			null,
-			false,
-			"Bottled Imp Essence",
-			"Bottled Imp Essences",
-			"A small glass bottle, with a little cork stopper wedged firmly in the top."
-					+ " Inside, the swirling "+PresetColour.RACE_IMP.getName()+" glow of an arcane essence, imbued with the energy of an imp, flickers and swirls about in a mesmerising, cyclical pattern.",
-			null,
-			PresetColour.RACE_IMP,
-			null,
-			null,
-			Rarity.EPIC,
-			Util.newArrayListOfValues(new ItemEffect(ItemEffectType.BOTTLED_ESSENCE_IMP)),
-			Util.newArrayListOfValues(ItemTag.ESSENCE)) {
-		@Override
-		public String getUseName() {
-			return "absorb";
-		}
-		@Override
-		public String getUseDescription(GameCharacter user, GameCharacter target) {
-			return getEssenceAbsorptionText(PresetColour.RACE_IMP, user, target);
-		}
-		@Override
-		public String getSVGString() {
-			return getEssenceSvg(Subspecies.IMP);
-		}
-	};
-	
-	public static AbstractItemType BOTTLED_ESSENCE_ALLIGATOR_MORPH = new AbstractItemType(
-			50,
-			null,
-			false,
-			"Bottled Alligator-morph Essence",
-			"Bottled Alligator-morph Essences",
-			"A small glass bottle, with a little cork stopper wedged firmly in the top."
-					+ " Inside, the swirling "+PresetColour.RACE_ALLIGATOR_MORPH.getName()+" glow of an alligator-morph essence flickers and swirls about in a mesmerising, cyclical pattern.",
-			null,
-			PresetColour.RACE_ALLIGATOR_MORPH,
-			null,
-			null,
-			Rarity.EPIC,
-			Util.newArrayListOfValues(new ItemEffect(ItemEffectType.BOTTLED_ESSENCE_ALLIGATOR_MORPH)),
-			Util.newArrayListOfValues(ItemTag.ESSENCE)) {
-		@Override
-		public String getUseName() {
-			return "absorb";
-		}
-		@Override
-		public String getUseDescription(GameCharacter user, GameCharacter target) {
-			return getEssenceAbsorptionText(PresetColour.RACE_ALLIGATOR_MORPH, user, target);
-		}
-		@Override
-		public String getSVGString() {
-			return getEssenceSvg(Subspecies.ALLIGATOR_MORPH);
-		}
-	};
-	
-
-	public static AbstractItemType BOTTLED_ESSENCE_SQUIRREL_MORPH = new AbstractItemType(
-			50,
-			null,
-			false,
-			"Bottled Squirrel-morph Essence",
-			"Bottled Squirrel-morph Essences",
-			"A small glass bottle, with a little cork stopper wedged firmly in the top."
-					+ " Inside, the swirling "+PresetColour.RACE_SQUIRREL_MORPH.getName()+" glow of an arcane essence, imbued with the energy of a squirrel-morph, flickers and swirls about in a mesmerising, cyclical pattern.",
-			null,
-			PresetColour.RACE_SQUIRREL_MORPH,
-			null,
-			null,
-			Rarity.EPIC,
-			Util.newArrayListOfValues(new ItemEffect(ItemEffectType.BOTTLED_ESSENCE_SQUIRREL_MORPH)),
-			Util.newArrayListOfValues(ItemTag.ESSENCE)) {
-		@Override
-		public String getUseName() {
-			return "absorb";
-		}
-		@Override
-		public String getUseDescription(GameCharacter user, GameCharacter target) {
-			return getEssenceAbsorptionText(PresetColour.RACE_SQUIRREL_MORPH, user, target);
-		}
-		@Override
-		public String getSVGString() {
-			return getEssenceSvg(Subspecies.SQUIRREL_MORPH);
-		}
-	};
-	
-	public static AbstractItemType BOTTLED_ESSENCE_RAT_MORPH = new AbstractItemType(
-			50,
-			null,
-			false,
-			"Bottled Rat-morph Essence",
-			"Bottled Rat-morph Essences",
-			"A small glass bottle, with a little cork stopper wedged firmly in the top."
-					+ " Inside, the swirling "+PresetColour.RACE_RAT_MORPH.getName()+" glow of an arcane essence, imbued with the energy of a rat-morph, flickers and swirls about in a mesmerising, cyclical pattern.",
-			null,
-			PresetColour.RACE_RAT_MORPH,
-			null,
-			null,
-			Rarity.EPIC,
-			Util.newArrayListOfValues(new ItemEffect(ItemEffectType.BOTTLED_ESSENCE_RAT_MORPH)),
-			Util.newArrayListOfValues(ItemTag.ESSENCE)) {
-		@Override
-		public String getUseName() {
-			return "absorb";
-		}
-		@Override
-		public String getUseDescription(GameCharacter user, GameCharacter target) {
-			return getEssenceAbsorptionText(PresetColour.RACE_RAT_MORPH, user, target);
-		}
-		@Override
-		public String getSVGString() {
-			return getEssenceSvg(Subspecies.RAT_MORPH);
-		}
-	};
-	
-	public static AbstractItemType BOTTLED_ESSENCE_RABBIT_MORPH = new AbstractItemType(
-			50,
-			null,
-			false,
-			"Bottled Rabbit-morph Essence",
-			"Bottled Rabbit-morph Essences",
-			"A small glass bottle, with a little cork stopper wedged firmly in the top."
-					+ " Inside, the swirling "+PresetColour.RACE_RABBIT_MORPH.getName()+" glow of an arcane essence, imbued with the energy of a rabbit-morph, flickers and swirls about in a mesmerising, cyclical pattern.",
-			null,
-			PresetColour.RACE_RABBIT_MORPH,
-			null,
-			null,
-			Rarity.EPIC,
-			Util.newArrayListOfValues(new ItemEffect(ItemEffectType.BOTTLED_ESSENCE_RABBIT_MORPH)),
-			Util.newArrayListOfValues(ItemTag.ESSENCE)) {
-		@Override
-		public String getUseName() {
-			return "absorb";
-		}
-		@Override
-		public String getUseDescription(GameCharacter user, GameCharacter target) {
-			return getEssenceAbsorptionText(PresetColour.RACE_RABBIT_MORPH, user, target);
-		}
-		@Override
-		public String getSVGString() {
-			return getEssenceSvg(Subspecies.RABBIT_MORPH);
-		}
-	};
-	
-	public static AbstractItemType BOTTLED_ESSENCE_BAT_MORPH = new AbstractItemType(
-			50,
-			null,
-			false,
-			"Bottled Bat-morph Essence",
-			"Bottled Bat-morph Essences",
-			"A small glass bottle, with a little cork stopper wedged firmly in the top."
-					+ " Inside, the swirling "+PresetColour.RACE_BAT_MORPH.getName()+" glow of an arcane essence, imbued with the energy of a bat-morph, flickers and swirls about in a mesmerising, cyclical pattern.",
-			null,
-			PresetColour.RACE_BAT_MORPH,
-			null,
-			null,
-			Rarity.EPIC,
-			Util.newArrayListOfValues(new ItemEffect(ItemEffectType.BOTTLED_ESSENCE_BAT_MORPH)),
-			Util.newArrayListOfValues(ItemTag.ESSENCE)) {
-		@Override
-		public String getUseName() {
-			return "absorb";
-		}
-		@Override
-		public String getUseDescription(GameCharacter user, GameCharacter target) {
-			return getEssenceAbsorptionText(PresetColour.RACE_BAT_MORPH, user, target);
-		}
-		@Override
-		public String getSVGString() {
-			return getEssenceSvg(Subspecies.BAT_MORPH);
-		}
-	};
-	
-	public static AbstractItemType BOTTLED_ESSENCE_DOG_MORPH = new AbstractItemType(
-			50,
-			null,
-			false,
-			"Bottled Dog-morph Essence",
-			"Bottled Dog-morph Essences",
-			"A small glass bottle, with a little cork stopper wedged firmly in the top."
-					+ " Inside, the swirling "+PresetColour.RACE_DOG_MORPH.getName()+" glow of an arcane essence, imbued with the energy of a dog-morph, flickers and swirls about in a mesmerising, cyclical pattern.",
-			null,
-			PresetColour.RACE_DOG_MORPH,
-			null,
-			null,
-			Rarity.EPIC,
-			Util.newArrayListOfValues(new ItemEffect(ItemEffectType.BOTTLED_ESSENCE_DOG_MORPH)),
-			Util.newArrayListOfValues(ItemTag.ESSENCE)) {
-		@Override
-		public String getUseName() {
-			return "absorb";
-		}
-		@Override
-		public String getUseDescription(GameCharacter user, GameCharacter target) {
-			return getEssenceAbsorptionText(PresetColour.RACE_DOG_MORPH, user, target);
-		}
-		@Override
-		public String getSVGString() {
-			return getEssenceSvg(Subspecies.DOG_MORPH);
-		}
-	};
-	
-	public static AbstractItemType BOTTLED_ESSENCE_HARPY = new AbstractItemType(
-			50,
-			null,
-			false,
-			"Bottled Harpy Essence",
-			"Bottled Harpy Essences",
-			"A small glass bottle, with a little cork stopper wedged firmly in the top."
-					+ " Inside, the swirling "+PresetColour.RACE_HARPY.getName()+" glow of an arcane essence, imbued with the energy of a harpy, flickers and swirls about in a mesmerising, cyclical pattern.",
-			null,
-			PresetColour.RACE_HARPY,
-			null,
-			null,
-			Rarity.EPIC,
-			Util.newArrayListOfValues(new ItemEffect(ItemEffectType.BOTTLED_ESSENCE_HARPY)),
-			Util.newArrayListOfValues(ItemTag.ESSENCE)) {
-		@Override
-		public String getUseName() {
-			return "absorb";
-		}
-		@Override
-		public String getUseDescription(GameCharacter user, GameCharacter target) {
-			return getEssenceAbsorptionText(PresetColour.RACE_HARPY, user, target);
-		}
-		@Override
-		public String getSVGString() {
-			return getEssenceSvg(Subspecies.HARPY);
-		}
-	};
-	
-	public static AbstractItemType BOTTLED_ESSENCE_HORSE_MORPH = new AbstractItemType(
-			50,
-			null,
-			false,
-			"Bottled Horse-morph Essence",
-			"Bottled Horse-morph Essences",
-			"A small glass bottle, with a little cork stopper wedged firmly in the top."
-					+ " Inside, the swirling "+PresetColour.RACE_HORSE_MORPH.getName()+" glow of an arcane essence, imbued with the energy of a horse-morph, flickers and swirls about in a mesmerising, cyclical pattern.",
-			null,
-			PresetColour.RACE_HORSE_MORPH,
-			null,
-			null,
-			Rarity.EPIC,
-			Util.newArrayListOfValues(new ItemEffect(ItemEffectType.BOTTLED_ESSENCE_HORSE_MORPH)),
-			Util.newArrayListOfValues(ItemTag.ESSENCE)) {
-		@Override
-		public String getUseName() {
-			return "absorb";
-		}
-		@Override
-		public String getUseDescription(GameCharacter user, GameCharacter target) {
-			return getEssenceAbsorptionText(PresetColour.RACE_HORSE_MORPH, user, target);
-		}
-		@Override
-		public String getSVGString() {
-			return getEssenceSvg(Subspecies.HORSE_MORPH);
-		}
-	};
-	
-	public static AbstractItemType BOTTLED_ESSENCE_REINDEER_MORPH = new AbstractItemType(
-			50,
-			null,
-			false,
-			"Bottled Reindeer-morph Essence",
-			"Bottled Reindeer-morph Essences",
-			"A small glass bottle, with a little cork stopper wedged firmly in the top."
-					+ " Inside, the swirling "+PresetColour.RACE_REINDEER_MORPH.getName()+" glow of an arcane essence, imbued with the energy of a reindeer-morph, flickers and swirls about in a mesmerising, cyclical pattern.",
-			null,
-			PresetColour.RACE_REINDEER_MORPH,
-			null,
-			null,
-			Rarity.EPIC,
-			Util.newArrayListOfValues(new ItemEffect(ItemEffectType.BOTTLED_ESSENCE_REINDEER_MORPH)),
-			Util.newArrayListOfValues(ItemTag.ESSENCE)) {
-		@Override
-		public String getUseName() {
-			return "absorb";
-		}
-		@Override
-		public String getUseDescription(GameCharacter user, GameCharacter target) {
-			return getEssenceAbsorptionText(PresetColour.RACE_REINDEER_MORPH, user, target);
-		}
-		@Override
-		public String getSVGString() {
-			return getEssenceSvg(Subspecies.REINDEER_MORPH);
-		}
-	};
-	
-	public static AbstractItemType BOTTLED_ESSENCE_HUMAN = new AbstractItemType(
-			50,
-			null,
-			false,
-			"Bottled Human Essence",
-			"Bottled Human Essences",
-			"A small glass bottle, with a little cork stopper wedged firmly in the top."
-					+ " Inside, the swirling "+PresetColour.RACE_HUMAN.getName()+" glow of an arcane essence, imbued with the energy of a human, flickers and swirls about in a mesmerising, cyclical pattern.",
-			null,
-			PresetColour.RACE_HUMAN,
-			null,
-			null,
-			Rarity.EPIC,
-			Util.newArrayListOfValues(new ItemEffect(ItemEffectType.BOTTLED_ESSENCE_HUMAN)),
-			Util.newArrayListOfValues(ItemTag.ESSENCE)) {
-		@Override
-		public String getUseName() {
-			return "absorb";
-		}
-		@Override
-		public String getUseDescription(GameCharacter user, GameCharacter target) {
-			return getEssenceAbsorptionText(PresetColour.RACE_HUMAN, user, target);
-		}
-		@Override
-		public String getSVGString() {
-			return getEssenceSvg(Subspecies.HUMAN);
-		}
-	};
-	
-	public static AbstractItemType BOTTLED_ESSENCE_WOLF_MORPH = new AbstractItemType(
-			50,
-			null,
-			false,
-			"Bottled Wolf-morph Essence",
-			"Bottled Wolf-morph Essences",
-			"A small glass bottle, with a little cork stopper wedged firmly in the top."
-					+ " Inside, the swirling "+PresetColour.RACE_WOLF_MORPH.getName()+" glow of an arcane essence, imbued with the energy of a wolf-morph, flickers and swirls about in a mesmerising, cyclical pattern.",
-			null,
-			PresetColour.RACE_WOLF_MORPH,
-			null,
-			null,
-			Rarity.EPIC,
-			Util.newArrayListOfValues(new ItemEffect(ItemEffectType.BOTTLED_ESSENCE_WOLF_MORPH)),
-			Util.newArrayListOfValues(ItemTag.ESSENCE)) {
-		@Override
-		public String getUseName() {
-			return "absorb";
-		}
-		@Override
-		public String getUseDescription(GameCharacter user, GameCharacter target) {
-			return getEssenceAbsorptionText(PresetColour.RACE_WOLF_MORPH, user, target);
-		}
-		@Override
-		public String getSVGString() {
-			return getEssenceSvg(Subspecies.WOLF_MORPH);
-		}
-	};
-	
-	public static AbstractItemType BOTTLED_ESSENCE_FOX_MORPH = new AbstractItemType(
-			50,
-			null,
-			false,
-			"Bottled Fox-morph Essence",
-			"Bottled Fox-morph Essences",
-			"A small glass bottle, with a little cork stopper wedged firmly in the top."
-					+ " Inside, the swirling "+PresetColour.RACE_FOX_MORPH.getName()+" glow of an arcane essence, imbued with the energy of a fox-morph, flickers and swirls about in a mesmerising, cyclical pattern.",
-			null,
-			PresetColour.RACE_FOX_MORPH,
-			null,
-			null,
-			Rarity.EPIC,
-			Util.newArrayListOfValues(new ItemEffect(ItemEffectType.BOTTLED_ESSENCE_FOX_MORPH)),
-			Util.newArrayListOfValues(ItemTag.ESSENCE)) {
-		@Override
-		public String getUseName() {
-			return "absorb";
-		}
-		@Override
-		public String getUseDescription(GameCharacter user, GameCharacter target) {
-			return getEssenceAbsorptionText(PresetColour.RACE_FOX_MORPH, user, target);
-		}
-		@Override
-		public String getSVGString() {
-			return getEssenceSvg(Subspecies.FOX_MORPH);
-		}
-	};
-
-	public static AbstractItemType BOTTLED_ESSENCE_SLIME = new AbstractItemType(
-			50,
-			null,
-			false,
-			"Bottled Slime Essence",
-			"Bottled Slime Essences",
-			"A small glass bottle, with a little cork stopper wedged firmly in the top."
-					+ " Inside, the swirling "+PresetColour.RACE_SLIME.getName()+" glow of an arcane essence, imbued with the energy of a slime, flickers and swirls about in a mesmerising, cyclical pattern.",
-			null,
-			PresetColour.RACE_SLIME,
-			null,
-			null,
-			Rarity.EPIC,
-			Util.newArrayListOfValues(new ItemEffect(ItemEffectType.BOTTLED_ESSENCE_SLIME)),
-			Util.newArrayListOfValues(ItemTag.ESSENCE)) {
-		@Override
-		public String getUseName() {
-			return "absorb";
-		}
-		@Override
-		public String getUseDescription(GameCharacter user, GameCharacter target) {
-			return getEssenceAbsorptionText(PresetColour.RACE_SLIME, user, target);
-		}
-		@Override
-		public String getSVGString() {
-			return getEssenceSvg(Subspecies.SLIME);
-		}
-	};
-	
-	
-	
 	// Specials:
 	
 	public static AbstractItemType HARPY_MATRIARCH_BIMBO_LOLLIPOP = new AbstractItemType(1250,
@@ -1061,7 +570,7 @@ public class ItemType {
 	
 	// Crafting outputs:
 	
-	public static AbstractItemType POTION = new AbstractItemType(750,
+	public static AbstractItemType POTION = new AbstractItemType(500,
 			"",
 			false,
 			"potion",
@@ -1075,6 +584,14 @@ public class ItemType {
 			Rarity.RARE,
 			null,
 			null) {
+		@Override
+		public int getValue(List<ItemEffect> effects) {
+			int val = super.getValue(effects);
+			
+			val += (effects.size() * 25);
+			
+			return val;
+		}
 		@Override
 		public boolean isTransformative() {
 			return false;
@@ -1095,7 +612,7 @@ public class ItemType {
 		}
 	};
 	
-	public static AbstractItemType ELIXIR = new AbstractItemType(1500,
+	public static AbstractItemType ELIXIR = new AbstractItemType(750,
 			"",
 			false,
 			"elixir",
@@ -1109,6 +626,14 @@ public class ItemType {
 			Rarity.EPIC,
 			null,
 			null) {
+		@Override
+		public int getValue(List<ItemEffect> effects) {
+			int val = super.getValue(effects);
+			
+			val += (effects.size() * 50);
+			
+			return val;
+		}
 		@Override
 		public boolean isTransformative() {
 			return true;
@@ -2209,7 +1734,7 @@ public class ItemType {
 			false,
 			"arcane offspring map",
 			"arcane offspring maps",
-			"An arcane-enchanted map, obtained from Dominion's city hall, which is able to track the rough location of any of your offspring.",
+			"An arcane-enchanted map, obtained from Dominion's city hall, which is able to track the rough location of any of your nearby offspring.",
 			"offspring_map",
 			PresetColour.BASE_BROWN,
 			null,
@@ -2232,15 +1757,20 @@ public class ItemType {
 		@Override
 		public boolean isAbleToBeUsed(GameCharacter target) {
 			return target.isPlayer()
-					&& (target.getLocationPlace().getPlaceType().getEncounterType()==Encounter.DOMINION_ALLEY
-							|| target.getLocationPlace().getPlaceType().getEncounterType()==Encounter.DOMINION_CANAL
-							|| target.getLocationPlace().getPlaceType().getEncounterType()==Encounter.HARPY_NEST_WALKWAYS
-							|| target.getLocationPlace().getPlaceType().getEncounterType()==Encounter.SUBMISSION_TUNNELS)
-					&& Main.game.getCharactersTreatingCellAsHome(Main.game.getPlayerCell()).size()<=1;
+					&& Main.game.getCharactersTreatingCellAsHome(Main.game.getPlayerCell()).size()==0
+					&& ((Util.newArrayListOfValues(
+							Encounter.DOMINION_ALLEY,
+							Encounter.DOMINION_CANAL,
+							Encounter.HARPY_NEST_WALKWAYS,
+							Encounter.SUBMISSION_TUNNELS,
+							Encounter.BAT_CAVERN,
+							Encounter.getEncounterFromId("innoxia_elis_alleyway")
+						).contains(target.getLocationPlace().getPlaceType().getEncounterType()))
+						|| Main.game.getPlayer().getLocationPlaceType()==PlaceType.getPlaceTypeFromId("innoxia_fields_elis_town_alley"));
 		}
 		@Override
 		public String getUnableToBeUsedDescription(GameCharacter target) {
-			return "You need to be in one of Dominion's alleyway or canal tiles, a Harpy Nest walkway tile, or a Submission tunnel tile, and with no more than one character already present in that tile, in order to be able to use the map!";
+			return "In order to be able to use the map, you need to be in a vacant tile of one of the following types: Dominion alleyways; Dominion canals; Harpy Nest walkways; Submission tunnels; Bat Caverns; Elis alleyways.";
 		}
 		@Override
 		public String getUseTooltipDescription(GameCharacter user, GameCharacter target) {
@@ -2891,6 +2421,8 @@ public class ItemType {
 	private static List<AbstractItemType> dominionAlleywayItems = new ArrayList<>();
 	private static List<AbstractItemType> submissionTunnelItems = new ArrayList<>();
 	private static List<AbstractItemType> batCavernItems = new ArrayList<>();
+	private static List<AbstractItemType> elisAlleywayItems = new ArrayList<>();
+	
 	private static List<AbstractItemType> essences = new ArrayList<>();
 	private static List<AbstractItemType> allItems = new ArrayList<>();
 	private static List<AbstractItemType> moddedItems = new ArrayList<>();
@@ -3087,18 +2619,6 @@ public class ItemType {
 					
 					allItems.add(item);
 					
-					if(item.getItemTags().contains(ItemTag.DOMINION_ALLEYWAY_SPAWN)) {
-						dominionAlleywayItems.add(item);
-					}
-					
-					if(item.getItemTags().contains(ItemTag.SUBMISSION_TUNNEL_SPAWN)) {
-						submissionTunnelItems.add(item);
-					} 
-					
-					if(item.getItemTags().contains(ItemTag.BAT_CAVERNS_SPAWN)) {
-						batCavernItems.add(item);
-					} 
-					
 					if(item.getItemTags().contains(ItemTag.ESSENCE)) {
 						essences.add(item);
 					}
@@ -3145,19 +2665,19 @@ public class ItemType {
 					String raceKnowledgeGained = "";
 					if(target.isPlayer()) {
 						if(s == Spell.ELEMENTAL_EARTH) {
-							raceKnowledgeGained = getBookEffect(target, Subspecies.ELEMENTAL_EARTH, true);
+							raceKnowledgeGained = getBookEffect(target, Subspecies.ELEMENTAL_EARTH, null, true);
 							
 						} else if(s == Spell.ELEMENTAL_WATER) {
-							raceKnowledgeGained = getBookEffect(target, Subspecies.ELEMENTAL_WATER, true);
+							raceKnowledgeGained = getBookEffect(target, Subspecies.ELEMENTAL_WATER, null, true);
 							
 						} else if(s == Spell.ELEMENTAL_AIR) {
-							raceKnowledgeGained = getBookEffect(target, Subspecies.ELEMENTAL_AIR, true);
+							raceKnowledgeGained = getBookEffect(target, Subspecies.ELEMENTAL_AIR, null, true);
 							
 						} else if(s == Spell.ELEMENTAL_FIRE) {
-							raceKnowledgeGained = getBookEffect(target, Subspecies.ELEMENTAL_FIRE, true);
+							raceKnowledgeGained = getBookEffect(target, Subspecies.ELEMENTAL_FIRE, null, true);
 							
 						} else if(s == Spell.ELEMENTAL_ARCANE) {
-							raceKnowledgeGained = getBookEffect(target, Subspecies.ELEMENTAL_ARCANE, true);
+							raceKnowledgeGained = getBookEffect(target, Subspecies.ELEMENTAL_ARCANE, null, true);
 						}
 					}
 					
@@ -3275,6 +2795,8 @@ public class ItemType {
 				case DARK_SIREN_SIRENS_CALL:
 				case LIGHTNING_SPHERE_DISCHARGE:
 				case LIGHTNING_SPHERE_OVERCHARGE:
+				case ARCANE_CHAIN_LIGHTNING:
+				case ARCANE_LIGHTNING_SUPERBOLT:
 					break;
 			}
 			
@@ -3432,18 +2954,6 @@ public class ItemType {
 			subspeciesLoreMap.get(sub.getAdvancedDescriptionId()).add(sub);
 		}
 		
-//		for(Entry<String, List<AbstractSubspecies>> entry : subspeciesLoreMap.entrySet()) {
-//			AbstractSubspecies mainSubspecies = entry.getValue().contains(AbstractSubspecies.getMainSubspeciesOfRace(entry.getValue().get(0).getRace()))
-//											?AbstractSubspecies.getMainSubspeciesOfRace(entry.getValue().get(0).getRace())
-//											:entry.getValue().get(0);
-//			
-//			AbstractItemEffectType bookType = generateBookEffect(mainSubspecies);
-//			ItemEffectType.allEffectTypes.add(bookType);
-//			String id = "BOOK_READ_"+mainSubspecies.toString();
-//			ItemEffectType.itemEffectTypeToIdMap.put(bookType, id);
-//			ItemEffectType.idToItemEffectTypeMap.put(id, bookType);
-//		}
-		
 		for(Entry<String, List<AbstractSubspecies>> entry : subspeciesLoreMap.entrySet()) {
 			AbstractSubspecies mainSubspecies = entry.getValue().contains(AbstractSubspecies.getMainSubspeciesOfRace(entry.getValue().get(0).getRace()))
 											?AbstractSubspecies.getMainSubspeciesOfRace(entry.getValue().get(0).getRace())
@@ -3463,6 +2973,11 @@ public class ItemType {
 							null,
 							Util.newArrayListOfValues(ItemTag.BOOK)) {
 				@Override
+				public String getDescription() {
+					return super.getDescription()
+							+(mainSubspecies.getBookAuthor().isEmpty()?"":" The book's author is identified as '"+mainSubspecies.getBookAuthor()+"'.");
+				}
+				@Override
 				public List<ItemEffect> getEffects() {
 					AbstractSubspecies mainSubspecies = entry.getValue().contains(AbstractSubspecies.getMainSubspeciesOfRace(entry.getValue().get(0).getRace()))
 							?AbstractSubspecies.getMainSubspeciesOfRace(entry.getValue().get(0).getRace())
@@ -3470,7 +2985,7 @@ public class ItemType {
 					String id = "BOOK_READ_"+Subspecies.getIdFromSubspecies(mainSubspecies);
 					
 					if(!ItemEffectType.idToItemEffectTypeMap.containsKey(id)) {
-						AbstractItemEffectType bookType = generateBookEffect(mainSubspecies);
+						AbstractItemEffectType bookType = generateBookEffect(mainSubspecies, entry.getValue());
 						ItemEffectType.allEffectTypes.add(bookType);
 						ItemEffectType.itemEffectTypeToIdMap.put(bookType, id);
 						ItemEffectType.idToItemEffectTypeMap.put(id, bookType);
@@ -3517,17 +3032,158 @@ public class ItemType {
 			}
 			
 			allItems.add(loreBook);
+
+			// Essences
+			if(mainSubspecies!=Subspecies.CENTAUR) { // a CENTAUR essence is identical to a HORSE_MORPH essence
+
+				int override = mainSubspecies.getSubspeciesOverridePriority();
+				String raceName = (override>0?mainSubspecies.getName(null):mainSubspecies.getRace().getName(false));
+				String raceNamePlural = (override>0?mainSubspecies.getNamePlural(null):mainSubspecies.getRace().getNamePlural(false));
+
+				AbstractStatusEffect statusEffect = new AbstractStatusEffect(80,
+						(mainSubspecies.getRace()==Race.ANGEL
+							?"angelic"
+							:(mainSubspecies.getRace()==Race.DEMON && override <= 2
+								?"impish"
+								:(mainSubspecies.getRace()==Race.DEMON && override >= 5 && override <= 20
+									?"demonic"
+									:(mainSubspecies==Subspecies.LILIN
+										?"lilin"
+										:(mainSubspecies==Subspecies.ELDER_LILIN
+											?"elder lilin"
+											:raceName.toLowerCase())))))
+							+ " intuition",
+						null,
+						mainSubspecies.getColour(null),
+						true,
+						Util.newHashMapOfValues(new Util.Value<>(Attribute.MAJOR_PHYSIQUE, 2f),
+								new Util.Value<>(
+									mainSubspecies.getRace()==Race.DEMON && override <= 2
+										?Attribute.DAMAGE_IMP
+										:(mainSubspecies==Subspecies.LILIN
+											?Attribute.DAMAGE_LILIN
+											:mainSubspecies==Subspecies.ELDER_LILIN
+												?Attribute.DAMAGE_ELDER_LILIN
+												:Attribute.getRacialDamageAttribute(mainSubspecies.getRace())),
+									25f)),
+						null) {
+					@Override
+					public String getDescription(GameCharacter target) {
+						if(target == null) {
+							return "";
+						}
+						return UtilText.parse(target, "After absorbing a specially-enchanted arcane essence, [npc.nameIsFull] able to accurately predict how "
+								+ raceNamePlural.toLowerCase() +" will behave.");
+					}
+					@Override
+					public String getSVGString(GameCharacter owner) {
+						return getEssenceEffectSvg(mainSubspecies);
+					}
+				};
+
+				String effect_id = "COMBAT_BONUS_"+Subspecies.getIdFromSubspecies(mainSubspecies).toUpperCase();
+
+				StatusEffect.statusEffectToIdMap.put(statusEffect, effect_id);
+				StatusEffect.idToStatusEffectMap.put(effect_id, statusEffect);
+				StatusEffect.allStatusEffects.add(statusEffect);
+
+				AbstractItemEffectType effectType = new AbstractItemEffectType(Util.newArrayListOfValues(
+						"[style.boldGood(+1)] [style.boldArcane(Arcane essence)]"),
+						mainSubspecies.getColour(null)) {
+					@Override
+					public List<String> getEffectsDescription(TFModifier primaryModifier, TFModifier secondaryModifier, TFPotency potency, int limit, GameCharacter user, GameCharacter target) {
+						List<String> list = super.getEffectsDescription(primaryModifier, secondaryModifier, potency, limit, user, target);
+						list.add("Applies <i style='color:"+statusEffect.getColour().toWebHexString()+";'>'"+Util.capitaliseSentence(statusEffect.getName(target))+"'</i>:");
+						for(Entry<AbstractAttribute, Float> entry : statusEffect.getAttributeModifiers(target).entrySet()) {
+							list.add("<i>"+entry.getKey().getFormattedValue(entry.getValue())+"</i>");
+						}
+						return list;
+					}
+					@Override
+					public String applyEffect(TFModifier primaryModifier, TFModifier secondaryModifier, TFPotency potency, int limit, GameCharacter user, GameCharacter target, ItemEffectTimer timer) {
+						target.incrementEssenceCount(1, false);
+						target.addStatusEffect(statusEffect, 60*4*60);
+						return UtilText.parse(target,
+								"<p style='text-align:center;'>"
+									+ "[npc.NameHasFull] absorbed [style.boldGood(+1)] [style.boldArcane(arcane essence)], and [npc.is] also temporarily far more effective at fighting "
+									+ "<b style='color:"+mainSubspecies.getColour(null).toWebHexString()+";'>" + raceNamePlural +"</b>!"
+								+ "</p>");
+					}
+				};
+
+				ItemEffectType.addAbstractItemEffectToIds("BOTTLED_ESSENCE_"+Subspecies.getIdFromSubspecies(mainSubspecies).toUpperCase(), effectType);
+
+				AbstractItemType essence = new AbstractItemType(
+						Math.min(Math.max((mainSubspecies.getBaseSlaveValue(null) / 250), 40), 10000), // i.e. 48 flames for cat-morphs, minimum 40 flames, 10000 maximum
+						null,
+						false,
+						"Bottled " + Util.capitaliseSentence(raceName) + " Essence",
+						"Bottled " + Util.capitaliseSentence(raceName) + " Essences",
+						"A small glass bottle, with a little cork stopper wedged firmly in the top."
+								+ " Inside, the swirling "+mainSubspecies.getColour(null).getName().toLowerCase() + " glow of an arcane essence,"
+								+ " imbued with the energy of "+UtilText.generateSingularDeterminer(raceName) + " " + raceName
+								+ ", flickers and swirls about in a mesmerising, cyclical pattern.",
+						null,
+						mainSubspecies.getColour(null),
+						null,
+						null,
+						Rarity.EPIC,
+						Util.newArrayListOfValues(new ItemEffect(effectType)),
+						(((mainSubspecies.getRace()==Race.DEMON && mainSubspecies.getSubspeciesOverridePriority()>5) || mainSubspecies.getRace()==Race.ANGEL) // Demon+ (and Angels) are contraband
+								?Util.newArrayListOfValues(ItemTag.ESSENCE, ItemTag.CONTRABAND_HEAVY)
+								:Util.newArrayListOfValues(ItemTag.ESSENCE))) {
+						
+					@Override
+					public String getUseName() {
+						return "absorb";
+					}
+					@Override
+					public String getUseDescription(GameCharacter user, GameCharacter target) {
+						return getEssenceAbsorptionText(mainSubspecies.getColour(null), user, target);
+					}
+					@Override
+					public String getSVGString() {
+						return getEssenceSvg(mainSubspecies);
+					}
+
+				};
+
+				String essence_id = "BOTTLED_ESSENCE_"+Subspecies.getIdFromSubspecies(mainSubspecies).toUpperCase();
+
+				itemToIdMap.put(essence, essence_id);
+				idToItemMap.put(essence_id, essence);
+
+				allItems.add(essence);
+				essences.add(essence);
+			}
+
+		}
+		
+		// Add items to spawn lists:
+		for(AbstractItemType item : allItems) {
+			if(item.getItemTags().contains(ItemTag.DOMINION_ALLEYWAY_SPAWN) || item.getItemTags().contains(ItemTag.ALL_AREAS_SPAWN)) {
+				dominionAlleywayItems.add(item);
+			}
+			if(item.getItemTags().contains(ItemTag.SUBMISSION_TUNNEL_SPAWN) || item.getItemTags().contains(ItemTag.ALL_AREAS_SPAWN)) {
+				submissionTunnelItems.add(item);
+			}
+			if(item.getItemTags().contains(ItemTag.BAT_CAVERNS_SPAWN) || item.getItemTags().contains(ItemTag.ALL_AREAS_SPAWN)) {
+				batCavernItems.add(item);
+			}
+			if(item.getItemTags().contains(ItemTag.ELIS_ALLEYWAY_SPAWN) || item.getItemTags().contains(ItemTag.ALL_AREAS_SPAWN)) {
+				elisAlleywayItems.add(item);
+			}
 		}
 	}
 	
-	private static AbstractItemEffectType generateBookEffect(AbstractSubspecies subspecies) {
+	private static AbstractItemEffectType generateBookEffect(AbstractSubspecies mainSubspecies, List<AbstractSubspecies> additionalUnlockSubspecies) {
 		return new AbstractItemEffectType(Util.newArrayListOfValues(
-				"Adds "+subspecies.getName(null)+" encyclopedia entry.",
-				"[style.boldExcellent(+10)] <b style='color:"+subspecies.getColour(null).toWebHexString()+";'>"+subspecies.getDamageMultiplier().getName()+"</b>"),
-				subspecies.getColour(null)) {
+				"Adds "+mainSubspecies.getName(null)+" encyclopedia entry.",
+				"[style.boldExcellent(+10)] <b style='color:"+mainSubspecies.getColour(null).toWebHexString()+";'>"+mainSubspecies.getDamageMultiplier().getName()+"</b>"),
+				mainSubspecies.getColour(null)) {
 			@Override
 			public String applyEffect(TFModifier primaryModifier, TFModifier secondaryModifier, TFPotency potency, int limit, GameCharacter user, GameCharacter target, ItemEffectTimer timer) {
-				return getBookEffect(target, subspecies, true);
+				return getBookEffect(target, mainSubspecies, additionalUnlockSubspecies, true);
 			}
 		};
 	}
@@ -3580,6 +3236,34 @@ public class ItemType {
 		return finalImage;
 	}
 
+	private static String getEssenceEffectSvg(AbstractSubspecies subspecies) {
+		String background = "";
+		Colour colour = subspecies.getColour(null);
+		try {
+			InputStream is = ItemType.class.getResourceAsStream("/com/lilithsthrone/res/items/essenceBackground.svg");
+			String s = Util.inputStreamToString(is);
+
+			background = SvgUtil.colourReplacement(subspecies.getName(null), colour, s);
+			is.close();
+
+		} catch (IOException e1) {
+			e1.printStackTrace();
+		}
+
+		String subspeciesIcon = subspecies.getSVGStringNoBackground();
+		subspeciesIcon = subspeciesIcon.replaceAll("fill=\"#(.*?)\"", "fill=\""+colour.getShades()[1]+"\"");
+		subspeciesIcon = subspeciesIcon.replaceAll("stroke=\"#(.*?)\"", "stroke=\""+colour.getShades()[1]+"\"");
+
+		String finalImage = "<div style='width:80%;height:80%;position:absolute;left:10%;top:10%;'>"
+				+ background
+				+ "</div>"
+				+"<div style='width:70%;height:70%;position:absolute;left:15%;top:20%;'>"
+				+ subspeciesIcon
+				+ "</div>";
+
+		return finalImage;
+	}
+
 	public static List<AbstractItemType> getDominionAlleywayItems() {
 		return dominionAlleywayItems;
 	}
@@ -3591,6 +3275,11 @@ public class ItemType {
 	public static List<AbstractItemType> getBatCavernItems() {
 		return batCavernItems;
 	}
+	
+	public static List<AbstractItemType> getElisAlleywayItems() {
+		return elisAlleywayItems;
+	}
+	
 	public static List<AbstractItemType> getEssences() {
 		return essences;
 	}

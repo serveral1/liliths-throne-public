@@ -96,11 +96,11 @@ public class HarpyNympho extends NPC {
 					PersonalityTrait.CONFIDENT,
 					PersonalityTrait.LEWD);
 		}
-		if(Main.isVersionOlderThan(Game.loadingVersion, "0.3.6")) {
-			this.resetPerksMap(true);
-		}
 		if(Main.isVersionOlderThan(Game.loadingVersion, "0.3.20")) {
 			this.setSkinCovering(new Covering(BodyCoveringType.HARPY_SKIN, PresetColour.SKIN_PINK_LIGHT), false);
+		}
+		if(Main.isVersionOlderThan(Game.loadingVersion, "0.4.3.3")) {
+			this.resetPerksMap(true);
 		}
 	}
 
@@ -109,7 +109,8 @@ public class HarpyNympho extends NPC {
 		this.addSpecialPerk(Perk.SPECIAL_MEGA_SLUT);
 		
 		PerkManager.initialisePerks(this,
-				Util.newArrayListOfValues(),
+				Util.newArrayListOfValues(
+						Perk.AHEGAO),
 				Util.newHashMapOfValues(
 						new Value<>(PerkCategory.PHYSICAL, 0),
 						new Value<>(PerkCategory.LUST, 1),
@@ -219,7 +220,7 @@ public class HarpyNympho extends NPC {
 
 		this.unequipAllClothingIntoVoid(true, true);
 
-		this.equipClothingFromNowhere(Main.game.getItemGen().generateClothing(ClothingType.GROIN_CROTCHLESS_PANTIES, PresetColour.CLOTHING_PINK, false), true, this);
+		this.equipClothingFromNowhere(Main.game.getItemGen().generateClothing("innoxia_groin_crotchless_panties", PresetColour.CLOTHING_PINK, false), true, this);
 		this.equipClothingFromNowhere(Main.game.getItemGen().generateClothing(ClothingType.CHEST_OPEN_CUP_BRA, PresetColour.CLOTHING_PINK, false), true, this);
 		this.equipClothingFromNowhere(Main.game.getItemGen().generateClothing("innoxia_ankle_anklet", PresetColour.CLOTHING_GOLD, PresetColour.CLOTHING_GOLD, null, false), true, this);
 		this.equipClothingFromNowhere(Main.game.getItemGen().generateClothing(ClothingType.WRIST_BANGLE, PresetColour.CLOTHING_GOLD, false), true, this);

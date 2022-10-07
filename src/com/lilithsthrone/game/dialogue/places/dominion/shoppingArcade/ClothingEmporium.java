@@ -67,14 +67,14 @@ public class ClothingEmporium {
 			return "<p style='text-align:center'>"
 						+ UtilText.parse(character, "[style.italicsDisabled([npc.Name] doesn't gain any additional affection towards you from this action...)]")
 						+ "<br/>"
-						+ AffectionLevel.getDescription(character, Main.game.getPlayer(), character.getAffectionLevel(Main.game.getPlayer()), true)
+						+ AffectionLevel.getDescription(character, Main.game.getPlayer(), true)
 					+ "</p>";
 		}
 		if(increment<0 && currentAffection<=minimumLimit) {
 			return "<p style='text-align:center'>"
 						+ UtilText.parse(character, "[style.italicsDisabled([npc.Name] doesn't lose any affection towards you from this action...)]")
 						+ "<br/>"
-						+ AffectionLevel.getDescription(character, Main.game.getPlayer(), character.getAffectionLevel(Main.game.getPlayer()), true)
+						+ AffectionLevel.getDescription(character, Main.game.getPlayer(), true)
 					+ "</p>";
 		}
 		
@@ -1013,7 +1013,7 @@ public class ClothingEmporium {
 				Main.game.getTextStartStringBuilder().append(UtilText.parseFromXMLFile("characters/dominion/nyan", "ROMANCE_WALK_REPEAT_END"));
 			}
 			
-			Cell finalDestination = Main.game.getWorlds().get(WorldType.SHOPPING_ARCADE).getNearestCell(PlaceType.SHOPPING_ARCADE_PATH, destination.getLocation());
+			Cell finalDestination = Main.game.getWorlds().get(WorldType.SHOPPING_ARCADE).getClosestCell(destination.getLocation(), PlaceType.SHOPPING_ARCADE_PATH);
 			Main.game.getPlayer().setLocation(WorldType.SHOPPING_ARCADE, finalDestination.getLocation(), false);
 			getNyan().setLocation(Main.game.getPlayer(), false);
 		}
@@ -1082,7 +1082,7 @@ public class ClothingEmporium {
 		public void applyPreParsingEffects() {
 			Cell destination = Main.game.getWorlds().get(WorldType.SHOPPING_ARCADE).getCell(PlaceType.SHOPPING_ARCADE_RESTAURANT);
 				
-			Cell finalDestination = Main.game.getWorlds().get(WorldType.SHOPPING_ARCADE).getNearestCell(PlaceType.SHOPPING_ARCADE_PATH, destination.getLocation());
+			Cell finalDestination = Main.game.getWorlds().get(WorldType.SHOPPING_ARCADE).getClosestCell(destination.getLocation(), PlaceType.SHOPPING_ARCADE_PATH);
 			Main.game.getPlayer().setLocation(WorldType.SHOPPING_ARCADE, finalDestination.getLocation(), false);
 			getNyan().setLocation(Main.game.getPlayer(), false);
 		}

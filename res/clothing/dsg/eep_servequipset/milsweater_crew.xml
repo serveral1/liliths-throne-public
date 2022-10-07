@@ -30,8 +30,6 @@
 
 		<imageEquippedName/> 
 
-		<enchantmentLimit/>
-
 		<effects/> 
 
 		<blockedPartsList> 
@@ -45,7 +43,9 @@
 					<clothingAccess>HEAD</clothingAccess>
 				</clothingAccessRequired>
 
-				<blockedBodyParts/> 
+				<blockedBodyParts>
+					<bodyPart>ARMPITS</bodyPart>
+				</blockedBodyParts>
 
 				<clothingAccessBlocked>
 					<clothingAccess>ARMS_UP_TO_SHOULDER</clothingAccess>

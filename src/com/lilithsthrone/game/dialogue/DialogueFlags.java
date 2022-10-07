@@ -27,15 +27,18 @@ import com.lilithsthrone.utils.colours.PresetColour;
 
 /**
  * @since 0.1.0
- * @version 0.3.9
+ * @version 0.4.4
  * @author Innoxia
  */
 public class DialogueFlags implements XMLSaving {
 	
-	public static int MUGGER_DEMAND_1 = 250;
-	public static int MUGGER_DEMAND_2 = 500;
+	private int muggerDemand1 = 250; // Dominion
+	private int muggerDemand2 = 500; // Submission
+	private int muggerDemand3 = 750; // Elis
 	
-	public Set<DialogueFlagValue> values;
+	private int prostituteFine = 10_000;
+	
+	public Set<AbstractDialogueFlagValue> values;
 	
 	public int ralphDiscount;
 	public int scarlettPrice;
@@ -161,8 +164,8 @@ public class DialogueFlags implements XMLSaving {
 		
 		Element valuesElement = doc.createElement("dialogueValues");
 		element.appendChild(valuesElement);
-		for(DialogueFlagValue value : values) {
-			XMLUtil.createXMLElementWithValue(doc, valuesElement, "dialogueValue", value.toString());
+		for(AbstractDialogueFlagValue value : values) {
+			XMLUtil.createXMLElementWithValue(doc, valuesElement, "dialogueValue", DialogueFlagValue.getIdFromDialogueFlagValue(value));
 		}
 		
 		
@@ -277,7 +280,10 @@ public class DialogueFlags implements XMLSaving {
 				if(flag.equalsIgnoreCase("punishedByAlexa")) {
 					newFlags.values.add(DialogueFlagValue.punishedByHelena);
 				} else {
-					newFlags.values.add(DialogueFlagValue.valueOf(flag));
+					AbstractDialogueFlagValue flagValue = DialogueFlagValue.getDialogueFlagValueFromId(flag);
+					if(flagValue!=null) {
+						newFlags.values.add(flagValue);
+					}
 				}
 			} catch(Exception ex) {
 			}
@@ -339,15 +345,34 @@ public class DialogueFlags implements XMLSaving {
 		}
 	}
 
-	public void dailyReset() {
-		values.removeIf((flag)->flag.isDailyReset());
+	public void applyTimePassingResets(int startHour, int hoursPassed) {
+		for(AbstractDialogueFlagValue flag : new HashSet<>(values)) {
+			if(flag.getResetHour()>-1) {
+				if((startHour<flag.getResetHour() && startHour+hoursPassed>=flag.getResetHour())
+						|| ((startHour-24)+hoursPassed>=flag.getResetHour())) {
+					values.remove(flag);
+				}
+			}
+		}
 	}
 
-	public boolean hasFlag(DialogueFlagValue flag) {
+	public boolean hasFlag(AbstractDialogueFlagValue flag) {
 		return values.contains(flag);
 	}
+
+	public boolean hasFlag(String flagId) {
+		return values.contains(DialogueFlagValue.getDialogueFlagValueFromId(flagId));
+	}
+
+	public void setFlag(String flagId, boolean flagMarker) {
+		if(flagMarker) {
+			values.add(DialogueFlagValue.getDialogueFlagValueFromId(flagId));
+		} else {
+			values.remove(DialogueFlagValue.getDialogueFlagValueFromId(flagId));
+		}
+	}
 	
-	public void setFlag(DialogueFlagValue flag, boolean flagMarker) {
+	public void setFlag(AbstractDialogueFlagValue flag, boolean flagMarker) {
 		if(flagMarker) {
 			values.add(flag);
 		} else {
@@ -358,6 +383,16 @@ public class DialogueFlags implements XMLSaving {
 	public void setSavedLong(String id, long value) {
 		savedLongs.put(id, value);
 	}
+	
+	public void setSavedLong(String id, String value) {
+		try {
+			long valueLong = Long.valueOf(value);
+			setSavedLong(id, valueLong);
+		} catch(Exception ex) {
+			ex.printStackTrace();
+		}
+	}
+	
 
 	/**
 	 * @return Increments the long saved to this id. Sets to -1 before incrementing if there was no entry found.
@@ -382,6 +417,22 @@ public class DialogueFlags implements XMLSaving {
 		return savedLongs.get(id);
 	}
 	
+	public int getMuggerDemand1() {
+		return muggerDemand1;
+	}
+
+	public int getMuggerDemand2() {
+		return muggerDemand2;
+	}
+
+	public int getMuggerDemand3() {
+		return muggerDemand3;
+	}
+
+	public int getProstituteFine() {
+		return prostituteFine;
+	}
+
 	public NPC getSlaveTrader() {
 		if(slaveTrader==null || slaveTrader.isEmpty()) {
 			return null;

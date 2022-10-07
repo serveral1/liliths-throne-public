@@ -20,10 +20,6 @@ public enum Occupation {
 	// Unique:
 	
 	ELEMENTAL(Perk.ELEMENTAL_CORE_OCCUPATION, "elemental", "[npc.NameIsFull] a construct of pure arcane energy and is a physical manifestation of [npc.her] summoner's aura.", OccupationTag.HAS_PREREQUISITES),
-//	ELEMENTAL_FIRE(Perk.ELEMENTAL_BOUND_FIRE, "fire elemental", "[npc.NameIsFull] currently bound to the arcane school of Fire.", OccupationTag.HAS_PREREQUISITES),
-//	ELEMENTAL_WATER(Perk.ELEMENTAL_BOUND_WATER, "water elemental", "[npc.NameIsFull] currently bound to the arcane school of Water.", OccupationTag.HAS_PREREQUISITES),
-//	ELEMENTAL_AIR(Perk.ELEMENTAL_BOUND_AIR, "air elemental", "[npc.NameIsFull] currently bound to the arcane school of Air.", OccupationTag.HAS_PREREQUISITES),
-//	ELEMENTAL_ARCANE(Perk.ELEMENTAL_BOUND_ARCANE, "arcane elemental", "[npc.NameIsFull] currently bound to the arcane school of Arcane.", OccupationTag.HAS_PREREQUISITES),
 
 	NPC_ENFORCER_PATROL_INSPECTOR(Perk.JOB_NPC_ENFORCER_PATROL_INSPECTOR, "Enforcer", "[npc.NameIs] a member of the Enforcers.", OccupationTag.HAS_PREREQUISITES, OccupationTag.ENFORCER_PATROL),
 	NPC_ENFORCER_PATROL_SERGEANT(Perk.JOB_NPC_ENFORCER_PATROL_SERGEANT, "Enforcer", "[npc.NameIs] a member of the Enforcers.", OccupationTag.HAS_PREREQUISITES, OccupationTag.ENFORCER_PATROL),
@@ -60,6 +56,7 @@ public enum Occupation {
 	NPC_STORE_OWNER(Perk.JOB_NPC_SHOP_MANAGER, "store owner", "[npc.NameIs] the owner of a shop.", OccupationTag.HAS_PREREQUISITES),
 	NPC_CASINO_OWNER(Perk.JOB_NPC_SHOP_MANAGER, "casino owner", "[npc.NameIs] the owner of a casino.", OccupationTag.HAS_PREREQUISITES),
 	NPC_BUSINESS_OWNER(Perk.JOB_NPC_SHOP_MANAGER, "business owner", "[npc.NameIs] the owner of their own business.", OccupationTag.HAS_PREREQUISITES),
+	NPC_TAVERN_OWNER(Perk.JOB_NPC_SHOP_MANAGER, "tavern owner", "[npc.NameIs] the owner of a tavern.", OccupationTag.HAS_PREREQUISITES),
 	
 	REINDEER_OVERSEER(Perk.JOB_NPC_REINDEER_OVERSEER, "overseer", "[npc.NameIs] an overseer of one of the reindeer workgangs which migrate to Dominion during the winter.", OccupationTag.HAS_PREREQUISITES),
 
@@ -86,10 +83,24 @@ public enum Occupation {
 	
 	NPC_LYSSIETH_GUARD(Perk.JOB_LYSSIETH_GUARD, "Lyssieth's guard", "[npc.NameIsFull] one of Lyssieth's unrecognised daughters, and has been assigned to guard her mother's palace.", OccupationTag.HAS_PREREQUISITES),
 	
-	NPC_ELDER_LILIN(Perk.JOB_ELDER_LILIN, "elder lilin", "[npc.NameIs] one of the seven elder lilin; the recognised daughters of Lilith herself.", OccupationTag.HAS_PREREQUISITES),
+	NPC_ELDER_LILIN(Perk.JOB_ELDER_LILIN, "elder lilin", "[npc.NameIsFull] one of the seven elder lilin; the recognised daughters of Lilith herself.", OccupationTag.HAS_PREREQUISITES),
+
+	NPC_TAUR_TRANSPORT(Perk.JOB_TAUR_TRANSPORT, "taur transporter", "[npc.Name] uses [npc.her] tauric body to its full potential by pulling carts and transporting goods.", OccupationTag.HAS_PREREQUISITES),
+
+	NPC_ELIS_MAYOR(Perk.JOB_NPC_MAYOR, "mayor of Elis", "[npc.NameIs] the mayor of Elis, and is responsible for the wellbeing and safety of not only the town itself, but also the surrounding Foloi Fields.", OccupationTag.HAS_PREREQUISITES),
+	NPC_ASSISTANT(Perk.JOB_NPC_ASSISTANT, "personal assistant", "[npc.NameIs] a personal assistant and helps [npc.her] boss with a wide range of everyday tasks.", OccupationTag.HAS_PREREQUISITES),
+	
+	NPC_LUNETTE_HERD(Perk.JOB_LUNETTE_HERD, "Daughter of Lunette", "[npc.NameIsFull] one of Lunette's daughters, and inherits [npc.her] mother's love of causing mayhem and havoc.", OccupationTag.HAS_PREREQUISITES),
+
+	NPC_MUSHROOM_FORAGER(Perk.JOB_NPC_MUSHROOM_FORAGER, "mushroom forager", "[npc.Name] [npc.verb(forage)] for and then sells psychedelic mushrooms in the bat caverns beneath Submission."),
+
+	NPC_LUNETTE_RECOGNISED_DAUGHTER(Perk.JOB_LUNETTE_RECOGNISED_DAUGHTER, "recognised daughter of Lunette", "[npc.NameIsFull] a recognised daughter of Lunette herself, and as such is considerably more powerful than a regular demon.", OccupationTag.HAS_PREREQUISITES),
+	
+	NPC_AMAZONIAN_QUEEN(Perk.JOB_AMAZONIAN_QUEEN, "Amazon Queen", "[npc.NameIsFull] the queen of the Amazons, and as such [npc.has] considerable strength and combat abilities.", OccupationTag.HAS_PREREQUISITES),
+	NPC_AMAZONIAN(Perk.JOB_AMAZONIAN, "Amazon", "[npc.NameIsFull] an Amazon, and as such [npc.has] spent much time training for combat.", OccupationTag.HAS_PREREQUISITES),
 	
 	
-	// NPC histories:
+	// NPC generic histories:
 
 	NPC_UNEMPLOYED(Perk.JOB_UNEMPLOYED, "unemployed", "[npc.NameIsFull] unemployed.", OccupationTag.HAS_PREREQUISITES),
 
@@ -97,6 +108,7 @@ public enum Occupation {
 	
 	NPC_CAPTIVE(Perk.JOB_CAPTIVE, "captive", "[npc.NameHasFull] been kidnapped and is being illegally held against [npc.her] will.", OccupationTag.HAS_PREREQUISITES),
 	
+	NPC_REBEL_FIGHTER(Perk.JOB_NPC_REBEL_FIGHTER, "rebel fighter", "[npc.NameIsFull] a fighter serving a rebel cause.", OccupationTag.HAS_PREREQUISITES),
 	
 	NPC_PROSTITUTE(Perk.JOB_PROSTITUTE, "prostitute", "[npc.NameIsFull] a prostitute, making a living by selling [npc.her] body.", OccupationTag.LOWLIFE),
 	
@@ -177,7 +189,7 @@ public enum Occupation {
 		}
 	},
 
-	NPC_OFFICE_WORKER(Perk.JOB_NPC_OFFICE_WORKER, "office worker", "[npc.NameHasFull] works for a large business, and [npc.has] manage [npc.her] subordinates, company finances, and difficult customers on a daily basis.") {
+	NPC_OFFICE_WORKER(Perk.JOB_NPC_OFFICE_WORKER, "office worker", "[npc.Name] works for a large business, and [npc.has] manage [npc.her] subordinates, company finances, and difficult customers on a daily basis.") {
 		@Override
 		public String getName(GameCharacter character) {
 			if(character==null) {
@@ -189,7 +201,7 @@ public enum Occupation {
 		}
 	},
 	
-	NPC_RECEPTIONIST(Perk.JOB_MISC, "receptionist", "-"),
+	NPC_RECEPTIONIST(Perk.JOB_MISC, "receptionist", "[npc.Name] works as a receptionist, and must deal with many visitors and customers every day."),
 	
 	NPC_SHOP_ASSISTANT(Perk.JOB_MISC, "shop assistant", "-"),
 	
@@ -264,7 +276,7 @@ public enum Occupation {
 			"soldier",
 			"You're a soldier, and are currently making the most of your leave.",
 			OccupationTag.PLAYER_ONLY),
-	
+
 	ATHLETE(Perk.JOB_ATHLETE,
 			"athlete",
 			"You're an athlete, and are currently training for your next big event.",

@@ -1,22 +1,41 @@
 package com.lilithsthrone.game.dialogue.utils;
 
+import java.io.File;
+import java.io.StringWriter;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Comparator;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Map.Entry;
+
+import javax.xml.transform.OutputKeys;
+import javax.xml.transform.Transformer;
+import javax.xml.transform.TransformerException;
+import javax.xml.transform.dom.DOMSource;
+import javax.xml.transform.stream.StreamResult;
+
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
 
 import com.lilithsthrone.game.PropertyValue;
 import com.lilithsthrone.game.character.GameCharacter;
+import com.lilithsthrone.game.character.body.Body;
+import com.lilithsthrone.game.character.body.BodyPartInterface;
 import com.lilithsthrone.game.character.body.coverings.AbstractBodyCoveringType;
 import com.lilithsthrone.game.character.body.coverings.BodyCoveringCategory;
 import com.lilithsthrone.game.character.body.coverings.BodyCoveringType;
+import com.lilithsthrone.game.character.body.coverings.Covering;
 import com.lilithsthrone.game.character.body.types.FaceType;
 import com.lilithsthrone.game.character.body.types.HornType;
 import com.lilithsthrone.game.character.body.types.TailType;
 import com.lilithsthrone.game.character.body.types.WingType;
 import com.lilithsthrone.game.character.body.valueEnums.BodyMaterial;
 import com.lilithsthrone.game.character.body.valueEnums.BreastShape;
-import com.lilithsthrone.game.character.effects.Perk;
+import com.lilithsthrone.game.character.body.valueEnums.Femininity;
 import com.lilithsthrone.game.character.race.AbstractRace;
+import com.lilithsthrone.game.character.race.AbstractSubspecies;
 import com.lilithsthrone.game.character.race.Race;
 import com.lilithsthrone.game.character.race.RacialBody;
 import com.lilithsthrone.game.character.race.Subspecies;
@@ -27,6 +46,7 @@ import com.lilithsthrone.game.dialogue.places.dominion.slaverAlley.ScarlettsShop
 import com.lilithsthrone.game.dialogue.responses.Response;
 import com.lilithsthrone.game.dialogue.responses.ResponseEffectsOnly;
 import com.lilithsthrone.main.Main;
+import com.lilithsthrone.rendering.SVGImages;
 import com.lilithsthrone.utils.Util;
 import com.lilithsthrone.utils.Util.Value;
 import com.lilithsthrone.utils.colours.Colour;
@@ -55,6 +75,10 @@ public class BodyChanging {
 			return Main.game.getPlayer();
 		}
 		return target;
+	}
+
+	private static String getPowers() {
+		return (isDemonTFMenu()?"demonic":"innate")+" transformative powers on changing";
 	}
 
 	public static void setTarget(GameCharacter target) {
@@ -203,15 +227,28 @@ public class BodyChanging {
 					UtilText.parse(getTarget(), "Change aspects of [npc.namePos] [npc.crotchBoobs]."),
 					BODY_CHANGING_BREASTS_CROTCH);
 			
-		} else if(index==11 && debugMenu) {
-			if(Main.game.getCurrentDialogueNode()==BODY_CHANGING_MAKEUP) {
-				return new Response("Makeup", "You are already in this screen!", null);
+		} else if(index==11) {
+			if(Main.game.getCurrentDialogueNode()==BODY_CHANGING_SAVE_LOAD) {
+				return new Response("Save/Load", "You are already in this screen!", null);
 			}
-			return new Response("Makeup", 
-					UtilText.parse(getTarget(), "Change aspects of [npc.namePos] makeup."),
+			return new Response("Save/Load",
+					UtilText.parse(getTarget(), "Save or load transformation presets, allowing you to quickly switch your appearance."),
+					BODY_CHANGING_SAVE_LOAD) {
+				@Override
+				public void effects() {
+					initSaveLoadMenu();
+				}
+			};
+			
+		} else if(index==12 && debugMenu) {
+			if(Main.game.getCurrentDialogueNode()==BODY_CHANGING_MAKEUP) {
+				return new Response("Makeup (debug)", "You are already in this screen!", null);
+			}
+			return new Response("Makeup (debug)",
+					UtilText.parse(getTarget(), "Change aspects of [npc.namePos] makeup. (This transformation menu is only available in the debug screen.)"),
 					BODY_CHANGING_MAKEUP);
 			
-		}  else if(index==0) {
+		} else if(index==0) {
 			if(debugMenu) {
 				return new Response("Back", "Return to the previous screen.", DebugDialogue.DEBUG_MENU);
 				
@@ -237,31 +274,27 @@ public class BodyChanging {
 		}
 	}
 
-	private static List<AbstractRace> allRaces = new ArrayList<>();
-	static {
-		for(AbstractRace r : Race.getAllRaces()) {
-			allRaces.add(r);
-		}
-	}
-	
+	private static final List<AbstractRace> allRaces = new ArrayList<>(Race.getAllRaces());
+
 	private static List<AbstractRace> getFaceSkinDemonRaces() {
 		List<AbstractRace> faceSkinOptions = Util.newArrayListOfValues();
 		GameCharacter target = BodyChanging.getTarget();
 		
-		if(BodyChanging.getTarget().isElemental()) {
-			faceSkinOptions = new ArrayList<>(Race.getAllRaces());
-			
+		if(target.isElemental()) {
+			return allRaces;
+
 		} else if(isHalfDemon()) {
 			faceSkinOptions.add(target.getHalfDemonSubspecies().getRace());
 			faceSkinOptions.add(Race.HUMAN);
-			
-		} else {
-			faceSkinOptions.add(Race.DEMON);
-			if(target.isPlayer()) {
-				if(target.hasPerkAnywhereInTree(Perk.POWER_OF_LYSSIETH_4)) {
-					faceSkinOptions.add(Race.HUMAN);
-				}
+
+		} else if(isSelfTFMenu()) {
+			faceSkinOptions.add(target.getRace());
+			if (target.isYouko()){
+				faceSkinOptions.addAll(target.getSelfTransformationRaces());
 			}
+
+		} else {
+			faceSkinOptions.addAll(target.getSelfTransformationRaces());
 		}
 		return faceSkinOptions;
 	}
@@ -270,19 +303,19 @@ public class BodyChanging {
 		List<AbstractRace> armLegOptions = Util.newArrayListOfValues();
 		GameCharacter target = BodyChanging.getTarget();
 		
-		if(BodyChanging.getTarget().isElemental()) {
-			armLegOptions = new ArrayList<>(Race.getAllRaces());
+		if(target.isElemental()) {
+			return allRaces;
 			
 		} else if(isHalfDemon()) {
 			armLegOptions.add(target.getHalfDemonSubspecies().getRace());
-			
-		} else {
-			armLegOptions.add(Race.DEMON);
-			if(target.isPlayer()) {
-				if(target.hasPerkAnywhereInTree(Perk.POWER_OF_LYSSIETH_4)) {
-					armLegOptions.add(Race.HUMAN);
-				}
+
+		} else if(isSelfTFMenu()) {
+			armLegOptions.add(target.getRace());
+			if (target.isYouko()) {
+				armLegOptions.addAll(target.getSelfTransformationRaces());
 			}
+		} else {
+			armLegOptions.addAll(target.getSelfTransformationRaces());
 		}
 		return armLegOptions;
 	}
@@ -295,8 +328,8 @@ public class BodyChanging {
 		List<AbstractRace> minorPartsOptions = Util.newArrayListOfValues();
 		GameCharacter target = BodyChanging.getTarget();
 		
-		if(BodyChanging.getTarget().isElemental()) {
-			minorPartsOptions = new ArrayList<>(Race.getAllRaces());
+		if(target.isElemental()) {
+			return allRaces;
 			
 		} else if(isHalfDemon()) {
 			if(isHalfSpeciesReplacement && target.getHalfDemonSubspecies().getRace()!=Race.HUMAN) {
@@ -304,14 +337,14 @@ public class BodyChanging {
 			} else {
 				minorPartsOptions.add(Race.DEMON);
 			}
-			
-		} else {
-			minorPartsOptions.add(Race.DEMON);
-			if(target.isPlayer()) {
-				if(target.hasPerkAnywhereInTree(Perk.POWER_OF_LYSSIETH_4)) {
-					minorPartsOptions.add(Race.HUMAN);
-				}
+
+		} else if(isSelfTFMenu()) {
+			minorPartsOptions.add(target.getRace());
+			if (target.isYouko()) {
+				minorPartsOptions.addAll(target.getSelfTransformationRaces());
 			}
+		} else {
+			minorPartsOptions.addAll(target.getSelfTransformationRaces());
 		}
 		
 		return minorPartsOptions;
@@ -336,16 +369,25 @@ public class BodyChanging {
 				&& BodyChanging.getTarget().getBodyMaterial()!=BodyMaterial.SLIME
 				&& (BodyChanging.getTarget().getRace()==Race.DEMON
 					|| BodyChanging.getTarget().getSubspeciesOverride()==Subspecies.DEMON
+					|| BodyChanging.getTarget().getSubspeciesOverride()==Subspecies.LILIN
+					|| BodyChanging.getTarget().getSubspeciesOverride()==Subspecies.ELDER_LILIN
 					|| BodyChanging.getTarget().isElemental());
 	}
-	
+
+	private static boolean isSelfTFMenu() {
+		return !debugMenu
+				&& !isDemonTFMenu()
+				&& BodyChanging.getTarget().getBodyMaterial()!=BodyMaterial.SLIME
+				&& BodyChanging.getTarget().getTrueSubspecies().isAbleToSelfTransform();
+	}
+
 	private static boolean isHalfDemon() {
 		return BodyChanging.getTarget().getSubspeciesOverride()==Subspecies.HALF_DEMON;
 	}
 	
 //	private static Map<AbstractBodyCoveringType, List<String>> getMainCoveringsMap() {
 //		Map<AbstractBodyCoveringType, List<String>> coveringsNamesMap = new LinkedHashMap<>();
-//		
+//
 ////		if(getTarget().isElemental()) {
 ////			switch(getTarget().getBodyMaterial()) {
 ////				case AIR:
@@ -374,10 +416,10 @@ public class BodyChanging {
 ////					coveringsNamesMap.put(BodyCoveringType.WATER, Util.newArrayListOfValues("WATER"));
 ////					break;
 ////			}
-////			
+////
 ////		} else if(getTarget().getBodyMaterial()==BodyMaterial.SLIME) {
 ////			coveringsNamesMap.put(BodyCoveringType.SLIME, Util.newArrayListOfValues("SLIME"));
-////			
+////
 ////		} else {
 //			for(BodyPartInterface bp : getTarget().getAllBodyParts()){
 //				if(bp.getBodyCoveringType(getTarget())!=null
@@ -395,7 +437,7 @@ public class BodyChanging {
 //					if(bp instanceof Torso) {
 //						name = "torso";
 //					}
-//					
+//
 //					if(coveringsNamesMap.containsKey(bp.getBodyCoveringType(getTarget()))) {
 //						coveringsNamesMap.get(bp.getBodyCoveringType(getTarget())).add(name);
 //					} else {
@@ -407,7 +449,7 @@ public class BodyChanging {
 //				coveringsNamesMap.put(BodyCoveringType.HAIR_DEMON, Util.newArrayListOfValues(BodyCoveringType.HAIR_DEMON.getName(getTarget())));
 //			}
 ////		}
-//		
+//
 //		// Return an altered map for if the target's body is not made of flesh:
 //		if(getTarget().getBodyMaterial()!=BodyMaterial.FLESH) {
 //			Map<AbstractBodyCoveringType, List<String>> altMaterialCoveringsNamesMap = new LinkedHashMap<>();
@@ -418,8 +460,8 @@ public class BodyChanging {
 //			}
 //			return altMaterialCoveringsNamesMap;
 //		}
-//		
-//			
+//
+//
 //		return coveringsNamesMap;
 //	}
 	
@@ -427,7 +469,7 @@ public class BodyChanging {
 		List<AbstractRace> list = new ArrayList<>();
 		
 		list.add(Race.NONE);
-		
+
 		for(AbstractRace race : Race.getAllRaces()) {
 			if(!race.isAbleToSelfTransform()
 					&& (Subspecies.getWorldSpecies(WorldType.DOMINION, PlaceType.SLAVER_ALLEY_SCARLETTS_SHOP, false).keySet().stream().anyMatch(s->s.getRace()==race)
@@ -443,7 +485,7 @@ public class BodyChanging {
 		if(ScarlettsShop.isSlaveCustomisationMenu()) {
 			return getSlaveCustomisationRaceOptions();
 		}
-		if(isDemonTFMenu()) {
+		if(isDemonTFMenu()||isSelfTFMenu()) {
 			return getTarget().isElemental()
 				?allRaces
 				:getMinorPartsDemonRaces(false);
@@ -461,7 +503,10 @@ public class BodyChanging {
 		sb.append("<div class='container-full-width' style='text-align:center;'>");
 			if(isDemonTFMenu()) {
 				sb.append(UtilText.parse(BodyChanging.getTarget(), "<i>[npc.Name] can harness the power of [npc.her] demonic form to self-transform aspects of [npc.her] "+area+".</i>"));
-				
+
+			} else if(isSelfTFMenu()) {
+				sb.append(UtilText.parse(BodyChanging.getTarget(), "<i>[npc.Name] can harness [npc.her] innate powers to self-transform aspects of [npc.her] "+area+".</i>"));
+
 			} else if(debugMenu) {
 				sb.append(UtilText.parse(BodyChanging.getTarget(), "<i>[npc.Name] can harness the power of the debugging tool to self-transform aspects of [npc.her] "+area+".</i>"));
 				
@@ -483,6 +528,7 @@ public class BodyChanging {
 			UtilText.nodeContentSB.setLength(0);
 			
 			if(ScarlettsShop.isSlaveCustomisationMenu()) {
+				SuccubisSecrets.initCoveringsMap(BodyChanging.getTarget());
 				UtilText.nodeContentSB.append(
 						"<div style='clear:left;'>"
 							+ CharacterModificationUtils.getAgeAppearanceChoiceDiv()
@@ -542,12 +588,12 @@ public class BodyChanging {
 							+ CharacterModificationUtils.getSelfTransformWingChoiceDiv(getSlaveCustomisationRaceOptions(), false)
 							+ CharacterModificationUtils.getSelfTransformWingSizeDiv()
 						+"</div>");
-				
-			} else if(isDemonTFMenu()) {
+
+			} else if(isDemonTFMenu()||isSelfTFMenu()) {
 				UtilText.nodeContentSB.append("<div class='container-full-width' style='text-align:center;'>"
-							+ (BodyChanging.getTarget().isPlayer()
-									?"<i>Focus your demonic transformative powers on changing core aspects of your body.</i>"
-											:UtilText.parse(BodyChanging.getTarget(), "<i>Get [npc.name] to focus [npc.her] demonic transformative powers on changing core aspects of [npc.her] body.</i>"))
+						+ (BodyChanging.getTarget().isPlayer()
+						?"<i>Focus your "+getPowers()+" core aspects of your body.</i>"
+						:UtilText.parse(BodyChanging.getTarget(), "<i>Get [npc.name] to focus [npc.her] "+getPowers()+" core aspects of [npc.her] body.</i>"))
 						+ "</div>"
 						
 						+"<div style='clear:left;'>"
@@ -580,50 +626,69 @@ public class BodyChanging {
 						+"<div style='clear:left;'>"
 							+ CharacterModificationUtils.getSelfTransformArmChoiceDiv(getArmLegDemonRaces())
 							+ CharacterModificationUtils.getSelfTransformLegChoiceDiv(getArmLegDemonRaces(), isDebugMenu())
-						+"</div>"
-						
-						+"<div style='clear:left;'>"
-							+ CharacterModificationUtils.getSelfTransformArmCountDiv()
-							+ CharacterModificationUtils.getSelfTransformFootStructureChoiceDiv()
-						+"</div>"
-						
-						+"<div style='clear:left;'>"
-							+ CharacterModificationUtils.getSelfTransformLegConfigurationChoiceDiv()
-							+ CharacterModificationUtils.getSelfTransformGenitalArrangementChoiceDiv()
-						+"</div>"
+						+"</div>");
 
-						+"<div style='clear:left;'>"
+						if(!BodyChanging.getTarget().isYouko()) {
+							UtilText.nodeContentSB.append(
+								"<div style='clear:left;'>"
+								+ CharacterModificationUtils.getSelfTransformArmCountDiv()
+								+ CharacterModificationUtils.getSelfTransformFootStructureChoiceDiv()
+								+"</div>"
+
+								+"<div style='clear:left;'>"
+								+ CharacterModificationUtils.getSelfTransformLegConfigurationChoiceDiv()
+								+ CharacterModificationUtils.getSelfTransformGenitalArrangementChoiceDiv()
+								+"</div>"
+							);
+							
+						} else {
+							UtilText.nodeContentSB.append(
+								"<div style='clear:left;'>"
+								+ CharacterModificationUtils.getSelfTransformFootStructureChoiceDiv()
+								+ CharacterModificationUtils.getSelfTransformLegConfigurationChoiceDiv()
+								+"</div>"
+							);
+						}
+
+						UtilText.nodeContentSB.append(
+							"<div style='clear:left;'>"
 							+ CharacterModificationUtils.getSelfTransformTailChoiceDiv(
 									(getTarget().isElemental()
 											?allRaces
-											:(!removeNoneFromTailChoices()
-												?Util.newArrayListOfValues(Race.DEMON)
-												:getMinorPartsDemonRaces(true))),
+											:getMinorPartsDemonRaces(true)),
+//											:(removeNoneFromTailChoices()||isSelfTFMenu()
+//												?getMinorPartsDemonRaces(true)
+//												:Util.newArrayListOfValues(Race.DEMON))),
 									removeNoneFromTailChoices())
 							+ CharacterModificationUtils.getSelfTransformTailLengthDiv()
-						+"</div>"
-						
-						+"<div style='clear:left;'>"
+							+"</div>"
+
+							+"<div style='clear:left;'>"
 							+ CharacterModificationUtils.getSelfTransformTailCountDiv()
 							+ CharacterModificationUtils.getSelfTransformTailGirthDiv()
-						+"</div>"
-						
-						+"<div style='clear:left;'>"
-							+ CharacterModificationUtils.getSelfTransformTentacleLengthDiv()
-							+ CharacterModificationUtils.getSelfTransformTentacleGirthDiv()
-						+"</div>"
-						
-						+"<div style='clear:left;'>"
-							+ CharacterModificationUtils.getSelfTransformWingChoiceDiv(
-									(getTarget().isElemental())
-										?allRaces
-										:(!removeNoneFromWingChoices()
-											?Util.newArrayListOfValues(Race.DEMON)
+							+"</div>"
+						);
+
+						if (!BodyChanging.getTarget().isYouko()) {
+							UtilText.nodeContentSB.append(
+								"<div style='clear:left;'>"
+									+ CharacterModificationUtils.getSelfTransformTentacleLengthDiv()
+									+ CharacterModificationUtils.getSelfTransformTentacleGirthDiv()
+								+"</div>"
+
+								+"<div style='clear:left;'>"
+									+ CharacterModificationUtils.getSelfTransformWingChoiceDiv(
+										(getTarget().isElemental()
+											?allRaces
 											:getMinorPartsDemonRaces(true)),
-									removeNoneFromWingChoices())
-							+ CharacterModificationUtils.getSelfTransformWingSizeDiv()
-						+"</div>");
-				
+//											:(!removeNoneFromWingChoices()
+//												?Util.newArrayListOfValues(Race.DEMON)
+//												:getMinorPartsDemonRaces(true)),
+										removeNoneFromWingChoices())
+									+ CharacterModificationUtils.getSelfTransformWingSizeDiv()
+								+"</div>"
+							);
+						}
 			// Slime/debug:
 			} else {
 				UtilText.nodeContentSB.append("<div class='container-full-width' style='text-align:center;'>"
@@ -697,7 +762,7 @@ public class BodyChanging {
 				AbstractRace race = entry.getValue().getKey();
 
 				Value<String, String> titleDescription = SuccubisSecrets.getCoveringTitleDescription(target, bct, entry.getValue().getValue());
-				
+
 				UtilText.nodeContentSB.append(CharacterModificationUtils.getKatesDivCoveringsNew(
 						false,
 						race,
@@ -800,19 +865,17 @@ public class BodyChanging {
 								UtilText.parse(BodyChanging.getTarget(), "The colour and pattern of [npc.namePos] sclerae."),
 								true, true));
 
-			} else if(isDemonTFMenu()) {
+			} else if(isDemonTFMenu()||isSelfTFMenu()) {
 				UtilText.nodeContentSB.append("<div class='container-full-width' style='text-align:center;'>"
 						+ (BodyChanging.getTarget().isPlayer()
-								?"<i>Focus your demonic transformative powers on changing aspects of your eyes.</i>"
-								:UtilText.parse(BodyChanging.getTarget(), "<i>Get [npc.name] to focus [npc.her] demonic transformative powers on changing aspects of [npc.her] eyes.</i>"))
+								?"<i>Focus your "+getPowers()+" aspects of your eyes.</i>"
+								:UtilText.parse(BodyChanging.getTarget(), "<i>Get [npc.name] to focus [npc.her] "+getPowers()+" aspects of [npc.her] eyes.</i>"))
 						+ "</div>"
 						
 						+"<div style='clear:left;'>"
 							+ CharacterModificationUtils.getSelfTransformEyeChoiceDiv(
-									(getTarget().isElemental())
-										?allRaces
-										:getMinorPartsDemonRaces(false))
-							+ CharacterModificationUtils.getSelfTransformEyeCountDiv()
+									(getMinorPartsDemonRaces(false)))
+							+ (BodyChanging.getTarget().isYouko()?"":CharacterModificationUtils.getSelfTransformEyeCountDiv())
 						+"</div>"
 						
 						+"<div style='clear:left;'>"
@@ -893,9 +956,11 @@ public class BodyChanging {
 
 			if(ScarlettsShop.isSlaveCustomisationMenu()) {
 				UtilText.nodeContentSB.append(
-						"<div style='clear:left;'>"
-							+ CharacterModificationUtils.getSelfTransformHairChoiceDiv(getSlaveCustomisationRaceOptions())
+						CharacterModificationUtils.getSelfTransformHairChoiceDiv(getSlaveCustomisationRaceOptions())
+						
+						+ "<div style='clear:left;'>"
 							+ CharacterModificationUtils.getSelfTransformHairLengthDiv()
+							+ CharacterModificationUtils.getNeckFluffDiv()
 						+"</div>"
 						
 						+ CharacterModificationUtils.getSelfDivHairStyles("Hair Style", UtilText.parse(BodyChanging.getTarget(), "Change [npc.namePos] hair style."))
@@ -911,9 +976,11 @@ public class BodyChanging {
 								:UtilText.parse(BodyChanging.getTarget(), "<i>Get [npc.name] to focus [npc.her] efforts on changing aspects of [npc.her] hair.</i>"))
 						+ "</div>"
 						
-						+"<div style='clear:left;'>"
-							+ CharacterModificationUtils.getSelfTransformHairChoiceDiv(allRaces)
+						+ CharacterModificationUtils.getSelfTransformHairChoiceDiv(allRaces)
+						
+						+ "<div style='clear:left;'>"
 							+ CharacterModificationUtils.getSelfTransformHairLengthDiv()
+							+ CharacterModificationUtils.getNeckFluffDiv()
 						+"</div>"
 						
 						+ CharacterModificationUtils.getSelfDivHairStyles("Hair Style", UtilText.parse(BodyChanging.getTarget(), "Change [npc.namePos] hair style."))
@@ -924,27 +991,29 @@ public class BodyChanging {
 										?"Change the colour of your hair."
 										:UtilText.parse(BodyChanging.getTarget(), "Change the colour of [npc.her] hair.")), true, true));
 
-			} else if(isDemonTFMenu()) {
+			} else if(isDemonTFMenu()||isSelfTFMenu()) {
 				UtilText.nodeContentSB.append("<div class='container-full-width' style='text-align:center;'>"
 						+ (BodyChanging.getTarget().isPlayer()
-								?"<i>Focus your demonic transformative powers on changing aspects of your hair.</i>"
-								:UtilText.parse(BodyChanging.getTarget(), "<i>Get [npc.name] to focus [npc.her] demonic transformative powers on changing aspects of [npc.her] hair.</i>"))
+								?"<i>Focus your "+getPowers()+" aspects of your hair.</i>"
+								:UtilText.parse(BodyChanging.getTarget(), "<i>Get [npc.name] to focus [npc.her] "+getPowers()+" on changing aspects of [npc.her] hair.</i>"))
 						+ "</div>"
 						
-						+"<div style='clear:left;'>"
-							+ CharacterModificationUtils.getSelfTransformHairChoiceDiv(
-									(getTarget().isElemental())
-										?allRaces
-										:getMinorPartsDemonRaces(true))
+						+ CharacterModificationUtils.getSelfTransformHairChoiceDiv((getMinorPartsDemonRaces(true)))
+						
+						+ "<div style='clear:left;'>"
 							+ CharacterModificationUtils.getSelfTransformHairLengthDiv()
+							+ CharacterModificationUtils.getNeckFluffDiv()
 						+"</div>"
 						
 						+ CharacterModificationUtils.getSelfDivHairStyles("Hair Style", UtilText.parse(BodyChanging.getTarget(), "Change [npc.namePos] hair style."))
 						
 						+ CharacterModificationUtils.getKatesDivCoveringsNew(false, BodyChanging.getTarget().getHairRace(),
 								BodyChanging.getTarget().getCovering(BodyChanging.getTarget().getHairCovering()).getType(), "Hair colour",
-								UtilText.parse(BodyChanging.getTarget(), "[npc.Name] can harness the power of [npc.her] demonic form to change the colour of [npc.her] hair."), true, true));
-				
+								(isDemonTFMenu()
+								?UtilText.parse(BodyChanging.getTarget(), "[npc.Name] can harness the power of [npc.her] demonic form to change the colour of [npc.her] hair.")
+								:UtilText.parse(BodyChanging.getTarget(), "[npc.Name] can harness [npc.her] innate powers to change the colour of [npc.her] hair."))
+						, true, true));
+
 			// Slime:
 			} else {
 				UtilText.nodeContentSB.append("<div class='container-full-width' style='text-align:center;'>"
@@ -953,9 +1022,11 @@ public class BodyChanging {
 								:UtilText.parse(BodyChanging.getTarget(), "<i>Get [npc.name] to focus [npc.her] efforts on changing aspects of [npc.her] slimy hair.</i>"))
 						+ "</div>"
 						
-						+"<div style='clear:left;'>"
-							+ CharacterModificationUtils.getSelfTransformHairChoiceDiv(allRaces)
+						+ CharacterModificationUtils.getSelfTransformHairChoiceDiv(allRaces)
+						
+						+ "<div style='clear:left;'>"
 							+ CharacterModificationUtils.getSelfTransformHairLengthDiv()
+							+ CharacterModificationUtils.getNeckFluffDiv()
 						+"</div>"
 						
 						+ CharacterModificationUtils.getSelfDivHairStyles("Hair Style", UtilText.parse(BodyChanging.getTarget(), "Change [npc.namePos] hair style."))
@@ -1131,54 +1202,55 @@ public class BodyChanging {
 										:UtilText.parse(BodyChanging.getTarget(), "The colour of [npc.namePos] tongue.")),
 								true, true));
 
-			} else if(isDemonTFMenu()) {
+			} else if(isDemonTFMenu()||isSelfTFMenu()) {
 				UtilText.nodeContentSB.append("<div class='container-full-width' style='text-align:center;'>"
 						+ (BodyChanging.getTarget().isPlayer()
-								?"<i>Focus your demonic transformative powers on changing aspects of your head and face.</i>"
-								:UtilText.parse(BodyChanging.getTarget(), "<i>Get [npc.name] to focus [npc.her] demonic transformative powers on changing aspects of [npc.her] head and face.</i>"))
+								?"<i>Focus your "+getPowers()+" aspects of your head and face.</i>"
+								:UtilText.parse(BodyChanging.getTarget(), "<i>Get [npc.name] to focus [npc.her] "+getPowers()+" aspects of [npc.her] head and face.</i>"))
 						+ "</div>"
 						
 						+ CharacterModificationUtils.getSelfTransformEarChoiceDiv(
-								(getTarget().isElemental())
-									?allRaces
-									:getMinorPartsDemonRaces(true))
+								(getMinorPartsDemonRaces(true)))
+				);
 
-						+"<div style='clear:left;'>"
+				if(!BodyChanging.getTarget().isYouko()) {
+					UtilText.nodeContentSB.append("<div style='clear:left;'>"
 							+ CharacterModificationUtils.getSelfTransformHornChoiceDiv(
-									(getTarget().isElemental())
-										?allRaces
-										:Util.mergeLists(getMinorPartsDemonRaces(true), Util.newArrayListOfValues(Race.NONE, Race.DEMON)))
+							(getTarget().isElemental())
+									?allRaces
+									:Util.mergeLists(getMinorPartsDemonRaces(true), Util.newArrayListOfValues(Race.NONE, Race.DEMON)))
 							+ CharacterModificationUtils.getSelfTransformHornSizeDiv()
-						+"</div>"
-						
-						+"<div style='clear:left;'>"
+							+"</div>"
+
+							+"<div style='clear:left;'>"
 							+ CharacterModificationUtils.getSelfTransformHornCountDiv()
 							+ CharacterModificationUtils.getSelfTransformHornsPerRowCountDiv()
-						+"</div>"
-						
-						+ "<div style='clear:left;'>"
-						+ CharacterModificationUtils.getSelfTransformAntennaChoiceDiv(
-								(getTarget().isElemental())
-									?allRaces
-									:getMinorPartsDemonRaces(true))
+							+"</div>"
+
+							+ "<div style='clear:left;'>"
+							+ CharacterModificationUtils.getSelfTransformAntennaChoiceDiv((getMinorPartsDemonRaces(true)))
 							+ CharacterModificationUtils.getSelfTransformAntennaSizeDiv()
-						+"</div>"
-						
-						+"<div style='clear:left;'>"
+							+"</div>"
+
+							+"<div style='clear:left;'>"
 							+ CharacterModificationUtils.getSelfTransformAntennaCountDiv()
 							+ CharacterModificationUtils.getSelfTransformAntennaePerRowCountDiv()
-						+"</div>"
-						
-						+ (BodyChanging.getTarget().getHornType()!=HornType.NONE
-								?CharacterModificationUtils.getKatesDivCoveringsNew(false, BodyChanging.getTarget().getHornRace(), BodyChanging.getTarget().getCovering(BodyChanging.getTarget().getHornCovering()).getType(),
-										"Horn Colour",
-									(BodyChanging.getTarget().isPlayer()
-										?"The colour of your horns."
-										:UtilText.parse(BodyChanging.getTarget(), "The colour of [npc.namePos] horns.")),
-									true, true)
-								:"")
+							+"</div>"
 
-						+ CharacterModificationUtils.getSelfTransformLipSizeDiv()
+							+ (BodyChanging.getTarget().getHornType()!=HornType.NONE
+							?CharacterModificationUtils.getKatesDivCoveringsNew(false, BodyChanging.getTarget().getHornRace(), BodyChanging.getTarget().getCovering(BodyChanging.getTarget().getHornCovering()).getType(),
+							"Horn Colour",
+							(BodyChanging.getTarget().isPlayer()
+									?"The colour of your horns."
+									:UtilText.parse(BodyChanging.getTarget(), "The colour of [npc.namePos] horns.")),
+							true, true)
+							:"")
+					);
+				}
+
+				UtilText.nodeContentSB.append(
+
+						CharacterModificationUtils.getSelfTransformLipSizeDiv()
 						
 						+"<div style='clear:left;'>"
 							+ CharacterModificationUtils.getSelfTransformThroatModifiersDiv()
@@ -1210,7 +1282,8 @@ public class BodyChanging {
 								(BodyChanging.getTarget().isPlayer()
 										?"The colour of your tongue."
 										:UtilText.parse(BodyChanging.getTarget(), "The colour of [npc.namePos] tongue.")),
-								true, true));
+								true, true)
+				);
 				
 			// Slime:
 			} else {
@@ -1377,6 +1450,8 @@ public class BodyChanging {
 
 		@Override
 		public String getHeaderContent() {
+			boolean isNipplePenOptions = isDebugMenu() || Main.game.isNipplePenEnabled();
+			
 			return getSelfTransformDescription("breasts")
 					
 					+ CharacterModificationUtils.getSelfTransformBreastChoiceDiv(getRacesForMinorPartSelfTransform())
@@ -1387,8 +1462,10 @@ public class BodyChanging {
 					+"</div>"
 					
 					+"<div style='clear:left;'>"
-						+ CharacterModificationUtils.getSelfTransformBreastRowsDiv()
-						+ CharacterModificationUtils.getSelfTransformNippleModifiersDiv()
+						+ CharacterModificationUtils.getSelfTransformBreastRowsDiv(isNipplePenOptions)
+						+ (isNipplePenOptions
+							?CharacterModificationUtils.getSelfTransformNippleModifiersDiv()
+							:"")
 					+"</div>"
 					
 					+"<div style='clear:left;'>"
@@ -1411,15 +1488,17 @@ public class BodyChanging {
 						+ CharacterModificationUtils.getSelfTransformAreolaeSizeDiv()
 					+"</div>"
 
-					+"<div style='clear:left;'>"
-						+ CharacterModificationUtils.getSelfTransformNippleCapacityDiv()
-						+ CharacterModificationUtils.getSelfTransformNippleDepthDiv()
-					+"</div>"
-
-					+"<div style='clear:left;'>"
-						+ CharacterModificationUtils.getSelfTransformNippleElasticityDiv()
-						+ CharacterModificationUtils.getSelfTransformNipplePlasticityDiv()
-					+"</div>"
+					+(isNipplePenOptions
+						?"<div style='clear:left;'>"
+							+ CharacterModificationUtils.getSelfTransformNippleCapacityDiv()
+							+ CharacterModificationUtils.getSelfTransformNippleDepthDiv()
+						+"</div>"
+	
+						+"<div style='clear:left;'>"
+							+ CharacterModificationUtils.getSelfTransformNippleElasticityDiv()
+							+ CharacterModificationUtils.getSelfTransformNipplePlasticityDiv()
+						+"</div>"
+						:"")
 					
 					+ CharacterModificationUtils.getKatesDivCoveringsNew(false,
 							BodyChanging.getTarget().getBreastRace(),
@@ -1466,7 +1545,7 @@ public class BodyChanging {
 					+ CharacterModificationUtils.getSelfTransformGirlcumFlavourDiv()
 
 					+ CharacterModificationUtils.getSelfTransformGirlcumModifiersDiv()
-					
+
 					+"<div style='clear:left;'>"
 						+ CharacterModificationUtils.getSelfTransformVaginaSquirterDiv()
 						+ CharacterModificationUtils.getSelfTransformVaginaHymenDiv()
@@ -1652,6 +1731,8 @@ public class BodyChanging {
 
 		@Override
 		public String getHeaderContent() {
+			boolean isNipplePenOptions = isDebugMenu() || Main.game.isNipplePenEnabled();
+			
 			return getSelfTransformDescription("[npc.crotchBoobs]")
 					
 					+ CharacterModificationUtils.getSelfTransformBreastCrotchChoiceDiv(getRacesForMinorPartSelfTransform())
@@ -1662,8 +1743,10 @@ public class BodyChanging {
 					+"</div>"
 					
 					+"<div style='clear:left;'>"
-						+ CharacterModificationUtils.getSelfTransformBreastCrotchRowsDiv()
-						+ CharacterModificationUtils.getSelfTransformNippleCrotchModifiersDiv()
+						+ CharacterModificationUtils.getSelfTransformBreastCrotchRowsDiv(isNipplePenOptions)
+						+ (isNipplePenOptions
+							?CharacterModificationUtils.getSelfTransformNippleCrotchModifiersDiv()
+							:"")
 					+"</div>"
 					
 					+"<div style='clear:left;'>"
@@ -1686,15 +1769,17 @@ public class BodyChanging {
 						+ CharacterModificationUtils.getSelfTransformAreolaeCrotchSizeDiv()
 					+"</div>"
 
-					+"<div style='clear:left;'>"
-						+ CharacterModificationUtils.getSelfTransformNippleCrotchCapacityDiv()
-						+ CharacterModificationUtils.getSelfTransformNippleCrotchDepthDiv()
-					+"</div>"
-					
-					+"<div style='clear:left;'>"
-						+ CharacterModificationUtils.getSelfTransformNippleCrotchElasticityDiv()
-						+ CharacterModificationUtils.getSelfTransformNippleCrotchPlasticityDiv()
-					+"</div>"
+					+(isNipplePenOptions
+						?"<div style='clear:left;'>"
+							+ CharacterModificationUtils.getSelfTransformNippleCrotchCapacityDiv()
+							+ CharacterModificationUtils.getSelfTransformNippleCrotchDepthDiv()
+						+"</div>"
+						
+						+"<div style='clear:left;'>"
+							+ CharacterModificationUtils.getSelfTransformNippleCrotchElasticityDiv()
+							+ CharacterModificationUtils.getSelfTransformNippleCrotchPlasticityDiv()
+						+"</div>"
+						:"")
 					
 					+ CharacterModificationUtils.getKatesDivCoveringsNew(false,
 							BodyChanging.getTarget().getBreastCrotchRace(),
@@ -1819,4 +1904,452 @@ public class BodyChanging {
 		}
 	};
 	
+	
+	// Save/Load dialogue and associated methods/variables:
+
+	public static void initSaveLoadMenu() {
+		presetTransformationsMap = new HashMap<>();
+		
+		for(File f : getSavedBodies()) {
+			try {
+				String name = Util.getFileIdentifier(f);
+				String nameReadable = Util.capitaliseSentence(name.replaceAll("_", " "));
+				Body loadedBody = loadBody(name);
+				Femininity fem = Femininity.valueOf(loadedBody.getFemininity());
+				AbstractSubspecies subspecies = loadedBody.getLoadedSubspecies();
+				String subspeciesName = loadedBody.isFeminine()?subspecies.getSingularFemaleName(loadedBody):subspecies.getSingularMaleName(loadedBody);
+				String displayName;
+				if(isPresetTransformationAvailable(loadedBody)) {
+					displayName = "<b>"+nameReadable+"</b>"
+							+ " (<span style='color:"+fem.getColour().toWebHexString()+";'>"+Util.capitaliseSentence(fem.getNames().get(0))+"</span>"
+							+ " <span style='color:"+subspecies.getColour(null).toWebHexString()+";'>"+subspeciesName+"</span>)";
+				} else {
+					displayName = "[style.boldDisabled("+nameReadable+")] [style.colourDisabled(("+Util.capitaliseSentence(fem.getNames().get(0))+" "+subspeciesName+"))]";
+				}
+				presetTransformationsMap.put(name, new Value<>(displayName, loadedBody));
+			} catch(Exception ex) {
+			}
+		}
+	}
+	
+	public static String loadConfirmationName = "";
+	public static String overwriteConfirmationName = "";
+	public static String deleteConfirmationName = "";
+	/** Mapping file location to a Value of saved name and Body. */
+	private static Map<String, Value<String, Body>> presetTransformationsMap = new HashMap<>();
+	
+	public static Map<String, Value<String, Body>> getPresetTransformationsMap() {
+		return presetTransformationsMap;
+	}
+
+	public static final DialogueNode BODY_CHANGING_SAVE_LOAD = new DialogueNode("Save transformation files", "", true) {
+		@Override
+		public String getContent() {
+			return "";
+		}
+		@Override
+		public String getHeaderContent(){
+			StringBuilder saveLoadSB = new StringBuilder();
+			
+			saveLoadSB.append(
+					"<div class='container-full-width' style='padding:0; margin:0 0 8px 0;'>"
+						+ "<p>"
+							+ "Only standard characters (letters and numbers) will work for save file names."
+							+ "<br/>Hover over each transformation preset's icon to see the body overview."
+							+ UtilText.parse(BodyChanging.getTarget(), "<br/>If a name is [style.colourDisabled(greyed-out)], then [npc.name] [npc.do]n't have the ability to transform into that preset,"
+								+ " and you can hover over the greyed-out load button to find out why it's unavailable.")
+						+ "</p>"
+					+ "</div>"
+					+ "<div class='container-full-width' style='padding:0; margin:0;'>"
+						+ "<div class='container-full-width' style='width:calc(75% - 16px); text-align:center; background:transparent;'>"
+							+ "Name"
+						+ "</div>"
+						+ "<div class='container-full-width' style='width:calc(25% - 16px); text-align:center; background:transparent;'>"
+							+ "Save | Load | Delete"
+						+ "</div>"
+					+ "</div>");
+
+			int i=0;
+			
+			saveLoadSB.append(getSaveLoadRow(null, "", null, i%2==0));
+			i++;
+			
+			for(Entry<String, Value<String, Body>> entry : presetTransformationsMap.entrySet()) {
+				saveLoadSB.append(getSaveLoadRow(entry.getKey(), entry.getValue().getKey(), entry.getValue().getValue(), i%2==0));
+				i++;
+			}
+			
+			saveLoadSB.append("<p id='hiddenPField' style='display:none;'></p>");
+			
+			return saveLoadSB.toString();
+		}
+		
+		@Override
+		public Response getResponse(int responseTab, int index) {
+			if (index == 1) {
+				return new Response("Confirmations: ",
+						"Toggle confirmations being shown when you click to load, overwrite, or delete a saved transformation."
+							+ " When turned on, it will take two clicks to apply any button press."
+							+ " When turned off, it will only take one click.",
+							BODY_CHANGING_SAVE_LOAD) {
+					@Override
+					public String getTitle() {
+						return "Confirmations: "+(Main.getProperties().hasValue(PropertyValue.overwriteWarning)
+								?"<span style='color:"+PresetColour.GENERIC_GOOD.toWebHexString()+";'>ON</span>"
+								:"<span style='color:"+PresetColour.GENERIC_BAD.toWebHexString()+";'>OFF</span>");
+					}
+					
+					@Override
+					public void effects() {
+						loadConfirmationName = "";
+						overwriteConfirmationName = "";
+						deleteConfirmationName = "";
+						Main.getProperties().setValue(PropertyValue.overwriteWarning, !Main.getProperties().hasValue(PropertyValue.overwriteWarning));
+						Main.getProperties().savePropertiesAsXML();
+					}
+				};
+
+			} else if (index == 0) {
+				return new Response("Back", "Back to the transformation menu.", BODY_CHANGING_CORE);
+
+			} else {
+				return null;
+			}
+		}
+
+		@Override
+		public DialogueNodeType getDialogueNodeType() {
+			return DialogueNodeType.PHONE;
+		}
+	};
+	
+	public static List<File> getSavedBodies() {
+		List<File> filesList = new ArrayList<>();
+		
+		File dir = new File("data/transformation_presets");
+		if (dir.isDirectory()) {
+			File[] directoryListing = dir.listFiles((path, name) -> name.endsWith(".xml"));
+			if (directoryListing != null) {
+				filesList.addAll(Arrays.asList(directoryListing));
+			}
+		}
+
+		filesList.sort(Comparator.comparing(File::getName).reversed());
+		
+		return filesList;
+	}
+
+	private static String getSaveLoadRow(String baseName, String displayName, Body body, boolean altColour) {
+		
+		if(body!=null){
+			String fileName = (baseName+".xml");
+			
+			boolean canTransform = isPresetTransformationAvailable(body);
+			
+//			System.out.println(body.getLoadedSubspecies().getName(body));
+			
+			return "<div class='container-full-width' style='padding:0; margin:0 0 4px 0;"+(altColour?"background:#222;":"")+" position:relative;'>"
+						+ "<div class='container-full-width' style='width:calc(75% - 16px); background:transparent;'>"
+							+ "<div class='container-full-width' style='width:10%; margin:0; padding:0; background:transparent; position:relative; float:left;'>"
+								+"<div class='inventoryImage' style='width:100%;'>"
+									+ "<div class='inventoryImage-content'"+(canTransform?"":" style='opacity:0.25;'")+">"
+										+ body.getLoadedSubspecies().getSVGStringFromBody(body)
+									+ "</div>"
+									+ "<div class='overlay no-pointer' id='LOADED_BODY_" + baseName + "'></div>"
+								+ "</div>"
+							+ "</div>"
+						
+							+ "<div style='width:calc(90% - 8px); padding:0; margin:0 0 0 8px; position:relative; float:left;'>"
+								+ "<p style='margin:0; padding:2px;'>"+displayName+"</p>"
+								+ "<p style='margin:0; padding:2px;'>[style.colourDisabled(data/transformation_presets/)]"+baseName+"[style.colourDisabled(.xml)]</p>"
+							+"</div>"
+						+ "</div>"
+						+ "<div class='container-full-width' style='width:calc(25% - 16px);text-align:center; background:transparent;'>"
+							+ (Main.game.isStarted()
+									?(fileName.equals(overwriteConfirmationName)
+										?"<div class='square-button saveIcon' id='overwrite_saved_" + baseName + "'><div class='square-button-content'>"+SVGImages.SVG_IMAGE_PROVIDER.getDiskSaveConfirm()+"</div></div>"
+										:"<div class='square-button saveIcon' id='overwrite_saved_" + baseName + "'><div class='square-button-content'>"+SVGImages.SVG_IMAGE_PROVIDER.getDiskOverwrite()+"</div></div>")
+									:"<div class='square-button saveIcon disabled'><div class='square-button-content'>"+SVGImages.SVG_IMAGE_PROVIDER.getDiskSaveDisabled()+"</div></div>")
+							
+							+ (canTransform
+									? (fileName.equals(loadConfirmationName)
+										?"<div class='square-button saveIcon' id='load_saved_" + baseName + "'><div class='square-button-content'>"+SVGImages.SVG_IMAGE_PROVIDER.getDiskLoadConfirm()+"</div></div>"
+										:"<div class='square-button saveIcon' id='load_saved_" + baseName + "'><div class='square-button-content'>"+SVGImages.SVG_IMAGE_PROVIDER.getDiskLoad()+"</div></div>")
+									:"<div class='square-button saveIcon disabled' id='load_saved_" + baseName + "'><div class='square-button-content'>"+SVGImages.SVG_IMAGE_PROVIDER.getDiskLoadDisabled()+"</div></div>")
+	
+	
+							+ (fileName.equals(deleteConfirmationName)
+								?"<div class='square-button saveIcon' id='delete_saved_" + baseName + "'><div class='square-button-content'>"+SVGImages.SVG_IMAGE_PROVIDER.getDiskDeleteConfirm()+"</div></div>"
+								:"<div class='square-button saveIcon' id='delete_saved_" + baseName + "'><div class='square-button-content'>"+SVGImages.SVG_IMAGE_PROVIDER.getDiskDelete()+"</div></div>")
+						+ "</div>"
+					+ "</div>";
+			
+		} else {
+			String svgString = BodyChanging.getTarget().getSubspecies().getSVGString(BodyChanging.getTarget());
+			
+			return "<div class='container-full-width' style='padding:0; margin:0 0 4px 0;"+(altColour?"background:#222;":"")+"'>"
+					
+						+ "<div class='container-full-width' style='width:calc(75% - 16px); background:transparent;'>"
+					
+							+ "<div class='container-full-width' style='width:10%; margin:0; padding:0; background:transparent; position:relative; float:left;'>"
+								+"<div class='inventoryImage' style='width:100%;'>"
+									+ "<div class='inventoryImage-content'>"
+										+ svgString
+									+ "</div>"
+									+ "<div class='overlay no-pointer' id='LOADED_BODY_CURRENT'></div>"
+								+ "</div>"
+							+ "</div>"
+						
+							+ "<div style='width:calc(90% - 8px); padding:0; margin:0 0 0 8px; position:relative; float:left;'>"
+								+"<form style='padding:0;margin:0;text-align:center;'><input type='text' id='new_save_name' placeholder='Enter File Name' style='padding:0;margin:0;width:100%;'></form>"
+							+"</div>"
+							
+						+ "</div>"
+					
+						+ "<div class='container-full-width' style='width:calc(25% - 16px); text-align:center; background:transparent;'>"
+							+ "<div class='square-button saveIcon' id='new_saved' style='float:left;'><div class='square-button-content'>"+SVGImages.SVG_IMAGE_PROVIDER.getDiskSave()+"</div></div>"
+						+ "</div>"
+					+ "</div>";
+		}
+	}
+
+	public static void saveBody(String name, boolean allowOverwrite) {
+		name = Main.checkFileName(name);
+		if(name.isEmpty()) {
+			return;
+		}
+		
+		Body body = BodyChanging.getTarget().getBody();
+		
+		File dir = new File("data/");
+		dir.mkdir();
+
+		dir = new File("data/transformation_presets");
+		dir.mkdir();
+
+		if (dir.isDirectory()) {
+			File[] directoryListing = dir.listFiles((path, filename) -> filename.endsWith(".xml"));
+			if (directoryListing != null) {
+				for (File child : directoryListing) {
+					if (child.getName().equals(name+".xml")){
+						if(!allowOverwrite) {
+							Main.game.flashMessage(PresetColour.GENERIC_BAD, "Name already exists!");
+							return;
+						}
+					}
+				}
+			}
+		}
+
+		try {
+			// Starting stuff:
+			Document doc = Main.getDocBuilder().newDocument();
+			
+			Element coreElement = doc.createElement("body");
+			doc.appendChild(coreElement);
+
+			body.saveAsXML(coreElement, doc);
+			
+			// Ending stuff:
+			
+			Transformer transformer1 = Main.transformerFactory.newTransformer();
+			transformer1.setOutputProperty(OutputKeys.OMIT_XML_DECLARATION, "yes");
+			StringWriter writer = new StringWriter();
+
+			transformer1.transform(new DOMSource(doc), new StreamResult(writer));
+			
+			// Save this xml:
+			Transformer transformer = Main.transformerFactory.newTransformer();
+			transformer.setOutputProperty(OutputKeys.INDENT, "yes");
+			transformer.setOutputProperty("{http://xml.apache.org/xslt}indent-amount", "2");
+			DOMSource source = new DOMSource(doc);
+			
+			String saveLocation = "data/transformation_presets/"+name+".xml";
+			StreamResult result = new StreamResult(saveLocation);
+			
+			transformer.transform(source, result);
+			
+		} catch (TransformerException tfe) {
+			tfe.printStackTrace();
+		}
+		
+		BodyChanging.initSaveLoadMenu();
+		Main.game.setContent(new Response("", "", BodyChanging.BODY_CHANGING_SAVE_LOAD));
+	}
+
+	public static Body loadBody(String name) {
+		if(isLoadBodyAvailable(name)) {
+			File file = new File("data/transformation_presets/"+name+".xml");
+
+			if (file.exists()) {
+				try {
+					Document doc = Main.getDocBuilder().parse(file);
+					
+					// Cast magic:
+					doc.getDocumentElement().normalize();
+					
+					Body body = Body.loadFromXML(null, (Element) doc.getDocumentElement(), doc);
+					body.calculateRace(null);
+					
+					return body;
+					
+				} catch(Exception e) {
+					e.printStackTrace();
+				}
+			}
+		}
+		
+		return null;
+	}
+	
+	public static boolean isLoadBodyAvailable(String name) {
+		File file = new File("data/transformation_presets/"+name+".xml");
+
+		if(!file.exists()) {
+			return false;
+		}
+		
+		return true;
+	}
+
+	public static void deleteBody(String name) {
+		File file = new File("data/transformation_presets/"+name+".xml");
+
+		if (file.exists()) {
+			try {
+				file.delete();
+				Main.game.setContent(new Response("", "", Main.game.getCurrentDialogueNode()));
+			} catch (Exception ex) {
+				ex.printStackTrace();
+			}
+			
+		} else {
+			Main.game.flashMessage(PresetColour.GENERIC_BAD, "File not found...");
+		}
+	}
+
+	public static boolean isPresetTransformationAvailable(Body body) {
+		return getPresetTransformationUnavailabilityText(body)==null || getPresetTransformationUnavailabilityText(body).isEmpty();
+	}
+	
+	public static String getPresetTransformationUnavailabilityText(Body body) {
+		if(debugMenu) {
+			return "";
+		}
+		if(body.getBodyMaterial()!=BodyChanging.getTarget().getBodyMaterial()) {
+			BodyMaterial matCurrent = BodyChanging.getTarget().getBodyMaterial();
+			BodyMaterial matTarget = body.getBodyMaterial();
+			return UtilText.parse(BodyChanging.getTarget(),
+					"[npc.Name] cannot transform into a body that has a different material than [npc.her] current one!"
+					+ "<br/>Current material: <span style='color:"+matCurrent.getColour().toWebHexString()+";'>"+Util.capitaliseSentence(matCurrent.getName())+"</span>"
+					+ "<br/>Transformation target's material: <span style='color:"+matTarget.getColour().toWebHexString()+";'>"+Util.capitaliseSentence(matTarget.getName())+"</span>");
+		}
+		if(body.isFeral()!=BodyChanging.getTarget().isFeral()) {
+			if(body.isFeral()) {
+				return UtilText.parse(BodyChanging.getTarget(), "[npc.Name] cannot transform into a [style.colourFeral(feral body)] as [npc.her] current body isn't feral!");
+			}
+			return UtilText.parse(BodyChanging.getTarget(), "[npc.Name] cannot transform into a [style.colourHuman(non-feral body)] as [npc.her] current body is feral!");
+		}
+		if(isDemonTFMenu() || BodyChanging.getTarget().isYouko()) {
+			StringBuilder sb = new StringBuilder();
+			List<String> partsList = new ArrayList<>();
+			for(BodyPartInterface part : body.getAllBodyParts()) {
+				if(!BodyChanging.getTarget().getSelfTransformationRaces().contains(part.getType().getRace())) {
+					if(sb.length()==0) {
+						sb.append("[npc.NameIsFull] unable to transform into the associated race for the following parts:");
+						sb.append("<br/>");
+					}
+					partsList.add(part.getType().getName(BodyChanging.getTarget()));
+				}
+			}
+			if(sb.length()>0) {
+				sb.append(Util.capitaliseSentence(Util.stringsToStringList(partsList, false)));
+				sb.append(".");
+				return UtilText.parse(BodyChanging.getTarget(), sb.toString());
+			}
+			
+			if(BodyChanging.getTarget().isYouko()) { // Youko self-TF limitations:
+				if(body.getArm().getArmRows()!=BodyChanging.getTarget().getArmRows()) {
+					sb.append("<br/>Arm row count");
+				}
+				if(body.getGenitalArrangement()!=BodyChanging.getTarget().getGenitalArrangement()) {
+					sb.append("<br/>Genital arrangement");
+				}
+				if(body.getTentacle().getType()!=BodyChanging.getTarget().getTentacleType()) {
+					sb.append("<br/>Tentacle type");
+				}
+				if(body.getWing().getType()!=BodyChanging.getTarget().getWingType()) {
+					sb.append("<br/>Wing type");
+				}
+				if(body.getEye().getEyePairs()!=BodyChanging.getTarget().getEyePairs()) {
+					sb.append("<br/>Eye count");
+				}
+				if(body.getHorn().getType()!=BodyChanging.getTarget().getHornType()) {
+					sb.append("<br/>Horn type");
+				}
+				if(body.getAntenna().getType()!=BodyChanging.getTarget().getAntennaType()) {
+					sb.append("<br/>Antennae type");
+				}
+				if(sb.length()>0) {
+					sb.insert(0, "Youkos' limited transformation powers prevent [npc.name] from transforming:");
+					return UtilText.parse(BodyChanging.getTarget(), sb.toString());
+				}
+			}
+			
+		} else if(body.getBodyMaterial() != BodyMaterial.SLIME){
+			StringBuilder sb = new StringBuilder();
+			List<String> partsList = new ArrayList<>();
+			for(BodyPartInterface part : body.getAllBodyParts()) {
+				if(BodyChanging.getTarget().getRace()!=part.getType().getRace()) {
+					if(sb.length()==0) {
+						sb.append("[npc.NameIsFull] unable to transform into the associated race for the following parts:");
+						sb.append("<br/>");
+					}
+					partsList.add(part.getType().getName(BodyChanging.getTarget()));
+				}
+			}
+			if(sb.length()>0) {
+				sb.append(Util.capitaliseSentence(Util.stringsToStringList(partsList, false)));
+				sb.append(".");
+				return UtilText.parse(BodyChanging.getTarget(), sb.toString());
+			}
+		}
+		return "";
+	}
+
+	/**
+	 * Sets the supplied body as the BodyChanging.getTarget()'s new body.
+	 * <br/>Retains all BodyChanging.getTarget()'s covering colours which are not actively used by the new body, replacing the loaded body's unused covering colours.
+	 * <br/>If the BodyChanging.getTarget() does not have covering colours saved which are present in the loaded body, then these loaded body's covering colours are retained.
+	 */
+	public static void applyLoadedBody(Body body) {
+		AbstractSubspecies subspeciesOverride = BodyChanging.getTarget().getSubspeciesOverride();
+		Map<AbstractBodyCoveringType, Covering> oldCoverings = BodyChanging.getTarget().getBody().getCoverings();
+		
+		BodyChanging.getTarget().setBody(body, false);
+		
+		BodyChanging.getTarget().setSubspeciesOverride(subspeciesOverride);
+		List<AbstractBodyCoveringType> currentlyActiveCoverings = new ArrayList<>();
+		for(BodyPartInterface part : body.getAllBodyPartsWithAllOrifices()) {
+			AbstractBodyCoveringType bct = BodyChanging.getTarget().getCovering(part);
+			if(bct==null) {
+//				System.out.println(part.getName(BodyChanging.getTarget()));
+				continue;
+			}
+			if(BodyCoveringType.getAllMakeupTypes().contains(bct) || bct==BodyCoveringType.DILDO) {
+				continue;
+			}
+			if(body.getBodyMaterial()!=BodyMaterial.FLESH) {
+				currentlyActiveCoverings.add(BodyCoveringType.getMaterialBodyCoveringType(body.getBodyMaterial(), bct.getCategory()));
+			}
+			currentlyActiveCoverings.add(bct);
+		}
+		
+		for(Entry<AbstractBodyCoveringType, Covering> entry: oldCoverings.entrySet()) {
+			if(!currentlyActiveCoverings.contains(entry.getKey())) {
+				BodyChanging.getTarget().getBody().getCoverings().put(entry.getKey(), entry.getValue());
+			}
+		}
+		
+	}
 }

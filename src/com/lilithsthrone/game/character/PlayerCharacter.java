@@ -34,11 +34,12 @@ import com.lilithsthrone.game.character.body.types.TailType;
 import com.lilithsthrone.game.character.body.types.TorsoType;
 import com.lilithsthrone.game.character.body.types.VaginaType;
 import com.lilithsthrone.game.character.body.types.WingType;
+import com.lilithsthrone.game.character.effects.Perk;
 import com.lilithsthrone.game.character.effects.StatusEffect;
+import com.lilithsthrone.game.character.fetishes.AbstractFetish;
 import com.lilithsthrone.game.character.fetishes.Fetish;
 import com.lilithsthrone.game.character.gender.Gender;
 import com.lilithsthrone.game.character.npc.NPC;
-import com.lilithsthrone.game.character.npc.dominion.DominionClubNPC;
 import com.lilithsthrone.game.character.npc.dominion.Lilaya;
 import com.lilithsthrone.game.character.npc.dominion.Scarlett;
 import com.lilithsthrone.game.character.npc.misc.NPCOffspring;
@@ -514,8 +515,9 @@ public class PlayerCharacter extends GameCharacter implements XMLSaving {
 								int questIncrement=0;
 								while(!questString.isEmpty()) {
 									quest = Quest.getQuestFromId(questString);
-	
-									questList.add(quest);
+									if(quest!=Quest.MAIN_1_J_ARTHURS_ROOM) {
+										questList.add(quest);
+									}
 									
 									questIncrement++;
 									questString = e.getAttribute("q"+questIncrement);
@@ -718,7 +720,19 @@ public class PlayerCharacter extends GameCharacter implements XMLSaving {
 				character.addItem(Main.game.getItemGen().generateItem(ItemType.NATALYA_BUSINESS_CARD), false);
 			}
 		}
+		
+		if(Main.isVersionOlderThan(version, "0.4.1.8")) {
+			if(!character.hasItemType("innoxia_quest_clothing_keys")) {
+				character.addItem(Main.game.getItemGen().generateItem("innoxia_quest_clothing_keys"), false);
+			}
+		}
 
+		if(Main.isVersionOlderThan(version, "0.4.4.2")) {
+			if(character.getQuest(QuestLine.MAIN)==Quest.MAIN_1_J_ARTHURS_ROOM) {
+				character.setQuestProgress(QuestLine.MAIN, Quest.MAIN_1_I_ARTHURS_TALE);
+			}
+		}
+		
 		if(debug) {
 			System.out.println("Player loading finished: "+((System.nanoTime()-time)/1000000000d));
 		}
@@ -807,7 +821,8 @@ public class PlayerCharacter extends GameCharacter implements XMLSaving {
 		
 		if(this.getWorldLocation()==WorldType.NIGHTLIFE_CLUB) {
 			List<GameCharacter> clubbers = new ArrayList<>(Main.game.getNonCompanionCharactersPresent());
-			clubbers.removeIf((npc) -> !(npc instanceof DominionClubNPC));
+//			clubbers.removeIf((npc) -> !(npc instanceof DominionClubNPC));
+			clubbers.removeIf((npc) -> npc.isUnique());
 			
 			AbstractWorldType worldLocationInitial = this.getWorldLocation();
 			Vector2i locationInitial = this.getLocation();
@@ -822,11 +837,11 @@ public class PlayerCharacter extends GameCharacter implements XMLSaving {
 				}
 			}
 			
-		} else if(this.getWorldLocation()==WorldType.SUBMISSION) {
+		} else if(worldLocation==WorldType.SUBMISSION) {
 			super.setLocation(worldLocation, location, setAsHomeLocation);
 			
 			AbstractPlaceType place = Main.game.getWorlds().get(WorldType.SUBMISSION).getCell(location).getPlace().getPlaceType();
-			if(place.equals(PlaceType.SUBMISSION_LILIN_PALACE_GATE) || place.equals(PlaceType.SUBMISSION_LILIN_PALACE)) {
+			if(Main.game.isStarted() && Main.game.getNpc(Elizabeth.class)!=null && (place.equals(PlaceType.SUBMISSION_LILIN_PALACE_GATE) || place.equals(PlaceType.SUBMISSION_LILIN_PALACE))) {
 				Main.game.getNpc(Elizabeth.class).setLocation(this, false);
 			}
 			
@@ -889,7 +904,7 @@ public class PlayerCharacter extends GameCharacter implements XMLSaving {
 			}
 			return Util.newHashSetOfValues(Relationship.Nibling);
 		}
-		if(character.getRace()==Race.DEMON) {
+		if(this.getRace()==Race.DEMON) {
 			if(character instanceof Lyssieth) {
 				return Util.newHashSetOfValues(Relationship.Parent);
 			}
@@ -975,7 +990,7 @@ public class PlayerCharacter extends GameCharacter implements XMLSaving {
 		
 		quests.get(questLine).add(0, quest);
 		
-		Main.game.getEventLog().add(new EventLogEntry(Main.game.getMinutesPassed(), "[style.colourGood(Optional Task Complete)]", quest.getName()));
+		Main.game.addEvent(new EventLogEntry("[style.colourGood(Optional Task Complete)]", quest.getName()), false);
 		return "<p style='text-align:center;'>"
 				+ "<b style='color:" + questLine.getType().getColour().toWebHexString() + ";'>Quest - " + questLine.getName() + "</b><br/>"
 				+ "<b style='color:"+PresetColour.GENERIC_GOOD.toWebHexString()+";'>Optional Task Completed: " + quest.getName() + "</b><br/>"
@@ -1007,7 +1022,7 @@ public class PlayerCharacter extends GameCharacter implements XMLSaving {
 			quests.get(questLine).add(quest);
 			
 			if (questLine.getQuestTree().getFirstNodeWithData(quest).getChildren().isEmpty()) { // QuestLine complete (No more children in the tree)
-				Main.game.getEventLog().add(new EventLogEntry(Main.game.getMinutesPassed(), "[style.colourExcellent(Quest Complete)]", questLine.getName()));
+				Main.game.addEvent(new EventLogEntry("[style.colourExcellent(Quest Complete)]", questLine.getName()), false);
 				return "<p style='text-align:center;'>"
 						+ "<b style='color:" + questLine.getType().getColour().toWebHexString() + ";'>Quest - " + questLine.getName() + "</b><br/>"
 						+ "<b style='color:"+PresetColour.GENERIC_GOOD.toWebHexString()+";'>Task Completed</b><b> - "+currentQuest.getName()+"</b><br/>"
@@ -1015,7 +1030,7 @@ public class PlayerCharacter extends GameCharacter implements XMLSaving {
 						+ experienceUpdate;
 				
 			} else {
-				Main.game.getEventLog().add(new EventLogEntry(Main.game.getMinutesPassed(), "[style.colourMinorGood(New Task)]", quest.getName()));
+				Main.game.addEvent(new EventLogEntry("[style.colourMinorGood(New Task)]", quest.getName()), false);
 				return "<p style='text-align:center;'>"
 						+ "<b style='color:" + questLine.getType().getColour().toWebHexString() + ";'>Quest - " + questLine.getName() + "</b><br/>"
 						+ "<b style='color:"+PresetColour.GENERIC_GOOD.toWebHexString()+";'>Task Completed - "+currentQuest.getName()+"</b><br/>"
@@ -1027,7 +1042,7 @@ public class PlayerCharacter extends GameCharacter implements XMLSaving {
 			quests.put(questLine, new ArrayList<>());
 			quests.get(questLine).add(quest);
 			
-			Main.game.getEventLog().add(new EventLogEntry(Main.game.getMinutesPassed(), "[style.colourGood(Quest Started)]", questLine.getName()));
+			Main.game.addEvent(new EventLogEntry("[style.colourGood(Quest Started)]", questLine.getName()), false);
 			
 			return "<p style='text-align:center;'>"
 					+ "<b style='color:" + questLine.getType().getColour().toWebHexString() + ";'>New Quest - " + questLine.getName() + "</b><br/>"
@@ -1142,18 +1157,18 @@ public class PlayerCharacter extends GameCharacter implements XMLSaving {
 	public void addCharacterEncountered(String character) {
 		if (!charactersEncountered.contains(character)) {
 			charactersEncountered.add(character);
-		}
-		if(Main.game.isStarted()) {
-			sortCharactersEncountered();
+			if(Main.game.isStarted()) {
+				sortCharactersEncountered();
+			}
 		}
 	}
-	
+
 	public void addCharacterEncountered(GameCharacter character) {
 		if (!charactersEncountered.contains(character.getId())) {
 			charactersEncountered.add(character.getId());
-		}
-		if(Main.game.isStarted()) {
-			sortCharactersEncountered();
+			if(Main.game.isStarted()) {
+				sortCharactersEncountered();
+			}
 		}
 	}
 	
@@ -1163,6 +1178,7 @@ public class PlayerCharacter extends GameCharacter implements XMLSaving {
 	 */
 	public List<GameCharacter> getCharactersEncounteredAsGameCharacters(boolean expansiveSearch) {
 		List<GameCharacter> npcsEncountered = new ArrayList<>();
+		charactersEncountered.removeIf(id -> !Main.game.isCharacterExisting(id));
 		for(String characterId : charactersEncountered) {
 			try {
 				GameCharacter npc = Main.game.getNPCById(characterId);
@@ -1187,6 +1203,7 @@ public class PlayerCharacter extends GameCharacter implements XMLSaving {
 	
 	public void sortCharactersEncountered() {
 		List<GameCharacter> npcsEncountered = new ArrayList<>();
+		charactersEncountered.removeIf(id -> !Main.game.isCharacterExisting(id));
 		for(String characterId : charactersEncountered) {
 			try {
 				GameCharacter npc = Main.game.getNPCById(characterId);
@@ -1404,7 +1421,7 @@ public class PlayerCharacter extends GameCharacter implements XMLSaving {
 	// This behaviour is overridden for unique scenes in which the player's orgasm requires special dialogue or effects.
 	//TODO move this into the NPC's class
 	@Override
-	public SexActionOrgasmOverride getSexActionOrgasmOverride(SexActionInterface sexAction, OrgasmCumTarget target, boolean applyExtraEffects) {
+	public SexActionOrgasmOverride getSexActionOrgasmOverride(SexActionInterface sexAction, OrgasmCumTarget target, boolean applyExtraEffects, String description) {
 
 		// SCARLETT:
 		
@@ -1412,8 +1429,11 @@ public class PlayerCharacter extends GameCharacter implements XMLSaving {
 				&& Main.sex.getOngoingSexAreas(this, SexAreaOrifice.ANUS, Main.game.getNpc(Scarlett.class)).contains(SexAreaPenetration.PENIS)
 				&& Main.sex.getSexPace(Main.game.getNpc(Scarlett.class))==SexPace.DOM_ROUGH) { // Orgasm reaction when you cum from Scarlett's anal:
 			StringBuilder sb = new StringBuilder();
-			
-			sb.append(GenericOrgasms.getGenericOrgasmDescription(sexAction, this, target));
+			if(description!=null) {
+				sb.append(description);
+			} else {
+				sb.append(GenericOrgasms.getGenericOrgasmDescription(sexAction, this, target));
+			}
 			
 			sb.append(UtilText.parseFromXMLFile("characters/dominion/scarlett", "ROUGH_ANAL_ORGASM"));
 			
@@ -1433,49 +1453,75 @@ public class PlayerCharacter extends GameCharacter implements XMLSaving {
 		
 		if(Main.sex.getAllParticipants().contains(Main.game.getNpc(Lilaya.class))
 				&& Main.game.getNpc(Lilaya.class).getFetishDesire(Fetish.FETISH_PREGNANCY).isNegative()
-				&& target==OrgasmCumTarget.INSIDE
-				&& !Main.game.getNpc(Lilaya.class).isVisiblyPregnant()
-				&& this.getCurrentPenisRawCumStorageValue()>0
-				&& Main.sex.getOngoingSexAreas(this, SexAreaPenetration.PENIS, Main.game.getNpc(Lilaya.class)).contains(SexAreaOrifice.VAGINA)) {
+				&& !Main.game.getNpc(Lilaya.class).isVisiblyPregnant()) {
+			Main.game.getDialogueFlags().setFlag(DialogueFlagValue.lilayaAmazonsSecretImpregnation, false);
+			Main.game.getDialogueFlags().setFlag(DialogueFlagValue.lilayaCondomBroke, false);
+			boolean triggerEndScene = false;
 			
 			StringBuilder sb = new StringBuilder();
-			sb.append(GenericOrgasms.getGenericOrgasmDescription(sexAction, this, target));
-			
-			if(this.isWearingCondom()) {
-				if(sexAction.getCondomFailure(this, Main.game.getNpc(Lilaya.class))!=CondomFailure.NONE) {
-					Main.game.getDialogueFlags().setFlag(DialogueFlagValue.lilayaCondomBroke, true);
-					sb.append(UtilText.parseFromXMLFile("characters/dominion/lilaya", "ORGASM_REACTION_CREAMPIE_CONDOM_BROKE"));
-				} else {
-					Main.game.getDialogueFlags().setFlag(DialogueFlagValue.lilayaCondomBroke, false);
-					sb.append(UtilText.parseFromXMLFile("characters/dominion/lilaya", "ORGASM_REACTION_CREAMPIE_CONDOM"));
-				}
+			if(description!=null) {
+				sb.append(description);
 			} else {
-				Main.game.getDialogueFlags().setFlag(DialogueFlagValue.lilayaCondomBroke, false);
-				sb.append(UtilText.parseFromXMLFile("characters/dominion/lilaya", "ORGASM_REACTION_CREAMPIE"));
+				sb.append(GenericOrgasms.getGenericOrgasmDescription(sexAction, this, target));
 			}
 			
-			return new SexActionOrgasmOverride(false) {
-				@Override
-				public String getDescription() {
-					return sb.toString();
+			// Penis cumming inside reaction:
+			if(target==OrgasmCumTarget.INSIDE
+					&& this.getCurrentPenisRawCumStorageValue()>0
+					&& Main.sex.getOngoingSexAreas(this, SexAreaPenetration.PENIS, Main.game.getNpc(Lilaya.class)).contains(SexAreaOrifice.VAGINA)) {
+				if(this.isWearingCondom()) {
+					if(sexAction.getCondomFailure(this, Main.game.getNpc(Lilaya.class))!=CondomFailure.NONE) {
+						Main.game.getDialogueFlags().setFlag(DialogueFlagValue.lilayaCondomBroke, true);
+						sb.append(UtilText.parseFromXMLFile("characters/dominion/lilaya", "ORGASM_REACTION_CREAMPIE_CONDOM_BROKE"));
+					} else {
+						sb.append(UtilText.parseFromXMLFile("characters/dominion/lilaya", "ORGASM_REACTION_CREAMPIE_CONDOM"));
+					}
+				} else {
+					sb.append(UtilText.parseFromXMLFile("characters/dominion/lilaya", "ORGASM_REACTION_CREAMPIE"));
 				}
-				@Override
-				public void applyEffects() {
+				triggerEndScene = true;
+				
+			// Amazon's Secret status effect reaction:
+			} else if(this.hasStatusEffect("innoxia_amazons_secret")) {
+				Set<GameCharacter> charactersContactingVagina = new HashSet<>(Main.sex.getOngoingCharactersUsingAreas(this, SexAreaOrifice.VAGINA, SexAreaPenetration.CLIT));
+				charactersContactingVagina.addAll(Main.sex.getOngoingCharactersUsingAreas(this, SexAreaPenetration.CLIT, SexAreaOrifice.VAGINA));
+				charactersContactingVagina.addAll(Main.sex.getOngoingCharactersUsingAreas(this, SexAreaOrifice.VAGINA, SexAreaOrifice.VAGINA));
+				charactersContactingVagina.addAll(Main.sex.getOngoingCharactersUsingAreas(this, SexAreaPenetration.CLIT, SexAreaPenetration.CLIT));
+
+				if(charactersContactingVagina.contains(Main.game.getNpc(Lilaya.class))) {
+					Main.game.getDialogueFlags().setFlag(DialogueFlagValue.lilayaAmazonsSecretImpregnation, true);
+					triggerEndScene = true;
+					sb.append(UtilText.parseFromXMLFile("characters/dominion/lilaya", "ORGASM_REACTION_AMAZONS_SECRET"));
 				}
-				@Override
-				public boolean isEndsSex() {
-					return Main.game.getNpc(Lilaya.class).hasStatusEffect(StatusEffect.PREGNANT_0)
-							&& Main.game.getNpc(Lilaya.class).getFetishDesire(Fetish.FETISH_PREGNANCY).isNegative();
-				}
-			};
+			}
+			
+			if(triggerEndScene) {
+				return new SexActionOrgasmOverride(false) {
+					@Override
+					public String getDescription() {
+						return sb.toString();
+					}
+					@Override
+					public void applyEffects() {
+					}
+					@Override
+					public boolean isEndsSex() {
+						return Main.game.getNpc(Lilaya.class).hasStatusEffect(StatusEffect.PREGNANT_0)
+								&& Main.game.getNpc(Lilaya.class).getFetishDesire(Fetish.FETISH_PREGNANCY).isNegative();
+					}
+				};
+			}
 		}
 		
 		
 		// LYSSIETH:
 		
 		if(Main.sex.getSexManager() instanceof SMLyssiethDemonTF) { // Lyssieth's demon TF scene:
-			StringBuilder sb = new StringBuilder();
-			sb.append(GenericOrgasms.getGenericOrgasmDescription(sexAction, this, target));
+			StringBuilder sb = new StringBuilder();if(description!=null) {
+				sb.append(description);
+			} else {
+				sb.append(GenericOrgasms.getGenericOrgasmDescription(sexAction, this, target));
+			}
 			
 			if(Main.sex.getLastUsedSexAction(Main.game.getNpc(Lyssieth.class)).getActionType()==SexActionType.ORGASM) { //These specials are only for follow-ups to Lyssieth's orgasms:
 				if(Main.sex.getNumberOfOrgasms(Main.game.getNpc(Lyssieth.class))==1) {
@@ -1492,7 +1538,21 @@ public class PlayerCharacter extends GameCharacter implements XMLSaving {
 							public void applyEffects() {
 							}
 						};
-		
+						
+					// Stage 1) Player is eating Lyssieth out:
+					} else if(Main.sex.getOngoingSexAreas(this, SexAreaPenetration.TONGUE, Main.game.getNpc(Lyssieth.class)).contains(SexAreaOrifice.VAGINA)) {
+						sb.append(UtilText.parseFromXMLFile("characters/submission/lyssieth", "DEMON_TF_STAGE_1_PC_GIVING_LYSSIETH_CUNNILINGUS_END"));
+						
+						return new SexActionOrgasmOverride(false) {
+							@Override
+							public String getDescription() {
+								return sb.toString();
+							}
+							@Override
+							public void applyEffects() {
+							}
+						};
+							
 					// Stage 1) Lyssieth is sucking player's cock:
 					} else if(Main.sex.getOngoingSexAreas(this, SexAreaPenetration.PENIS, Main.game.getNpc(Lyssieth.class)).contains(SexAreaOrifice.MOUTH)) {
 						sb.append(UtilText.parseFromXMLFile("characters/submission/lyssieth", "DEMON_TF_STAGE_1_PC_GETTING_BLOWJOB_FROM_LYSSIETH_END"));
@@ -1508,7 +1568,7 @@ public class PlayerCharacter extends GameCharacter implements XMLSaving {
 						};
 						
 					// Stage 1) Lyssieth is eating the player out:
-					} else if(Main.sex.getOngoingSexAreas(this, SexAreaPenetration.TONGUE, Main.game.getNpc(Lyssieth.class)).contains(SexAreaOrifice.VAGINA)) {
+					} else if(Main.sex.getOngoingSexAreas(this, SexAreaOrifice.VAGINA, Main.game.getNpc(Lyssieth.class)).contains(SexAreaPenetration.TONGUE)) {
 						sb.append(UtilText.parseFromXMLFile("characters/submission/lyssieth", "DEMON_TF_STAGE_1_PC_GETTING_CUNNILINGUS_FROM_LYSSIETH_END"));
 						
 						return new SexActionOrgasmOverride(false) {
@@ -1570,6 +1630,30 @@ public class PlayerCharacter extends GameCharacter implements XMLSaving {
 					// Stage 2) The player is fucking Lyssieth:
 					} else if(Main.sex.getOngoingSexAreas(this, SexAreaPenetration.PENIS, Main.game.getNpc(Lyssieth.class)).contains(SexAreaOrifice.VAGINA)) {
 						sb.append(UtilText.parseFromXMLFile("characters/submission/lyssieth", "DEMON_TF_STAGE_2_PC_FUCKING_LYSSIETH_END"));
+						
+						return new SexActionOrgasmOverride(false) {
+							@Override
+							public String getDescription() {
+								return sb.toString();
+							}
+							@Override
+							public void applyEffects() {
+							}
+							@Override
+							public void applyEndEffects() {
+								if(applyExtraEffects) {
+									Main.sex.stopAllOngoingActions(Main.game.getPlayer(), Main.game.getNpc(Lyssieth.class));
+								}
+							}
+						};
+						
+					// Stage 2) Scissoring:
+					} else if(Main.sex.getOngoingSexAreas(this, SexAreaPenetration.CLIT, Main.game.getNpc(Lyssieth.class)).contains(SexAreaPenetration.CLIT)) {
+						if(Main.sex.getSexPositionSlot(this)==SexSlotLyingDown.SCISSORING) {
+							sb.append(UtilText.parseFromXMLFile("characters/submission/lyssieth", "DEMON_TF_STAGE_2_SCISSOR_PC_TOP_END"));
+						} else {
+							sb.append(UtilText.parseFromXMLFile("characters/submission/lyssieth", "DEMON_TF_STAGE_2_SCISSOR_PC_BOTTOM_END"));
+						}
 						
 						return new SexActionOrgasmOverride(false) {
 							@Override
@@ -1667,7 +1751,7 @@ public class PlayerCharacter extends GameCharacter implements XMLSaving {
 			}
 		}
 
-		return super.getSexActionOrgasmOverride(sexAction, target, applyExtraEffects); // Normal scene
+		return super.getSexActionOrgasmOverride(sexAction, target, applyExtraEffects, description); // Normal scene
 	}
 	
 	/**
@@ -1708,7 +1792,38 @@ public class PlayerCharacter extends GameCharacter implements XMLSaving {
 	public boolean isDiscoveredWorldMap() {
 		return this.isQuestProgressGreaterThan(QuestLine.MAIN, Quest.MAIN_2_D_MEETING_A_LILIN);
 	}
-
+	
+	public void handleDemonicTransformationPerkEffects() {
+		if(Main.game.getPlayer().hasPerkAnywhereInTree(Perk.POWER_OF_LIRECEA_1)) {
+			Main.game.getPlayer().removeSpecialPerk(Perk.POWER_OF_LIRECEA_1);
+			Main.game.getPlayer().addSpecialPerk(Perk.POWER_OF_LIRECEA_1_DEMON);
+		}
+		if(Main.game.getPlayer().hasPerkAnywhereInTree(Perk.POWER_OF_LOVIENNE_2)) {
+			Main.game.getPlayer().removeSpecialPerk(Perk.POWER_OF_LOVIENNE_2);
+			Main.game.getPlayer().addSpecialPerk(Perk.POWER_OF_LOVIENNE_2_DEMON);
+		}
+		if(Main.game.getPlayer().hasPerkAnywhereInTree(Perk.POWER_OF_LASIELLE_3)) {
+			Main.game.getPlayer().removeSpecialPerk(Perk.POWER_OF_LASIELLE_3);
+			Main.game.getPlayer().addSpecialPerk(Perk.POWER_OF_LASIELLE_3_DEMON);
+		}
+		if(Main.game.getPlayer().hasPerkAnywhereInTree(Perk.POWER_OF_LYSSIETH_4)) {
+			Main.game.getPlayer().removeSpecialPerk(Perk.POWER_OF_LYSSIETH_4);
+			Main.game.getPlayer().addSpecialPerk(Perk.POWER_OF_LYSSIETH_4_DEMON);
+		}
+		if(Main.game.getPlayer().hasPerkAnywhereInTree(Perk.POWER_OF_LUNETTE_5)) {
+			Main.game.getPlayer().removeSpecialPerk(Perk.POWER_OF_LUNETTE_5);
+			Main.game.getPlayer().addSpecialPerk(Perk.POWER_OF_LUNETTE_5_DEMON);
+		}
+		if(Main.game.getPlayer().hasPerkAnywhereInTree(Perk.POWER_OF_LYXIAS_6)) {
+			Main.game.getPlayer().removeSpecialPerk(Perk.POWER_OF_LYXIAS_6);
+			Main.game.getPlayer().addSpecialPerk(Perk.POWER_OF_LYXIAS_6_DEMON);
+		}
+		if(Main.game.getPlayer().hasPerkAnywhereInTree(Perk.POWER_OF_LISOPHIA_7)) {
+			Main.game.getPlayer().removeSpecialPerk(Perk.POWER_OF_LISOPHIA_7);
+			Main.game.getPlayer().addSpecialPerk(Perk.POWER_OF_LISOPHIA_7_DEMON);
+		}
+	}
+	
 	protected String losingPureVirginity(GameCharacter characterPenetrating, SexAreaPenetration penetrationType) {
 		if(characterPenetrating.isPlayer()) {
 			return UtilText.parse(this,
@@ -1755,7 +1870,11 @@ public class PlayerCharacter extends GameCharacter implements XMLSaving {
 					+ "</p>"
 					+ "<p style='text-align:center;'>"
 						+ "[pc.thought(This is how I lose my virginity?!<br/>"
-								+ "To... <i>[npc.a_race]</i>?!<br/>"
+								+ "To...<i>"
+								+ (characterPenetrating.isSlave() && characterPenetrating.getOwner().isPlayer()
+										?" my own slave"
+										:" [npc.a_race]")
+								+ "</i>?!<br/>"
 								+ "This can't be happening!)]"
 					+ "</p>"
 					+ "<p>"
@@ -1900,7 +2019,7 @@ public class PlayerCharacter extends GameCharacter implements XMLSaving {
 		if(characterPenetrating.hasFetish(Fetish.FETISH_DEFLOWERING)) {
 			sb.append("<p style='text-align:center;'>"
 										+ "[style.italicsArcane(Due to [npc.namePos] deflowering fetish, [npc.she] [npc.verb(gain)])]"
-										+ " [style.italicsExperience("+Fetish.getExperienceGainFromTakingOtherVirginity(characterPenetrating)+")] [style.italicsArcane(experience!)]"
+										+ " [style.italicsExperience("+AbstractFetish.getExperienceGainFromTakingOtherVirginity(characterPenetrating)+")] [style.italicsArcane(experience!)]"
 								+ "</p>");
 		}
 		
@@ -2111,7 +2230,7 @@ public class PlayerCharacter extends GameCharacter implements XMLSaving {
 		if(characterPenetrating.hasFetish(Fetish.FETISH_DEFLOWERING)) {
 			sb.append("<p style='text-align:center;'>"
 						+ "[style.italicsArcane(Due to [npc.namePos] deflowering fetish, [npc.she] [npc.verb(gain)])]"
-						+ " [style.italicsExperience("+Fetish.getExperienceGainFromTakingOtherVirginity(characterPenetrating)+")] [style.italicsArcane(experience!)]"
+						+ " [style.italicsExperience("+AbstractFetish.getExperienceGainFromTakingOtherVirginity(characterPenetrating)+")] [style.italicsArcane(experience!)]"
 					+ "</p>");
 		}
 		
@@ -2131,7 +2250,7 @@ public class PlayerCharacter extends GameCharacter implements XMLSaving {
 				+(characterPenetrated.hasFetish(Fetish.FETISH_DEFLOWERING)
 						?"<p style='text-align:center;'>"
 							+ "[style.italicsArcane(Due to [npc.namePos] deflowering fetish, [npc.she] [npc.verb(gain)])]"
-								+ " [style.italicsExperience("+Fetish.getExperienceGainFromTakingOtherVirginity(characterPenetrated)+")] [style.italicsArcane(experience!)]"
+								+ " [style.italicsExperience("+AbstractFetish.getExperienceGainFromTakingOtherVirginity(characterPenetrated)+")] [style.italicsArcane(experience!)]"
 						+ "</p>"
 						:""));
 	}
@@ -2149,7 +2268,7 @@ public class PlayerCharacter extends GameCharacter implements XMLSaving {
 				+(characterPenetrating.hasFetish(Fetish.FETISH_DEFLOWERING)
 						?"<p style='text-align:center;'>"
 							+ "[style.italicsArcane(Due to [npc2.namePos] deflowering fetish, [npc2.she] [npc2.verb(gain)])]"
-								+ " [style.italicsExperience("+Fetish.getExperienceGainFromTakingOtherVirginity(characterPenetrating)+")] [style.italicsArcane(experience!)]"
+								+ " [style.italicsExperience("+AbstractFetish.getExperienceGainFromTakingOtherVirginity(characterPenetrating)+")] [style.italicsArcane(experience!)]"
 						+ "</p>"
 						:""));
 	}
@@ -2167,7 +2286,7 @@ public class PlayerCharacter extends GameCharacter implements XMLSaving {
 				+(characterPenetrating.hasFetish(Fetish.FETISH_DEFLOWERING)
 						?"<p style='text-align:center;'>"
 							+ "[style.italicsArcane(Due to [npc2.namePos] deflowering fetish, [npc2.she] [npc2.verb(gain)])]"
-								+ " [style.italicsExperience("+Fetish.getExperienceGainFromTakingOtherVirginity(characterPenetrating)+")] [style.italicsArcane(experience!)]"
+								+ " [style.italicsExperience("+AbstractFetish.getExperienceGainFromTakingOtherVirginity(characterPenetrating)+")] [style.italicsArcane(experience!)]"
 						+ "</p>"
 						:""));
 	}
@@ -2185,7 +2304,7 @@ public class PlayerCharacter extends GameCharacter implements XMLSaving {
 				+(characterPenetrating.hasFetish(Fetish.FETISH_DEFLOWERING)
 						?"<p style='text-align:center;'>"
 							+ "[style.italicsArcane(Due to [npc2.namePos] deflowering fetish, [npc2.she] [npc2.verb(gain)])]"
-								+ " [style.italicsExperience("+Fetish.getExperienceGainFromTakingOtherVirginity(characterPenetrating)+")] [style.italicsArcane(experience!)]"
+								+ " [style.italicsExperience("+AbstractFetish.getExperienceGainFromTakingOtherVirginity(characterPenetrating)+")] [style.italicsArcane(experience!)]"
 						+ "</p>"
 						:""));
 	}
@@ -2203,7 +2322,7 @@ public class PlayerCharacter extends GameCharacter implements XMLSaving {
 				+(characterPenetrating.hasFetish(Fetish.FETISH_DEFLOWERING)
 						?"<p style='text-align:center;'>"
 							+ "[style.italicsArcane(Due to [npc2.namePos] deflowering fetish, [npc2.she] [npc2.verb(gain)])]"
-								+ " [style.italicsExperience("+Fetish.getExperienceGainFromTakingOtherVirginity(characterPenetrating)+")] [style.italicsArcane(experience!)]"
+								+ " [style.italicsExperience("+AbstractFetish.getExperienceGainFromTakingOtherVirginity(characterPenetrating)+")] [style.italicsArcane(experience!)]"
 						+ "</p>"
 						:""));
 	}
@@ -2221,7 +2340,7 @@ public class PlayerCharacter extends GameCharacter implements XMLSaving {
 				+(characterPenetrating.hasFetish(Fetish.FETISH_DEFLOWERING)
 						?"<p style='text-align:center;'>"
 							+ "[style.italicsArcane(Due to [npc2.namePos] deflowering fetish, [npc2.she] [npc2.verb(gain)])]"
-								+ " [style.italicsExperience("+Fetish.getExperienceGainFromTakingOtherVirginity(characterPenetrating)+")] [style.italicsArcane(experience!)]"
+								+ " [style.italicsExperience("+AbstractFetish.getExperienceGainFromTakingOtherVirginity(characterPenetrating)+")] [style.italicsArcane(experience!)]"
 						+ "</p>"
 						:""));
 	}

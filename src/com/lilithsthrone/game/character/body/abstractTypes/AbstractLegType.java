@@ -31,6 +31,7 @@ import com.lilithsthrone.game.character.body.types.VaginaType;
 import com.lilithsthrone.game.character.body.valueEnums.BreastShape;
 import com.lilithsthrone.game.character.body.valueEnums.FootStructure;
 import com.lilithsthrone.game.character.body.valueEnums.GenitalArrangement;
+import com.lilithsthrone.game.character.body.valueEnums.Height;
 import com.lilithsthrone.game.character.body.valueEnums.LabiaSize;
 import com.lilithsthrone.game.character.body.valueEnums.LegConfiguration;
 import com.lilithsthrone.game.character.race.AbstractRace;
@@ -298,6 +299,7 @@ public abstract class AbstractLegType implements BodyPartTypeInterface {
 				case AVIAN:
 				case BIPEDAL:
 				case QUADRUPEDAL:
+				case WINGED_BIPED:
 					return "leg";
 				case CEPHALOPOD:
 					return "tentacle";
@@ -317,6 +319,7 @@ public abstract class AbstractLegType implements BodyPartTypeInterface {
 				case AVIAN:
 				case BIPEDAL:
 				case QUADRUPEDAL:
+				case WINGED_BIPED:
 					return "legs";
 				case CEPHALOPOD:
 					return "tentacles";
@@ -421,7 +424,7 @@ public abstract class AbstractLegType implements BodyPartTypeInterface {
 	 * Penis.class (type, size, cloaca)<br/>
 	 * Vagina.class (type, capacity, cloaca)<br/>
 	 * 
-	 * @param configuration The leg configuration to be applied.
+	 * @param legConfiguration The leg configuration to be applied.
 	 * @param character The character which is being transformed.
 	 * @param applyEffects Whether the transformative effects should be applied. Pass in false to get the transformation description without applying any of the actual effects.
 	 * @param applyFullEffects Pass in true if you want the additional transformations to include attribute changes (such as penis resizing, vagina capacity resetting, etc.).
@@ -430,16 +433,22 @@ public abstract class AbstractLegType implements BodyPartTypeInterface {
 	 */
 	public String applyLegConfigurationTransformation(GameCharacter character, LegConfiguration legConfiguration, boolean applyEffects, boolean applyFullEffects) {
 		StringBuilder feralStringBuilder = new StringBuilder();
+
+		if(character.isFeral()) {
+			return "<p style='text-align:center;'>"
+						+ UtilText.parse(character, "[style.italicsDisabled(Nothing happens, for as [npc.sheIsFull] a feral [npc.race], [npc.name] cannot have [npc.her] leg configuration transformed!)]")
+					+ "</p>";
+		}
 		
 		if(character.getLegConfiguration()==legConfiguration && character.getLegType().equals(this)) {
 			return "<p>"
-						+ "[style.italicsDisabled(Nothing happens, as [npc.name] already [npc.has] [npc.a_legRace]'s lower body in the '"+legConfiguration.getName()+"' configuration...)]"
+						+ UtilText.parse(character, "[style.italicsDisabled(Nothing happens, as [npc.name] already [npc.has] [npc.a_legRace]'s lower body in the '"+legConfiguration.getName()+"' configuration...)]")
 					+ "</p>";
 		}
 		
 		if(!character.getLegType().isLegConfigurationAvailable(legConfiguration)) {
 			return "<p>"
-					+ "[style.italicsDisabled(Nothing happens, as [npc.namePos] current lower body cannot be transformed into the '"+legConfiguration.getName()+"' configuration...)]"
+					+ UtilText.parse(character, "[style.italicsDisabled(Nothing happens, as [npc.namePos] current lower body cannot be transformed into the '"+legConfiguration.getName()+"' configuration...)]")
 				+ "</p>";
 		}
 		
@@ -506,7 +515,7 @@ public abstract class AbstractLegType implements BodyPartTypeInterface {
 			case BIPEDAL:
 				feral = false;
 				if(applyEffects) {
-					applyExtraLegConfigurationTransformations(body, body.getLeg().getLegConfiguration(), false, applyFullEffects); // revert feral parts based on current configuration
+					applyExtraLegConfigurationTransformations(body, body.getLeg().getLegConfiguration(), legConfiguration.isLargeGenitals(), applyFullEffects); // revert feral parts based on current configuration
 					// Changing back to bipedal reverts crotch-boobs based on preferences:
 					AbstractRacialBody startingBodyType = RacialBody.valueOfRace(this.getRace());
 					if(body.getRaceStage()!=RaceStage.GREATER || Main.getProperties().getUddersLevel()<2 || !body.getGender().isFeminine()) {
@@ -538,7 +547,7 @@ public abstract class AbstractLegType implements BodyPartTypeInterface {
 				break;
 			case ARACHNID:
 				if(applyEffects) {
-					applyExtraLegConfigurationTransformations(body, legConfiguration, true, applyFullEffects);
+					applyExtraLegConfigurationTransformations(body, legConfiguration, legConfiguration.isLargeGenitals(), applyFullEffects);
 					if(!legConfiguration.getAvailableGenitalConfigurations().contains(body.getGenitalArrangement())) {
 						body.setGenitalArrangement(legConfiguration.getAvailableGenitalConfigurations().get(0));
 					}
@@ -559,7 +568,7 @@ public abstract class AbstractLegType implements BodyPartTypeInterface {
 				break;
 			case AVIAN:
 				if(applyEffects) {
-					applyExtraLegConfigurationTransformations(body, legConfiguration, true, applyFullEffects);
+					applyExtraLegConfigurationTransformations(body, legConfiguration, legConfiguration.isLargeGenitals(), applyFullEffects);
 					if(!legConfiguration.getAvailableGenitalConfigurations().contains(body.getGenitalArrangement())) {
 						body.setGenitalArrangement(legConfiguration.getAvailableGenitalConfigurations().get(0));
 					}
@@ -578,7 +587,7 @@ public abstract class AbstractLegType implements BodyPartTypeInterface {
 				break;
 			case CEPHALOPOD:
 				if(applyEffects) {
-					applyExtraLegConfigurationTransformations(body, legConfiguration, false, applyFullEffects);
+					applyExtraLegConfigurationTransformations(body, legConfiguration, legConfiguration.isLargeGenitals(), applyFullEffects);
 					body.setGenitalArrangement(GenitalArrangement.CLOACA);
 				}
 				feralStringBuilder.append(
@@ -596,7 +605,7 @@ public abstract class AbstractLegType implements BodyPartTypeInterface {
 				break;
 			case TAIL:
 				if(applyEffects) {
-					applyExtraLegConfigurationTransformations(body, legConfiguration, false, applyFullEffects);
+					applyExtraLegConfigurationTransformations(body, legConfiguration, legConfiguration.isLargeGenitals(), applyFullEffects);
 					body.setGenitalArrangement(GenitalArrangement.CLOACA);
 				}
 				feralStringBuilder.append(
@@ -608,7 +617,7 @@ public abstract class AbstractLegType implements BodyPartTypeInterface {
 				break;
 			case TAIL_LONG:
 				if(applyEffects) {
-					applyExtraLegConfigurationTransformations(body, legConfiguration, false, applyFullEffects);
+					applyExtraLegConfigurationTransformations(body, legConfiguration, legConfiguration.isLargeGenitals(), applyFullEffects);
 					body.setGenitalArrangement(GenitalArrangement.CLOACA);
 				}
 				feralStringBuilder.append(
@@ -618,14 +627,30 @@ public abstract class AbstractLegType implements BodyPartTypeInterface {
 							+ "[npc.Name] now [npc.has] the [style.boldTfGeneric(huge tail)] of <b style='color:"+raceColorString+";'>"+feralRaceNameWithDeterminer+"</b>, which is covered in [npc.legFullDescription]."
 						+ "</p>");
 				break;
+			case WINGED_BIPED:
+				if(applyEffects) {
+					applyExtraLegConfigurationTransformations(body, legConfiguration, legConfiguration.isLargeGenitals(), applyFullEffects);
+					AbstractRacialBody startingBodyType = RacialBody.valueOfRace(this.getRace());
+					body.setGenitalArrangement(startingBodyType.getGenitalArrangement());
+				}
+
+				feralStringBuilder.append(
+						"<p>"
+							+ "[npc.NamePos] lower body transforms back into a bipedal configuration, with [npc.her] genitals shifting back to their normal position between [npc.her] [npc.legs]."
+							+ " Letting out a surprised cry, [npc.name] [npc.verb(bend)] down and [npc.verb(stoop)] over as [npc.her] spine rapidly reshapes itself."
+							+ " The transformation is over within a matter of moments, leaving [npc.name] to naturally use [npc.her] [npc.arms] in place of forelegs so as to support [npc.her] newly-shaped body.<br/>"
+							+ "[npc.Name] now [npc.has] [style.boldTfGeneric(bipedal)] <b style='color:"+raceColorString+";'>"+this.getTransformName()+" legs</b>, which are covered in [npc.legFullDescription],"
+									+ " and [style.boldTfGeneric([npc.verb(use)] [npc.her] [npc.arms] as forelegs)]."
+						+ "</p>");
+				break;
 			case QUADRUPEDAL:
 				feralStringBuilder.append(
 						"<p>"
 							+ "An extremely unsettling, tingling feeling starts to spread down into [npc.namePos] [npc.legs+],");
 				
 				if(applyEffects) {
-					applyExtraLegConfigurationTransformations(body, legConfiguration, true, applyFullEffects);
-					body.setGenitalArrangement(GenitalArrangement.NORMAL);
+					applyExtraLegConfigurationTransformations(body, legConfiguration, legConfiguration.isLargeGenitals(), applyFullEffects);
+					body.setGenitalArrangement(body.getLegType().getRace().getRacialBody().getGenitalArrangement());
 				}
 				
 				feralStringBuilder.append(
@@ -644,6 +669,29 @@ public abstract class AbstractLegType implements BodyPartTypeInterface {
 						+ "</p>");
 				break;
 		}
+
+		// Increase or decrease height based on configuration:
+		if(applyEffects) {
+			if(!body.getLegConfiguration().isTall() && legConfiguration.isTall()) {
+				int newHeight = (int) (body.getHeightValue()*1.33f);
+				if(body.isShortStature()) {
+					newHeight = Math.min(Height.getShortStatureCutOff()-1, newHeight);
+				}
+				body.setHeight(newHeight);
+				String colouredHeightValue = "<span style='color:"+body.getHeight().getColour().toWebHexString()+";'>[npc.heightValue]</span>";
+				feralStringBuilder.append("<p>The size of [npc.namePos] new lower body has resulted in [npc.herHim] getting taller, so now when standing at full height [npc.she] [npc.verb(measure)] "+colouredHeightValue+".</p>");
+				
+			} else if(body.getLegConfiguration().isTall() && !legConfiguration.isTall()) {
+				int newHeight = (int) (body.getHeightValue()/1.33f);
+				if(!body.isShortStature()) {
+					newHeight = Math.max(Height.getShortStatureCutOff(), newHeight);
+				}
+				body.setHeight(newHeight);
+				String colouredHeightValue = "<span style='color:"+body.getHeight().getColour().toWebHexString()+";'>[npc.heightValue]</span>";
+				feralStringBuilder.append("<p>The reduced size of [npc.namePos] new lower body has resulted in [npc.herHim] getting shorter, so now when standing at full height [npc.she] [npc.verb(measure)] "+colouredHeightValue+".</p>");
+			}
+		}
+		
 		
 		if(legConfiguration.isTailLostOnInitialTF()) {
 			if(body.getTail().getType()!=TailType.NONE) {
@@ -797,6 +845,7 @@ public abstract class AbstractLegType implements BodyPartTypeInterface {
 						?AssType.DEMON_COMMON
 						:startingBodyType.getAssType()));
 			} else {
+				boolean virgin = body.getAss().getAnus().getOrificeAnus().isVirgin();
 				body.setAss(
 						new Ass(
 							(demon
@@ -810,6 +859,7 @@ public abstract class AbstractLegType implements BodyPartTypeInterface {
 							startingBodyType.getAnusElasticity(),
 							startingBodyType.getAnusPlasticity(),
 							true));
+				body.getAss().getAnus().getOrificeAnus().setVirgin(virgin);
 			}
 		}
 		if(legConfiguration.getFeralParts().contains(BreastCrotch.class)) { // Crotch-boobs:

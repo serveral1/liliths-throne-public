@@ -15,7 +15,6 @@
 		<clothingSet>c4mg1rl_trickster</clothingSet>
 		<imageName>tunic.svg</imageName> 
 		<imageEquippedName/> 
-		<enchantmentLimit/>
 		<effects/>
 		
 		<blockedPartsList> 	
@@ -27,6 +26,7 @@
 					<bodyPart>NIPPLES</bodyPart>
 					<bodyPart>STOMACH</bodyPart>
 					<bodyPart>BACK</bodyPart>
+					<bodyPart>ARMPITS</bodyPart>
 				</blockedBodyParts>
 				<clothingAccessBlocked> 
 					<clothingAccess>WAIST</clothingAccess>
