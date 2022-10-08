@@ -4934,7 +4934,7 @@ public class CharacterModificationUtils {
 	
 	public static AssSize[] getAssSizesAvailable() {
 		if(BodyChanging.getTarget().hasPenis()) {
-			return new AssSize[] {AssSize.ZERO_FLAT, AssSize.ONE_TINY, AssSize.TWO_SMALL, AssSize.THREE_NORMAL, AssSize.FOUR_LARGE};
+			return new AssSize[] {AssSize.ZERO_FLAT, AssSize.ONE_TINY, AssSize.TWO_SMALL, AssSize.THREE_NORMAL, AssSize.FOUR_LARGE, AssSize.FIVE_HUGE};
 		} else {
 			return AssSize.values();
 		}
@@ -4979,7 +4979,7 @@ public class CharacterModificationUtils {
 	
 	public static HipSize[] getHipSizesAvailable() {
 		if(BodyChanging.getTarget().hasPenis()) {
-			return new HipSize[] {HipSize.ZERO_NO_HIPS, HipSize.ONE_VERY_NARROW, HipSize.TWO_NARROW, HipSize.THREE_GIRLY};
+			return new HipSize[] {HipSize.ZERO_NO_HIPS, HipSize.ONE_VERY_NARROW, HipSize.TWO_NARROW, HipSize.THREE_GIRLY, HipSize.FOUR_WOMANLY};
 		} else {
 			return HipSize.values();
 		}

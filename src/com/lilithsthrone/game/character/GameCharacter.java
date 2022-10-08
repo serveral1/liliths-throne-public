@@ -4285,16 +4285,16 @@ public abstract class GameCharacter implements XMLSaving {
 
 	public void setBirthday(LocalDateTime birthday) {
 		this.birthday = birthday;
-		
-		if(this.isPlayer()) {
-			long age = ChronoUnit.YEARS.between(birthday, Main.game.getDateNow());
-			if(age<MINIMUM_AGE) {
-				this.birthday = (this.getBirthday().minusYears(MINIMUM_AGE-age));
+			
+			if(this.isPlayer()) {
+				long age = ChronoUnit.YEARS.between(birthday, Main.game.getDateNow());
+				if(age<MINIMUM_AGE) {
+					this.birthday = (this.getBirthday().minusYears(MINIMUM_AGE-age));
 				
-			} else if(age>50) {
-				this.birthday = (this.getBirthday().plusYears(age-50));
+				} else if(age>50) {
+					this.birthday = (this.getBirthday().plusYears(age-50));
+				}
 			}
-		}
 	}
 
 	public AgeCategory getAppearsAsAge() {
@@ -4313,11 +4313,11 @@ public abstract class GameCharacter implements XMLSaving {
 		int age = Math.max(0, (int) ChronoUnit.YEARS.between(getBirthday(), Main.game.getDateNow()));
 		if(this.isPlayer()) {
 			return Math.max(MINIMUM_AGE, age);
-		} else { // All non-player characters start as 18.
+		} else if (age<MINIMUM_AGE) { // All non-player characters start as 18.
 			return MINIMUM_AGE + age;
-		}
-		
-		return Math.max(MINIMUM_AGE, age);
+		} else {
+			return age;
+		}				
 	}
 	
 	public int getAgeAppearanceDifference() {

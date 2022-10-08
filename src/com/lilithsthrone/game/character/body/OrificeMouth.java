@@ -155,7 +155,7 @@ public class OrificeMouth implements OrificeInterface {
 		if(Main.game.isElasticityAffectDepthEnabled() && OrificeElasticity.getElasticityFromInt(elasticity).isExtendingUncomfortableDepth()) {
 			return (int) (getMaximumPenetrationDepthComfortable(owner, depth) * (float)elasticity/1.5f); //old values was 1.5
 		} else {
-			return getMaximumPenetrationDepthComfortable(owner, depth) * 1.25; //old value was 2
+			return (int) (getMaximumPenetrationDepthComfortable(owner, depth) * 1.25f); //old value was 2
 		}
 	}
 	

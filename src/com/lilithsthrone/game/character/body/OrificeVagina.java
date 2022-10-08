@@ -185,15 +185,15 @@ public class OrificeVagina implements OrificeInterface {
 	
 	@Override
 	public int getMaximumPenetrationDepthComfortable(GameCharacter owner, OrificeDepth depth) { // 0.08 might be a little more realistic, but give it a little extra so that it's not annoying for people with large cocks
-		return (int) (owner.getHeightValue() * 0.125f * depth.getDepthPercentage());
+		return (int) (owner.getHeightValue() * 0.15f * depth.getDepthPercentage());
 	}
 	
 	@Override
 	public int getMaximumPenetrationDepthUncomfortable(GameCharacter owner, OrificeDepth depth) {
 		if(Main.game.isElasticityAffectDepthEnabled() && OrificeElasticity.getElasticityFromInt(elasticity).isExtendingUncomfortableDepth()) {
-			return (int) (getMaximumPenetrationDepthComfortable(owner, depth) * (float)elasticity/1.25f);  // old value was 1.8
+			return (int) (getMaximumPenetrationDepthComfortable(owner, depth) * (float)elasticity/1.30f);  // old value was 1.8
 		} else {
-			return (int) (getMaximumPenetrationDepthComfortable(owner, depth) * 1.15f); //old value was 1.5, previous ancient outdated fork values was this
+			return (int) (getMaximumPenetrationDepthComfortable(owner, depth) * 1.25f); //old value was 1.5, previous ancient outdated fork values was this
 		}
 	}
 
