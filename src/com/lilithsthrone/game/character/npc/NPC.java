@@ -1316,7 +1316,7 @@ public abstract class NPC extends GameCharacter implements XMLSaving {
 				this.setPenisSize((int) (racialBody.getPenisSize()*(largeGenitals?2.5f:1)));
 				this.setPenisGirth(racialBody.getPenisGirth()+(largeGenitals?1:0));
 				this.setPenisCumStorage(racialBody.getCumProduction()*(largeGenitals?10:1));
-				this.setTesticleSize(racialBody.getTesticleSize()+(largeGenitals?1:0));
+				this.setTesticleSize(racialBody.getTesticleSize()+(largeGenitals?2:0));
 				this.setTesticleCount(racialBody.getTesticleQuantity());
 			} else {
 				this.setPenisType(PenisType.NONE);

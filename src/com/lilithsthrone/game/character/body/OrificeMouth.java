@@ -147,15 +147,15 @@ public class OrificeMouth implements OrificeInterface {
 	
 	@Override
 	public int getMaximumPenetrationDepthComfortable(GameCharacter owner, OrificeDepth depth) {
-		return (int) (owner.getHeightValue() * 0.1f * depth.getDepthPercentage());
+		return (int) (owner.getHeightValue() * 0.15f * depth.getDepthPercentage());
 	}
 	
 	@Override
 	public int getMaximumPenetrationDepthUncomfortable(GameCharacter owner, OrificeDepth depth) {
 		if(Main.game.isElasticityAffectDepthEnabled() && OrificeElasticity.getElasticityFromInt(elasticity).isExtendingUncomfortableDepth()) {
-			return (int) (getMaximumPenetrationDepthComfortable(owner, depth) * (float)elasticity/1.5f); //old values was 1.5
+			return (int) (getMaximumPenetrationDepthComfortable(owner, depth) * (float)elasticity/1.6); //old values was 1.5
 		} else {
-			return (int) (getMaximumPenetrationDepthComfortable(owner, depth) * 1.25f); //old value was 2
+			return (int) (getMaximumPenetrationDepthComfortable(owner, depth) * 1.3f); //old value was 2
 		}
 	}
 	

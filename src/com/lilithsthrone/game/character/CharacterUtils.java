@@ -1937,7 +1937,6 @@ public class CharacterUtils {
 		}
 		int assHipVariation = - 1 + Util.random.nextInt(3); // -1 to 1
 		character.setAssSize(character.getAssSize().getValue() + assHipVariation);
-		character.setHipSize(character.getHipSize().getValue() - assHipVariation);
 		
 		// Body (height):
 		int height = character.getHeightValue()-15 + Util.random.nextInt(30) +1;
