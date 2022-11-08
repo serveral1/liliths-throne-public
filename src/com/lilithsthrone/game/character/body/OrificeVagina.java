@@ -174,7 +174,7 @@ public class OrificeVagina implements OrificeInterface {
 	@Override
 	public OrificeDepth getMinimumDepthForSizeUncomfortable(GameCharacter owner, int insertionSize) {
 		OrificeDepth depth = OrificeDepth.ONE_SHALLOW;
-		while((int) ((owner.getHeightValue() * 0.125f * depth.getDepthPercentage())*1.15f)<insertionSize) {
+		while((int) ((owner.getHeightValue() * 0.125f * depth.getDepthPercentage())*1.25f)<insertionSize) {
 			if(depth == OrificeDepth.SEVEN_FATHOMLESS) {
 				return depth;
 			}
@@ -185,7 +185,7 @@ public class OrificeVagina implements OrificeInterface {
 	
 	@Override
 	public int getMaximumPenetrationDepthComfortable(GameCharacter owner, OrificeDepth depth) { // 0.08 might be a little more realistic, but give it a little extra so that it's not annoying for people with large cocks
-		return (int) (owner.getHeightValue() * 0.15f * depth.getDepthPercentage());
+		return (int) (owner.getHeightValue() * 0.125f * depth.getDepthPercentage());
 	}
 	
 	@Override
@@ -193,7 +193,7 @@ public class OrificeVagina implements OrificeInterface {
 		if(Main.game.isElasticityAffectDepthEnabled() && OrificeElasticity.getElasticityFromInt(elasticity).isExtendingUncomfortableDepth()) {
 			return (int) (getMaximumPenetrationDepthComfortable(owner, depth) * (float)elasticity/1.5f);  // old value was 1.8
 		} else {
-			return (int) (getMaximumPenetrationDepthComfortable(owner, depth) * 1.3f); //old value was 1.5, previous ancient outdated fork values was this
+			return (int) (getMaximumPenetrationDepthComfortable(owner, depth) * 1.25f); //old value was 1.5, previous ancient outdated fork values was this
 		}
 	}
 
