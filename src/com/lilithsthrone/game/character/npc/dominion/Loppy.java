@@ -78,7 +78,7 @@ public class Loppy extends NPC {
 				"Loppy is one of the two prostitutes Angel has working for her."
 						+ " Just like her younger sister, Bunny, Loppy is a rabbit-morph, and seems to genuinely love her line of work.",
 				22, Month.JANUARY, 7,
-				10, Gender.F_P_V_B_FUTANARI, Subspecies.RABBIT_MORPH_LOP, RaceStage.PARTIAL,
+				10, Gender.F_P_B_SHEMALE, Subspecies.RABBIT_MORPH_LOP, RaceStage.PARTIAL,
 				new CharacterInventory(30), WorldType.ANGELS_KISS_FIRST_FLOOR, PlaceType.ANGELS_KISS_BEDROOM_LOPPY, true);
 	}
 
@@ -210,14 +210,14 @@ public class Loppy extends NPC {
 		this.setPenisVirgin(false);
 
 		// Vagina:
-		this.setVaginaVirgin(false);
-		this.setVaginaClitorisSize(ClitorisSize.ZERO_AVERAGE);
-		this.setVaginaLabiaSize(LabiaSize.TWO_AVERAGE);
-		this.setVaginaSquirter(false);
-		this.setVaginaCapacity(Capacity.THREE_SLIGHTLY_LOOSE, true);
-		this.setVaginaWetness(Wetness.THREE_WET);
-		this.setVaginaElasticity(OrificeElasticity.FIVE_STRETCHY.getValue());
-		this.setVaginaPlasticity(OrificePlasticity.THREE_RESILIENT.getValue());
+		// this.setVaginaVirgin(false);
+		// this.setVaginaClitorisSize(ClitorisSize.ZERO_AVERAGE);
+		// this.setVaginaLabiaSize(LabiaSize.TWO_AVERAGE);
+		// this.setVaginaSquirter(false);
+		// this.setVaginaCapacity(Capacity.THREE_SLIGHTLY_LOOSE, true);
+		// this.setVaginaWetness(Wetness.THREE_WET);
+		// this.setVaginaElasticity(OrificeElasticity.FIVE_STRETCHY.getValue());
+		// this.setVaginaPlasticity(OrificePlasticity.THREE_RESILIENT.getValue());
 		
 		// Feet:
 		// Foot shape

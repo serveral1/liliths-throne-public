@@ -70,7 +70,7 @@ public class Cultist extends NPC {
 				"",
 				Util.random.nextInt(30)+30, Util.randomItemFrom(Month.values()), 1+Util.random.nextInt(25),
 				15,
-				Gender.F_P_V_B_FUTANARI,
+				Gender.F_P_B_SHEMALE,
 				Subspecies.DEMON,
 				RaceStage.GREATER,
 				new CharacterInventory(10),
@@ -101,7 +101,6 @@ public class Cultist extends NPC {
 			
 			this.setAgeAppearanceDifferenceToAppearAsAge(18+Util.random.nextInt(10));
 			
-			this.setVaginaVirgin(false);
 			this.setAssVirgin(false);
 			this.setFaceVirgin(false);
 			this.setNippleVirgin(false);
@@ -345,7 +344,7 @@ public class Cultist extends NPC {
 				+UtilText.parse(this,
 					UtilText.returnStringAtRandom(
 							"[npc.Name] puts on a smouldering look, and as her eyes meet yours, you hear an extremely lewd moan echoing around in your head, [npc.thought(~Aaah!~ You're making me so wet!)]",
-							"[npc.Name] locks her big, innocent-looking eyes with yours, and as she pouts, you hear an echoing moan deep within your mind, [npc.thought(~Mmm!~ Fuck me! ~Aaa!~ My pussy's wet and ready for you!)]",
+							"[npc.Name] locks her big, innocent-looking eyes with yours, and as she pouts, you hear an echoing moan deep within your mind, [npc.thought(~Mmm!~ Fuck me! ~Aaa!~ My ass's twitching and ready for you!)]",
 							"[npc.Name] pouts innocently at you, before blowing you a wet kiss. As she straightens back up, you feel a ghostly pair of wet lips press against your cheek."))
 				+"</p>";
 	}

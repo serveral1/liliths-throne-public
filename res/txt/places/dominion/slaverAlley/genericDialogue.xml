@@ -1032,7 +1032,7 @@
 		Nobody else in the crowd offers another bid, leaving the auctioneer to call out, [maleNPC.speech(Going once... Going twice... Sold! To the [pc.race] at the back!)]
 	</p>
 	<p>
-		Walking towards the stage, you pay the auctioneer's assistant the amount that you bid, totalling [#SPECIAL_PARSE_2]. She informs you that your new slave will be ready for collection from the Slavery Administration building, before handing over the paperwork which proves your ownership of [npc.name].
+		Walking towards the stage, you pay the auctioneer's assistant the amount that you bid, totaling [#SPECIAL_PARSE_2]. She informs you that your new slave will be ready for collection from the Slavery Administration building, before handing over the paperwork which proves your ownership of [npc.name].
 	</p>
 	]]>
 	</htmlContent>

@@ -258,7 +258,7 @@
 	<penisType>dsg_raccoon_penis</penisType>
 	
 	<!-- Values from 0 to 100, measured in cm (don't use -1). Values: https://github.com/Innoxia/liliths-throne-public/blob/dev/src/com/lilithsthrone/game/character/body/valueEnums/PenisLength.java -->
-	<penisLength>16</penisLength>
+	<penisLength>18</penisLength>
 	<!-- Values from 0 to 6. Values: https://github.com/Innoxia/liliths-throne-public/blob/dev/src/com/lilithsthrone/game/character/body/valueEnums/PenetrationGirth.java -->
 	<penisGirth>3</penisGirth>
 	<!-- Values from 0 to 7. Values: https://github.com/Innoxia/liliths-throne-public/blob/dev/src/com/lilithsthrone/game/character/body/valueEnums/TesticleSize.java -->

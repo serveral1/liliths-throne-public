@@ -244,25 +244,25 @@ public class PregnancyRoulette {
 					
 				} else if(index==3) {
 					if(Main.game.getPlayer().isPregnant()) {
-						return new Response("Futa Bred ("+UtilText.formatAsMoneyUncoloured(10000, "span")+")", "You are already pregnant, so you can't sign up to be the mother!", null);
+						return new Response("Shemale Bred ("+UtilText.formatAsMoneyUncoloured(10000, "span")+")", "You are already pregnant, so you can't sign up to be the mother!", null);
 						
 					} else if(Main.game.getPlayer().hasIncubationLitter(SexAreaOrifice.VAGINA)) {
-						return new Response("Futa Bred ("+UtilText.formatAsMoneyUncoloured(10000, "span")+")", "Your womb is full of eggs, so you can't sign up to be the mother!", null);
+						return new Response("Shemale Bred ("+UtilText.formatAsMoneyUncoloured(10000, "span")+")", "Your womb is full of eggs, so you can't sign up to be the mother!", null);
 						
 					} else if(Main.game.getPlayer().getTotalFluidInArea(SexAreaOrifice.VAGINA)>0) {
-						return new Response("Futa Bred ("+UtilText.formatAsMoneyUncoloured(10000, "span")+")", "You can't sign up for pregnancy roulette if your pussy already is full of cum!", null);
+						return new Response("Shemale Bred ("+UtilText.formatAsMoneyUncoloured(10000, "span")+")", "You can't sign up for pregnancy roulette if your pussy already is full of cum!", null);
 						
 					} else if(!Main.game.getPlayer().hasVagina()) {
-						return new Response("Futa Bred ("+UtilText.formatAsMoneyUncoloured(10000, "span")+")", "You don't have a vagina, so you can't sign up to be the mother!", null);
+						return new Response("Shemale Bred ("+UtilText.formatAsMoneyUncoloured(10000, "span")+")", "You don't have a vagina, so you can't sign up to be the mother!", null);
 						
 					} else if(!Main.game.getPlayer().isAbleToAccessCoverableArea(CoverableArea.VAGINA, true)) {
-						return new Response("Futa Bred ("+UtilText.formatAsMoneyUncoloured(10000, "span")+")", "You aren't able to gain access to your vagina, so you can't sign up to be the mother!", null);
+						return new Response("Shemale Bred ("+UtilText.formatAsMoneyUncoloured(10000, "span")+")", "You aren't able to gain access to your vagina, so you can't sign up to be the mother!", null);
 						
 					} else if(Main.game.getPlayer().getMoney()<10000) {
-						return new Response("Futa Bred ("+UtilText.formatAsMoneyUncoloured(10000, "span")+")", "You don't have enough money, so you can't sign up to be the mother!", null);
+						return new Response("Shemale Bred ("+UtilText.formatAsMoneyUncoloured(10000, "span")+")", "You don't have enough money, so you can't sign up to be the mother!", null);
 						
 					} else {
-						return new Response("Futa Bred ("+UtilText.formatAsMoney(10000, "span")+")", "Sign up as the mother for pregnancy roulette, asking to bred by the futas.", PREGNANCY_ROULETTE_MOTHER_PRE_SELECTION) {
+						return new Response("Shemale Bred ("+UtilText.formatAsMoney(10000, "span")+")", "Sign up as the mother for pregnancy roulette, asking to bred by the shemales.", PREGNANCY_ROULETTE_MOTHER_PRE_SELECTION) {
 							@Override
 							public Colour getHighlightColour() {
 								return PresetColour.GENERIC_SEX;
@@ -280,7 +280,7 @@ public class PregnancyRoulette {
 								selectedBreeder=null;
 								
 								for(int i=0; i<6; i++) {
-									GenericSexualPartner partner = new GenericSexualPartner(Gender.F_P_V_B_FUTANARI, Main.game.getPlayer().getWorldLocation(), Main.game.getPlayer().getLocation(), false);
+									GenericSexualPartner partner = new GenericSexualPartner(Gender.F_P_B_SHEMALE, Main.game.getPlayer().getWorldLocation(), Main.game.getPlayer().getLocation(), false);
 									initBreeder(partner);
 									breeders.add(partner);
 								}
@@ -331,7 +331,7 @@ public class PregnancyRoulette {
 									Main.game.getPlayer().setLocation(WorldType.GAMBLING_DEN, PlaceType.GAMBLING_DEN_FUTA_PREGNANCY);
 									Main.game.getNpc(Epona.class).setLocation(WorldType.GAMBLING_DEN, PlaceType.GAMBLING_DEN_FUTA_PREGNANCY);
 									for(int i=0; i<5; i++) {
-										GenericSexualPartner partner = new GenericSexualPartner(Gender.F_P_V_B_FUTANARI, Main.game.getPlayer().getWorldLocation(), Main.game.getPlayer().getLocation(), false);
+										GenericSexualPartner partner = new GenericSexualPartner(Gender.F_P_B_SHEMALE, Main.game.getPlayer().getWorldLocation(), Main.game.getPlayer().getLocation(), false);
 										initBreeder(partner);
 										breeders.add(partner);
 									}

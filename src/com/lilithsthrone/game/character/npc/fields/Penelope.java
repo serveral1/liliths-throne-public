@@ -162,7 +162,7 @@ public class Penelope extends NPC {
 		this.setHairCovering(new Covering(BodyCoveringType.BODY_HAIR_CANINE_FUR, PresetColour.COVERING_BLACK), false);
 		this.setUnderarmHair(BodyHair.ZERO_NONE);
 		this.setAssHair(BodyHair.ZERO_NONE);
-		this.setPubicHair(BodyHair.ZERO_NONE);
+		this.setPubicHair(BodyHair.TWO_MANICURED);
 		this.setFacialHair(BodyHair.ZERO_NONE);
 
 		this.setHandNailPolish(new Covering(BodyCoveringType.MAKEUP_NAIL_POLISH_HANDS, PresetColour.COVERING_RED_DARK));
@@ -203,10 +203,9 @@ public class Penelope extends NPC {
 		// Penis:
 		this.setPenisVirgin(false);
 		this.setPenisGirth(PenetrationGirth.THREE_AVERAGE);
-		this.setPenisSize(16);
-		this.setTesticleSize(TesticleSize.TWO_AVERAGE);
-		this.setInternalTesticles(true);
-		this.setPenisCumStorage(50);
+		this.setPenisSize(20);
+		this.setTesticleSize(TesticleSize.THREE_LARGE);
+		this.setPenisCumStorage(100);
 		this.setPenisCumExpulsion(75);
 		this.fillCumToMaxStorage();
 		this.setTesticleCount(2);

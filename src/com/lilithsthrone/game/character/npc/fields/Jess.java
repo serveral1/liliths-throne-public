@@ -272,10 +272,10 @@ public class Jess extends NPC {
 					// 50% chance to entertain someone in her room
 					this.setLocation(WorldType.getWorldTypeFromId("innoxia_fields_elis_tavern_f1"), PlaceType.getPlaceTypeFromId("innoxia_fields_elis_tavern_f1_room_sex"), true);
 					Map<Gender, Integer> genders = Util.newHashMapOfValues(
-							new Value<>(Gender.F_V_B_FEMALE, 40),
-							new Value<>(Gender.F_P_B_SHEMALE, 5),
+							new Value<>(Gender.F_V_B_FEMALE, 5),
+							new Value<>(Gender.F_P_B_SHEMALE, 60),
 							new Value<>(Gender.F_P_V_B_FUTANARI, 5),
-							new Value<>(Gender.M_P_MALE, 50));
+							new Value<>(Gender.M_P_MALE, 30));
 					GenericSexualPartner partner = new GenericSexualPartner(Util.getRandomObjectFromWeightedMap(genders),
 							WorldType.getWorldTypeFromId("innoxia_fields_elis_tavern_f1"),
 							PlaceType.getPlaceTypeFromId("innoxia_fields_elis_tavern_f1_room_sex"),

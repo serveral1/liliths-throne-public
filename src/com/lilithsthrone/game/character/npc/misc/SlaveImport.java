@@ -86,21 +86,25 @@ public class SlaveImport extends NPC {
 			
 			
 			this.clearAffectionMap();
-			this.setObedience((float) Math.round((-25+(Math.random()*50))));
-			
+			this.setObedience((float) Math.round((-50+(Math.random()*50))));
+			this.setAffection(Main.game.getPlayer(), Math.round((-50+(Math.random()*50))));
 			this.getSlavesOwned().clear();
 			
-			this.setPlayerKnowsName(true);
-			
-			this.setHistory(Occupation.NPC_SLAVE);
+			this.setPlayerKnowsName(true);			
 //		}
 	}
-	
+
 	@Override
 	public String getDescription() {
-		return UtilText.parse(this, "As a slave, [npc.name] is no more than someone's property. The first time you saw [npc.herHim], [npc.she] was being sold in Slaver Alley.");
+		if(this.getHistory()==Occupation.NPC_PROSTITUTE) {
+			return (UtilText.parse(this, "[npc.NamePos] days of whoring [npc.herself] out are now over. Having run afoul of the law, [npc.sheIs] now a slave, and is no more than [npc.her] owner's property."));			
+		} else if(this.getHistory()==Occupation.NPC_MUGGER) {
+			return (UtilText.parse(this, "[npc.NamePos] days of mugging innocent travellers are now over. Having run afoul of the law, [npc.sheIs] now a slave, and is no more than [npc.her] owner's property."));
+		} else {
+			return (UtilText.parse(this, "For one reason or another, [npc.sheIs] now a slave, and is no more than [npc.her] owner's property."));
+		}
 	}
-	
+
 	@Override
 	public boolean isAbleToBeImpregnated() {
 		return true;

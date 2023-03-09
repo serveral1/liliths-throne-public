@@ -147,7 +147,7 @@ public class ZaranixMaidKelly extends NPC {
 		// Body:
 		// Add full body reset as this method is called after leaving Zaranix's house:
 		this.setAgeAppearanceDifferenceToAppearAsAge(18);
-		this.setBody(Gender.F_P_V_B_FUTANARI, Subspecies.DEMON, RaceStage.GREATER, false);
+		this.setBody(Gender.F_P_B_SHEMALE, Subspecies.DEMON, RaceStage.GREATER, false);
 		this.setTailType(TailType.DEMON_COMMON);
 		this.setWingType(WingType.NONE);
 		this.setLegType(LegType.DEMON_COMMON);
@@ -216,14 +216,14 @@ public class ZaranixMaidKelly extends NPC {
 		this.setTesticleCount(2);
 		
 		// Vagina:
-		this.setVaginaVirgin(false);
-		this.setVaginaClitorisSize(ClitorisSize.ZERO_AVERAGE);
-		this.setVaginaLabiaSize(LabiaSize.TWO_AVERAGE);
-		this.setVaginaSquirter(true);
-		this.setVaginaCapacity(Capacity.TWO_TIGHT, true);
-		this.setVaginaWetness(Wetness.FOUR_SLIMY);
-		this.setVaginaElasticity(OrificeElasticity.SEVEN_ELASTIC.getValue());
-		this.setVaginaPlasticity(OrificePlasticity.ONE_SPRINGY.getValue());
+		// this.setVaginaVirgin(false);
+		// this.setVaginaClitorisSize(ClitorisSize.ZERO_AVERAGE);
+		// this.setVaginaLabiaSize(LabiaSize.TWO_AVERAGE);
+		// this.setVaginaSquirter(true);
+		// this.setVaginaCapacity(Capacity.TWO_TIGHT, true);
+		// this.setVaginaWetness(Wetness.FOUR_SLIMY);
+		// this.setVaginaElasticity(OrificeElasticity.SEVEN_ELASTIC.getValue());
+		// this.setVaginaPlasticity(OrificePlasticity.ONE_SPRINGY.getValue());
 		
 		// Feet:
 		// Foot shape
@@ -329,7 +329,7 @@ public class ZaranixMaidKelly extends NPC {
 		return "<p>"
 				+ UtilText.returnStringAtRandom(
 						"Kelly pulls the bottom of her maid's dress up a little, moaning, [kelly.speech(If you beat me, there'd be nothing stopping you from ravishing me!)]",
-						"With a lewd moan, Kelly snakes a hand under her dress, moaning [kelly.speech(~Ah!~ You're so powerful! I'm getting wet already!)]",
+						"With a lewd moan, Kelly snakes a hand under her dress, moaning [kelly.speech(~Ah!~ You're so powerful! I'm getting hard already!)]",
 						"Biting her lip, Kelly looks up into your eyes, and you hear a lewd moan echoing around inside of your head, [kelly.speech(I hope you beat me! Show me no mercy!)]",
 						"With an incredibly lewd moan, Kelly runs her hands up the length of her body to cup her [kelly.cupSize]-cup breasts, [kelly.speech(~Mmm!~ If I fail, there'd be nothing stopping you from fucking me!)]",
 						"Kelly makes a show of staggering back, before desperately pressing her hands down between her legs, [kelly.speech(~Aah!~ I can just imagine all the lewd things you'd do to me if I fall here!)]",
@@ -443,7 +443,7 @@ public class ZaranixMaidKelly extends NPC {
 							+ " [kelly.speech(~Ah!~ That was good...)]"
 						+ "</p>"
 						+ "<p>"
-							+ "Despite the fact that you only just brought her to an orgasm, her hands slip down between her legs, and, with an exceptionally lewd moan, she starts fingering herself."
+							+ "Despite the fact that you only just brought her to an orgasm, her hands slip down between her legs, and, with an exceptionally lewd moan, she starts jerking herself off."
 							+ " It's quite clear from her actions that she's still overwhelmed by the arousing power of your aura, so it would be safe to leave her behind and continue in your exploration of Zaranix's home."
 						+ "</p>");
 				
@@ -454,7 +454,7 @@ public class ZaranixMaidKelly extends NPC {
 							+ " [kelly.speech(~Ah!~ I need more!)]"
 						+ "</p>"
 						+ "<p>"
-							+ "Her hands instantly slip down between her legs, and, with an exceptionally lewd moan, she starts fingering herself."
+							+ "Her hands instantly slip down between her legs, and, with an exceptionally lewd moan, she starts jerking herself off."
 							+ " It's quite clear from her actions that she's still overwhelmed by the arousing power of your aura, so it would be safe to leave her behind and continue in your exploration of Zaranix's home."
 						+ "</p>");
 			}

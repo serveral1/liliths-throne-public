@@ -1080,7 +1080,9 @@ public class OccupancyUtil implements XMLSaving {
 					AbstractSubspecies partnerHalfDemonSubspecies = null;
 					
 					if(usingRealPartner) {
-						if(Math.random()<0.25f) {
+						if(Math.random()<0.50f) {
+							partner = new GenericSexualPartner(Gender.F_P_B_SHEMALE, slave.getWorldLocation(), slave.getLocation(), false);
+						} else if(Math.random()>0.95f) {
 							partner = new GenericSexualPartner(Gender.F_P_V_B_FUTANARI, slave.getWorldLocation(), slave.getLocation(), false);
 						} else {
 							partner = new GenericSexualPartner(Gender.M_P_MALE, slave.getWorldLocation(), slave.getLocation(), false);

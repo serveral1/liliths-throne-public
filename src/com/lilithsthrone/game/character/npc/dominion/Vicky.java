@@ -35,6 +35,7 @@ import com.lilithsthrone.game.character.body.valueEnums.LabiaSize;
 import com.lilithsthrone.game.character.body.valueEnums.LipSize;
 import com.lilithsthrone.game.character.body.valueEnums.Muscle;
 import com.lilithsthrone.game.character.body.valueEnums.NippleSize;
+import com.lilithsthrone.game.character.body.valueEnums.PenetrationGirth;
 import com.lilithsthrone.game.character.body.valueEnums.OrificeElasticity;
 import com.lilithsthrone.game.character.body.valueEnums.OrificePlasticity;
 import com.lilithsthrone.game.character.body.valueEnums.TesticleSize;
@@ -181,7 +182,7 @@ public class Vicky extends NPC {
 		super(isImported, new NameTriplet("Vicky"), "Haugen",
 				"Vicky is the owner of the shop 'Arcane Arts'. Her manner of staring at anyone who enters her shop is quite unsettling, and you feel as though she's ready to pounce on you at any moment...",
 				37, Month.MAY, 26,
-				10, Gender.F_P_V_B_FUTANARI,
+				10, Gender.F_P_B_SHEMALE,
 				Subspecies.WOLF_MORPH, RaceStage.GREATER, new CharacterInventory(10), WorldType.SHOPPING_ARCADE, PlaceType.SHOPPING_ARCADE_VICKYS_SHOP, true);
 
 		weaponsForSale = new HashMap<>();
@@ -384,8 +385,8 @@ public class Vicky extends NPC {
 		this.setHairStyle(HairStyle.LOOSE);
 		
 		this.setHairCovering(new Covering(BodyCoveringType.BODY_HAIR_LYCAN_FUR, CoveringPattern.NONE, PresetColour.COVERING_BLACK, false, PresetColour.COVERING_BLACK, false), false);
-		this.setUnderarmHair(BodyHair.ZERO_NONE);
-		this.setAssHair(BodyHair.ZERO_NONE);
+		this.setUnderarmHair(BodyHair.THREE_TRIMMED);
+		this.setAssHair(BodyHair.THREE_TRIMMED);
 		this.setPubicHair(BodyHair.FOUR_NATURAL);
 		this.setFacialHair(BodyHair.ZERO_NONE);
 
@@ -421,20 +422,21 @@ public class Vicky extends NPC {
 		
 		// Penis:
 		this.setPenisVirgin(false);
-		this.setPenisSize(22);
+		this.setPenisGirth(PenetrationGirth.FOUR_GIRTHY);
+		this.setPenisSize(27);
 		this.setTesticleSize(TesticleSize.THREE_LARGE);
 		this.setPenisCumStorage(150);
 		this.fillCumToMaxStorage();
 		
 		// Vagina:
-		this.setVaginaVirgin(false);
-		this.setVaginaClitorisSize(ClitorisSize.ZERO_AVERAGE);
-		this.setVaginaLabiaSize(LabiaSize.THREE_LARGE);
-		this.setVaginaSquirter(true);
-		this.setVaginaCapacity(Capacity.FIVE_ROOMY, true);
-		this.setVaginaWetness(Wetness.THREE_WET);
-		this.setVaginaElasticity(OrificeElasticity.THREE_FLEXIBLE.getValue());
-		this.setVaginaPlasticity(OrificePlasticity.THREE_RESILIENT.getValue());
+		// this.setVaginaVirgin(false);
+		// this.setVaginaClitorisSize(ClitorisSize.ZERO_AVERAGE);
+		// this.setVaginaLabiaSize(LabiaSize.THREE_LARGE);
+		// this.setVaginaSquirter(true);
+		// this.setVaginaCapacity(Capacity.FIVE_ROOMY, true);
+		// this.setVaginaWetness(Wetness.THREE_WET);
+		// this.setVaginaElasticity(OrificeElasticity.THREE_FLEXIBLE.getValue());
+		// this.setVaginaPlasticity(OrificePlasticity.THREE_RESILIENT.getValue());
 		
 		// Feet:
 		// Foot shape
