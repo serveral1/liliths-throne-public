@@ -86,7 +86,7 @@ public class SlaveImport extends NPC {
 			
 			
 			this.clearAffectionMap();
-			this.setObedience((float) Math.round((-50+(Math.random()*50))));
+			this.setObedience((float) Math.round((-25+(Math.random()*50))));
 			this.setAffection(Main.game.getPlayer(), Math.round((-50+(Math.random()*50))));
 			this.getSlavesOwned().clear();
 			

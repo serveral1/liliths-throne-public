@@ -8,7 +8,7 @@
 		<namePlural pluralByDefault="true"><![CDATA[cargo trousers]]></namePlural>
 		<description><![CDATA[A pair of men's baggy cargo trousers, made of a hard-wearing fabric.]]></description>
 		<physicalResistance>0</physicalResistance>
-		<femininity>MASCULINE</femininity>
+		<femininity>ANDROGYNOUS</femininity>
 		<slot>LEG</slot>
 		<rarity>COMMON</rarity>
 		<clothingSet/>

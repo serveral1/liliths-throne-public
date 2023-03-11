@@ -16728,7 +16728,7 @@ public abstract class GameCharacter implements XMLSaving {
 		float insertedLength = characterPenetrating.getPenetrationLengthInserted(penetrationType, characterPenetrated, (SexAreaOrifice)orifice);
 		float penetratedHeight = characterPenetrated.getHeightValue();
 		
-		return insertedLength > penetratedHeight*0.125f;
+		return insertedLength > penetratedHeight*0.15f;
 	}
 	
 	/**
