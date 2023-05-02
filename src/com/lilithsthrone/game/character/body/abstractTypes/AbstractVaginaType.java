@@ -35,18 +35,24 @@ public abstract class AbstractVaginaType implements BodyPartTypeInterface {
 			new Value<>("cherry", 2),
 			new Value<>("cunt", 2),
 			new Value<>("kitty", 1),
+			new Value<>("snatch", 1),
 			new Value<>("pussy", 4),
 			new Value<>("sex", 1),
+			new Value<>("clam", 1),
+			new Value<>("vagina", 2),
 			new Value<>("slit", 1),
-			new Value<>("twat", 2));
+			new Value<>("twat", 3));
 	protected static final Map<String, Integer> BASE_NAMES_PLURAL = Util.newHashMapOfValues(
 			new Value<>("cherries", 2),
 			new Value<>("cunts", 2),
 			new Value<>("kitties", 1),
+			new Value<>("snatches", 1),
 			new Value<>("pussies", 4),
 			new Value<>("sexes", 1),
+			new Value<>("clams", 1),
+			new Value<>("vaginas", 2),
 			new Value<>("slits", 1),
-			new Value<>("twats", 2));
+			new Value<>("twats", 3));
 
 	private boolean mod;
 	private boolean fromExternalFile;

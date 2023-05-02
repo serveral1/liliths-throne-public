@@ -4929,22 +4929,22 @@ public class Body implements XMLSaving {
 						descriptionSB.append(" [npc.Her] [npc.ballsCount] [npc.balls] are [npc.materialCompositionDescriptor] [npc.ballFullDescription(true)], and are small enough to comfortably nestle underneath [npc.her] [npc.cock].");
 						break;
 					case TWO_AVERAGE:
-						descriptionSB.append(" [npc.Her] [npc.ballsCount] [npc.balls+] are [npc.materialCompositionDescriptor] [npc.ballFullDescription(true)], and dangle down beneath [npc.her] [npc.cock].");
+						descriptionSB.append(" [npc.Her] [npc.ballsCount] average-sized [npc.balls] are [npc.materialCompositionDescriptor] [npc.ballFullDescription(true)], and dangle down beneath [npc.her] [npc.cock].");
 						break;
 					case THREE_LARGE:
-						descriptionSB.append(" [npc.Her] [npc.ballsCount] [npc.balls+] are [npc.materialCompositionDescriptor] [npc.ballFullDescription(true)], and hang down beneath [npc.her] [npc.cock].");
+						descriptionSB.append(" [npc.Her] [npc.ballsCount] large [npc.balls] are [npc.materialCompositionDescriptor] [npc.ballFullDescription(true)], and hang down beneath [npc.her] [npc.cock].");
 						break;
 					case FOUR_HUGE:
-						descriptionSB.append(" [npc.Her] [npc.ballsCount] [npc.balls+] are [npc.materialCompositionDescriptor] [npc.ballFullDescription(true)], and hang down beneath [npc.her] [npc.cock].");
+						descriptionSB.append(" [npc.Her] [npc.ballsCount] huge [npc.balls] are [npc.materialCompositionDescriptor] [npc.ballFullDescription(true)], and hang down beneath [npc.her] [npc.cock].");
 						break;
 					case FIVE_MASSIVE:
-						descriptionSB.append(" [npc.Her] [npc.ballsCount] [npc.balls+] are [npc.materialCompositionDescriptor] [npc.ballFullDescription(true)], and hang down beneath [npc.her] [npc.cock].");
+						descriptionSB.append(" [npc.Her] [npc.ballsCount] massive [npc.balls] are [npc.materialCompositionDescriptor] [npc.ballFullDescription(true)], and hang down beneath [npc.her] [npc.cock].");
 						break;
 					case SIX_GIGANTIC:
-						descriptionSB.append(" [npc.Her] [npc.ballsCount] [npc.balls+] are [npc.materialCompositionDescriptor] [npc.ballFullDescription(true)], and hang down beneath [npc.her] [npc.cock].");
+						descriptionSB.append(" [npc.Her] [npc.ballsCount] gigantic [npc.balls] are [npc.materialCompositionDescriptor] [npc.ballFullDescription(true)], and hang down beneath [npc.her] [npc.cock].");
 						break;
 					case SEVEN_ABSURD:
-						descriptionSB.append(" [npc.Her] [npc.ballsCount] [npc.balls+] are [npc.materialCompositionDescriptor] [npc.ballFullDescription(true)], and hang down beneath [npc.her] [npc.cock].");
+						descriptionSB.append(" [npc.Her] [npc.ballsCount] absurdly enormous [npc.balls] are [npc.materialCompositionDescriptor] [npc.ballFullDescription(true)], and hang down beneath [npc.her] [npc.cock].");
 						break;
 				}
 			}

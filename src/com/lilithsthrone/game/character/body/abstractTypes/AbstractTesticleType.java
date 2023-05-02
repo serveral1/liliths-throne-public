@@ -155,7 +155,7 @@ public abstract class AbstractTesticleType implements BodyPartTypeInterface {
 	@Override
 	public String getNameSingular(GameCharacter gc) {
 		if(names==null || names.isEmpty()) {
-			return UtilText.returnStringAtRandom("ball", "testicle");
+			return UtilText.returnStringAtRandom("ball", "testicle", "nut", "gonad", "teste");
 		}
 		return Util.randomItemFrom(names);
 	}
@@ -163,7 +163,7 @@ public abstract class AbstractTesticleType implements BodyPartTypeInterface {
 	@Override
 	public String getNamePlural(GameCharacter gc) {
 		if(namesPlural==null || namesPlural.isEmpty()) {
-			return UtilText.returnStringAtRandom("balls", "testicles");
+			return UtilText.returnStringAtRandom("balls", "testicles", "nuts", "gonads", "testes");
 		}
 		return Util.randomItemFrom(namesPlural);
 	}

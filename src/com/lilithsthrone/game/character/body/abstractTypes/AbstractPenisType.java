@@ -34,8 +34,8 @@ public abstract class AbstractPenisType implements BodyPartTypeInterface {
 	private boolean fromExternalFile;
 	
 	// Maps the name to weighting for use in random selection:
-	protected static final Map<String, Integer> BASE_NAMES_SINGULAR = Util.newHashMapOfValues(new Value<>("cock", 3), new Value<>("dick", 2), new Value<>("shaft", 1));
-	protected static final Map<String, Integer> BASE_NAMES_PLURAL = Util.newHashMapOfValues(new Value<>("cocks", 3), new Value<>("dicks", 2), new Value<>("shafts", 1));
+	protected static final Map<String, Integer> BASE_NAMES_SINGULAR = Util.newHashMapOfValues(new Value<>("cock", 5), new Value<>("dick", 4), new Value<>("shaft", 1), new Value<>("phallus", 1), new Value<>("prick", 2), new Value<>("dong", 1), new Value<>("tool", 1), new Value<>("member", 1), new Value<>("penis", 1));
+	protected static final Map<String, Integer> BASE_NAMES_PLURAL = Util.newHashMapOfValues(new Value<>("cocks", 3), new Value<>("dicks", 2), new Value<>("shafts", 1), new Value<>("phalluses", 1), new Value<>("pricks", 2), new Value<>("dongs", 1), new Value<>("tools", 1), new Value<>("members", 1), new Value<>("penises", 1));
 	
 	private AbstractBodyCoveringType coveringType;
 	private AbstractRace race;
@@ -229,7 +229,7 @@ public abstract class AbstractPenisType implements BodyPartTypeInterface {
 	}
 	
 	public String getPenisHeadName(GameCharacter gc) {
-		return UtilText.returnStringAtRandom("head", "tip");
+		return UtilText.returnStringAtRandom("head", "tip", "glans");
 	}
 	
 	public String getPenisHeadDescriptor(GameCharacter gc) {
@@ -281,6 +281,10 @@ public abstract class AbstractPenisType implements BodyPartTypeInterface {
 		Map<String, Integer> returnNames = new HashMap<>(BASE_NAMES_SINGULAR);
 		if(UtilText.isInSpeech()) {
 			returnNames.remove("shaft");
+			returnNames.remove("phallus");
+			returnNames.remove("dong");
+			returnNames.remove("member");
+			returnNames.remove("tool");
 		}
 		
 		if(gc.isFeminine()) {
@@ -323,6 +327,10 @@ public abstract class AbstractPenisType implements BodyPartTypeInterface {
 		Map<String, Integer> returnNames = new HashMap<>(BASE_NAMES_PLURAL);
 		if(UtilText.isInSpeech()) {
 			returnNames.remove("shafts");
+			returnNames.remove("phalluses");
+			returnNames.remove("dongs");
+			returnNames.remove("members");
+			returnNames.remove("tools");
 		}
 		
 		if(gc.isFeminine()) {

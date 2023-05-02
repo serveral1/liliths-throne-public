@@ -138,7 +138,7 @@ public class Heather extends NPC {
 			this.setPersonalityTraits(
 					PersonalityTrait.LEWD);
 			
-			this.setSexualOrientation(SexualOrientation.ANDROPHILIC);
+			this.setSexualOrientation(SexualOrientation.AMBIPHILIC);
 			
 			this.setHistory(Occupation.NPC_STORE_OWNER);
 
