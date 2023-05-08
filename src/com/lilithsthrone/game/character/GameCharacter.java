@@ -796,7 +796,7 @@ public abstract class GameCharacter implements XMLSaving {
 		properties.appendChild(characterCoreInfo);
 		
 		XMLUtil.createXMLElementWithValue(doc, characterCoreInfo, "id", this.getId());
-		XMLUtil.createXMLElementWithValue(doc, characterCoreInfo, "pathName", this.getClass().getCanonicalName());
+		XMLUtil.createXMLElementWithValue(doc, characterCoreInfo, "pathName", this.getClass().isAnonymousClass() ? this.getClass().getSuperclass().getCanonicalName() : this.getClass().getCanonicalName());
 		
 		Element name = doc.createElement("name");
 		characterCoreInfo.appendChild(name);
@@ -1087,7 +1087,7 @@ public abstract class GameCharacter implements XMLSaving {
 			Element element = doc.createElement("f");
 			characterFetishes.appendChild(element);
 			element.setTextContent(Fetish.getIdFromFetish(f));
-			if(this.hasFetish(f)) {
+			if(this.hasFetish(f, false)) {
 				XMLUtil.addAttribute(doc, element, "o", Boolean.TRUE.toString());
 			}
 			if(this.getFetishDesireMap().containsKey(f)) {
@@ -3401,7 +3401,7 @@ public abstract class GameCharacter implements XMLSaving {
 		}
 
 		if(!folder.isEmpty()) {
-			if(!this.isUnique()) {
+			if(!this.isUnique() || this.isPlayer()) {
 				File f = new File("data/images/"+Main.game.getId()+"/characters/" + folder);
 				if(f.exists() && f.isDirectory()) {
 					Artwork art = new Artwork(this, f, Artwork.customArtist);
@@ -3443,7 +3443,7 @@ public abstract class GameCharacter implements XMLSaving {
 		try {
 			// Copy files to the character's custom image folder
 			Path destination;
-			if(this.isUnique()) {
+			if(this.isUnique() && !this.isPlayer()) {
 				destination = Paths.get("res", "images", "characters", getArtworkFolderName(), "custom");
 			} else {
 				destination = Paths.get("data", "images", String.valueOf(Main.game.getId()), "characters", getArtworkFolderName());
@@ -4236,6 +4236,10 @@ public abstract class GameCharacter implements XMLSaving {
 
 	public void setSurname(String surname) {
 		this.surname = surname;
+	}
+	
+	public boolean hasSurname() {
+		return this.surname!=null && this.surname.length()>0;
 	}
 	
 	/**
@@ -6889,7 +6893,11 @@ public abstract class GameCharacter implements XMLSaving {
 	}
 	
 	public boolean hasFetish(AbstractFetish fetish) {
-		return fetish.isContentEnabled() && (fetishes.contains(fetish) || fetishesFromClothing.contains(fetish));
+		return hasFetish(fetish, true);
+	}
+	
+	public boolean hasFetish(AbstractFetish fetish, boolean includeFetishesFromClothing) {
+		return fetish.isContentEnabled() && (fetishes.contains(fetish) || (includeFetishesFromClothing?fetishesFromClothing.contains(fetish):false));
 	}
 	
 	/**
@@ -25251,6 +25259,9 @@ public abstract class GameCharacter implements XMLSaving {
 	public List<AbstractRace> getSelfTransformationRaces(boolean includeNoneRace) {
 		List<AbstractRace> races = new ArrayList<>();
 		
+		if(this instanceof Elemental) {
+			races.addAll(Race.allRaces);
+		}
 		if(this.getSubspeciesOverrideRace()==Race.DEMON) {
 			races.add(Race.NONE);
 			races.add(Race.DEMON);
@@ -25541,6 +25552,16 @@ public abstract class GameCharacter implements XMLSaving {
 	}
 
 	// Tattoos, scars, and lipstick markings:
+	
+	public void clearTattoos() {
+		for(InventorySlot slot : InventorySlot.values()) {
+			Tattoo tattoo = tattoos.get(slot);
+			if(tattoo!=null) {
+				applyUnequipTattooEffects(tattoo);
+				tattoos.remove(slot);
+			}
+		}
+	}
 	
 	public void clearTattoosAndScars() {
 		for(InventorySlot slot : InventorySlot.values()) {

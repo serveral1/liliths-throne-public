@@ -3299,6 +3299,14 @@ public class Game implements XMLSaving {
 					content = "<p style='text-align:center;'>"
 								+ "[style.italicsBad(Error: getContent() method is throwing an exception in the node: '"+node.getLabel()+"')]"
 							+ "</p>";
+					
+					// Hopefully bug reports will include this ;_;
+					content += "<p style='font-size:0.75em;'>";
+						for(StackTraceElement ste : ex.getStackTrace()) {
+							content += "<br/>"+ste.toString();
+						}
+					content += "</p>";
+					
 					ex.printStackTrace();
 				}
 				if(content==null) {
@@ -3514,6 +3522,14 @@ public class Game implements XMLSaving {
 			content = "<p style='text-align:center;'>"
 						+ "[style.italicsBad(Error: getContent() method is throwing an exception in the node: '"+node.getLabel()+"')]"
 					+ "</p>";
+			
+			// Hopefully bug reports will include this ;_;
+			content += "<p style='font-size:0.75em;'>";
+				for(StackTraceElement ste : ex.getStackTrace()) {
+					content += "<br/>"+ste.toString();
+				}
+			content += "</p>";
+			
 			ex.printStackTrace();
 		}
 		if(content==null) {
@@ -4000,6 +4016,14 @@ public class Game implements XMLSaving {
 			content = "<p style='text-align:center;'>"
 						+ "[style.italicsBad(Error: getContent() method is throwing an exception in the node: '"+currentDialogueNode.getLabel()+"')]"
 					+ "</p>";
+			
+			// Hopefully bug reports will include this ;_;
+			content += "<p style='font-size:0.75em;'>";
+				for(StackTraceElement ste : ex.getStackTrace()) {
+					content += "<br/>"+ste.toString();
+				}
+			content += "</p>";
+			
 			ex.printStackTrace();
 		}
 		
@@ -4280,6 +4304,14 @@ public class Game implements XMLSaving {
 				content = "<p style='text-align:center;'>"
 							+ "[style.italicsBad(Error: getContent() method is throwing an exception in the node: '"+currentDialogueNode.getLabel()+"')]"
 						+ "</p>";
+				
+				// Hopefully bug reports will include this ;_;
+				content += "<p style='font-size:0.75em;'>";
+					for(StackTraceElement ste : ex.getStackTrace()) {
+						content += "<br/>"+ste.toString();
+					}
+				content += "</p>";
+				
 				ex.printStackTrace();
 			}
 			
@@ -5017,7 +5049,7 @@ public class Game implements XMLSaving {
 				npc.setId(getUniqueNPCId(npc.getClass()));
 			} else {
 				int id = npcTally.incrementAndGet();
-				npc.setId(id+","+(npc.getClass().getSimpleName()));
+				npc.setId(id+","+(npc.getClass().isAnonymousClass() ? npc.getClass().getSuperclass().getSimpleName() : npc.getClass().getSimpleName()));
 			}
 		}
 		
