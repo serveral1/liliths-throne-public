@@ -186,8 +186,8 @@ public class FluidType {
 	 public static AbstractFluidType CUM_REINDEER_MORPH = new AbstractFluidType(FluidTypeBase.CUM,
 			FluidFlavour.CUM,
 			Race.REINDEER_MORPH,
-			Util.newArrayListOfValues("reindeer-"),
-			Util.newArrayListOfValues("reindeer-"),
+			Util.newArrayListOfValues("reindeer-", "cervine"),
+			Util.newArrayListOfValues("reindeer-", "cervine"),
 			Util.newArrayListOfValues(""),
 			Util.newArrayListOfValues(""),
 			Util.newArrayListOfValues(

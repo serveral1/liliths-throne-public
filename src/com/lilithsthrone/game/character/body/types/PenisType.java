@@ -83,10 +83,10 @@ public class PenisType {
 	public static AbstractPenisType DEMON_COMMON = new AbstractPenisType(BodyCoveringType.PENIS,
 			Race.DEMON,
 			TesticleType.DEMON_COMMON,
-			Util.newArrayListOfValues("succubus-"),
-			Util.newArrayListOfValues("succubus-"),
-			Util.newArrayListOfValues("incubus-"),
-			Util.newArrayListOfValues("incubus-"),
+			Util.newArrayListOfValues("succubus-", "demon-", "demonic-"),
+			Util.newArrayListOfValues("succubus-", "demon-", "demonic-"),
+			Util.newArrayListOfValues("incubus-", "demon-", "demonic-"),
+			Util.newArrayListOfValues("incubus-", "demon-", "demonic-"),
 			Util.newArrayListOfValues("demonic"),
 			"[npc.She] [npc.verb(squirm)] and [npc.moansVerb] as the skin covering [npc.her] cock transforms into a smooth, highly sensitive demonic counterpart."
 				+ " Slimy precum starts drooling from the tip, and [npc.she] [npc.verb(let)] out [npc.a_moan+] as thick ridges suddenly press out all along its length."
@@ -114,11 +114,11 @@ public class PenisType {
 	public static AbstractPenisType COW_MORPH = new AbstractPenisType(BodyCoveringType.PENIS,
 			Race.COW_MORPH,
 			TesticleType.BOVINE,
-			Util.newArrayListOfValues("cow-"),
-			Util.newArrayListOfValues("cow-"),
-			Util.newArrayListOfValues("bull-"),
-			Util.newArrayListOfValues("bull-"),
-			Util.newArrayListOfValues(""),
+			Util.newArrayListOfValues("cow-", "bovine-"),
+			Util.newArrayListOfValues("cow-", "bovine-"),
+			Util.newArrayListOfValues("bull-", "bovine-"),
+			Util.newArrayListOfValues("bull-", "bovine-"),
+			Util.newArrayListOfValues("bovine"),
 			"Letting out an involuntary moan, [npc.name] [npc.verb(feel)] [npc.her] penis shifting into a new form, and [npc.sheIs] hit by a wave of overwhelming arousal as [npc.her] shaft grows wider and the head tapers down into a point.<br/>"
 				+ "[npc.She] now [npc.has] a [style.boldCowMorph(bovine penis)], [npc.materialDescriptor] [npc.penisFullDescription].<br/>"
 				+ "[npc.She] [npc.has] [style.boldCowMorph([npc.ballsCount]#IF(npc.isInternalTesticles()) internal,#ENDIF bovine balls)],"
@@ -133,10 +133,10 @@ public class PenisType {
 	public static AbstractPenisType DOG_MORPH = new AbstractPenisType(BodyCoveringType.PENIS,
 			Race.DOG_MORPH,
 			TesticleType.CANINE,
-			Util.newArrayListOfValues("dog-", "bitch-"),
-			Util.newArrayListOfValues("dog-", "bitch-"),
-			Util.newArrayListOfValues("dog-"),
-			Util.newArrayListOfValues("dog-"),
+			Util.newArrayListOfValues("dog-", "bitch-", "canine"),
+			Util.newArrayListOfValues("dog-", "bitch-", "canine"),
+			Util.newArrayListOfValues("dog-", "canine"),
+			Util.newArrayListOfValues("dog-", "canine"),
 			Util.newArrayListOfValues("canine"),
 			"Letting out an involuntary moan, [npc.name] [npc.verb(feel)] [npc.her] penis shifting into a new form, and [npc.sheIs] hit by a wave of overwhelming arousal as a thick knot suddenly presses out at the base of [npc.her] shaft."
 				+ " As [npc.she] [npc.verb(pant)] and [npc.verb(gasp)] for air, the tip of [npc.her] cock narrows down as it tapers into its new form.<br/>"
@@ -160,16 +160,16 @@ public class PenisType {
 	public static AbstractPenisType WOLF_MORPH = new AbstractPenisType(BodyCoveringType.PENIS,
 			Race.WOLF_MORPH,
 			TesticleType.LUPINE,
-			Util.newArrayListOfValues("wolf-"),
-			Util.newArrayListOfValues("wolf-"),
-			Util.newArrayListOfValues("wolf-"),
-			Util.newArrayListOfValues("wolf-"),
+			Util.newArrayListOfValues("wolf-", "lupine"),
+			Util.newArrayListOfValues("wolf-", "lupine"),
+			Util.newArrayListOfValues("wolf-", "lupine"),
+			Util.newArrayListOfValues("wolf-", "lupine"),
 			Util.newArrayListOfValues("lupine"),
 			"Letting out an involuntary moan, [npc.name] [npc.verb(feel)] [npc.her] penis shifting into a new form, and [npc.sheIs] hit by a wave of overwhelming arousal as a thick knot suddenly presses out at the base of [npc.her] shaft."
 				+ " As [npc.she] [npc.verb(pant)] and [npc.verb(gasp)] for air, the tip of [npc.her] cock narrows down as it tapers into its new form.<br/>"
-				+ "[npc.She] now [npc.has] a [style.boldWolfMorph(wolf-like penis)], [npc.materialDescriptor] [npc.penisFullDescription(true)].<br/>"
+				+ "[npc.She] now [npc.has] a [style.boldWolfMorph(lupine penis)], [npc.materialDescriptor] [npc.penisFullDescription(true)].<br/>"
 				+ "[npc.She] [npc.has] [style.boldWolfMorph([npc.ballsCount]#IF(npc.isInternalTesticles()) internal,#ENDIF lupine balls)],"
-					+ " [npc.materialDescriptor] [npc.ballsFullDescription(true)], which produce [npc.cumColour(true)] [style.boldWolfMorph(wolf cum)].",
+					+ " [npc.materialDescriptor] [npc.ballsFullDescription(true)], which produce [npc.cumColour(true)] [style.boldWolfMorph(lupine cum)].",
 			"[npc.She] [npc.has] [npc.a_cockGirth], [npc.cockLengthValue] wolf cock, which is [npc.materialCompositionDescriptor] [npc.cockFullDescription(true)].",
 			Util.newArrayListOfValues(
 				PenetrationModifier.KNOTTED,
@@ -187,17 +187,17 @@ public class PenisType {
 	public static AbstractPenisType FOX_MORPH = new AbstractPenisType(BodyCoveringType.PENIS,
 			Race.FOX_MORPH,
 			TesticleType.FOX_MORPH,
-			Util.newArrayListOfValues("fox-", "vixen-"),
-			Util.newArrayListOfValues("fox-", "vixen-"),
-			Util.newArrayListOfValues("fox-"),
-			Util.newArrayListOfValues("fox-"),
+			Util.newArrayListOfValues("fox-", "vixen-", "vulpine"),
+			Util.newArrayListOfValues("fox-", "vixen-", "vulpine"),
+			Util.newArrayListOfValues("fox-", "vulpine"),
+			Util.newArrayListOfValues("fox-", "vulpine"),
 			Util.newArrayListOfValues("vulpine"),
 			"Letting out an involuntary moan, [npc.name] [npc.verb(feel)] [npc.her] penis shifting into a new form, and [npc.sheIs] hit by a wave of overwhelming arousal as a thick knot suddenly presses out at the base of [npc.her] shaft."
 				+ " As [npc.she] [npc.verb(pant)] and [npc.verb(gasp)] for air, the tip of [npc.her] cock narrows down as it tapers into its new form.<br/>"
-				+ "[npc.She] now [npc.has] a [style.boldFoxMorph(fox-like penis)], [npc.materialDescriptor] [npc.penisFullDescription(true)].<br/>"
+				+ "[npc.She] now [npc.has] a [style.boldFoxMorph(vulpine penis)], [npc.materialDescriptor] [npc.penisFullDescription(true)].<br/>"
 				+ "[npc.She] [npc.has] [style.boldFoxMorph([npc.ballsCount]#IF(npc.isInternalTesticles()) internal,#ENDIF vulpine balls)],"
 					+ " [npc.materialDescriptor] [npc.ballsFullDescription(true)], which produce [npc.cumColour(true)] [style.boldFoxMorph(fox cum)].",
-			"[npc.She] [npc.has] [npc.a_cockGirth], [npc.cockLengthValue] fox cock, which is [npc.materialCompositionDescriptor] [npc.cockFullDescription(true)].",
+			"[npc.She] [npc.has] [npc.a_cockGirth], [npc.cockLengthValue] vulpine cock, which is [npc.materialCompositionDescriptor] [npc.cockFullDescription(true)].",
 			Util.newArrayListOfValues(
 				PenetrationModifier.KNOTTED,
 				PenetrationModifier.SHEATHED,
@@ -214,10 +214,10 @@ public class PenisType {
 	public static AbstractPenisType CAT_MORPH = new AbstractPenisType(BodyCoveringType.PENIS,
 			Race.CAT_MORPH,
 			TesticleType.FELINE,
-			Util.newArrayListOfValues("cat-"),
-			Util.newArrayListOfValues("cat-"),
-			Util.newArrayListOfValues("cat-"),
-			Util.newArrayListOfValues("cat-"),
+			Util.newArrayListOfValues("cat-", "feline"),
+			Util.newArrayListOfValues("cat-", "feline"),
+			Util.newArrayListOfValues("cat-", "feline"),
+			Util.newArrayListOfValues("cat-", "feline"),
 			Util.newArrayListOfValues("feline"),
 			"Letting out an involuntary moan, [npc.she] [npc.verb(feel)] [npc.her] penis shifting into a new form,"
 					+ " and [npc.sheIs] hit by a wave of overwhelming arousal as rows of fleshy little backwards-facing barbs press out all along [npc.her] shaft.<br/>"
@@ -269,11 +269,11 @@ public class PenisType {
 	public static AbstractPenisType REINDEER_MORPH = new AbstractPenisType(BodyCoveringType.PENIS,
 			Race.REINDEER_MORPH,
 			TesticleType.REINDEER_MORPH,
-			Util.newArrayListOfValues("reindeer-"),
-			Util.newArrayListOfValues("reindeer-"),
-			Util.newArrayListOfValues("reindeer-"),
-			Util.newArrayListOfValues("reindeer-"),
-			Util.newArrayListOfValues(""),
+			Util.newArrayListOfValues("reindeer-", "cervine"),
+			Util.newArrayListOfValues("reindeer-", "cervine"),
+			Util.newArrayListOfValues("reindeer-", "cervine"),
+			Util.newArrayListOfValues("reindeer-", "cervine"),
+			Util.newArrayListOfValues("cervine"),
 			"Letting out an involuntary moan, [npc.name] [npc.verb(feel)] [npc.her] penis shifting into a new form, and [npc.sheIs] hit by a wave of overwhelming arousal as [npc.her] shaft grows wider and the head flattens down.<br/>"
 				+ "[npc.She] now [npc.has] an [style.boldReindeerMorph(reindeer-like penis)], [npc.materialDescriptor] [npc.penisFullDescription(true)].<br/>"
 				+ "[npc.She] [npc.has] [style.boldReindeerMorph([npc.ballsCount]#IF(npc.isInternalTesticles()) internal,#ENDIF reindeer balls)],"
@@ -323,7 +323,7 @@ public class PenisType {
 			Util.newArrayListOfValues("rat-"),
 			Util.newArrayListOfValues("rat-"),
 			Util.newArrayListOfValues("rat-"),
-			Util.newArrayListOfValues(""),
+			Util.newArrayListOfValues("rodent"),
 			"[npc.She] now [npc.has] a [style.boldRatMorph(rat penis)], [npc.materialDescriptor] [npc.penisFullDescription(true)].<br/>"
 				+ "[npc.She] [npc.has] [style.boldRatMorph([npc.ballsCount]#IF(npc.isInternalTesticles()) internal,#ENDIF rat balls)], [npc.materialDescriptor] [npc.ballsFullDescription(true)],"
 					+ " which produce [npc.cumColour(true)] [style.boldRatMorph(rat cum)].",
