@@ -7938,6 +7938,14 @@ public abstract class GameCharacter implements XMLSaving {
 		}
 	}
 
+	/**
+	 * Uses getLastTimeHadSex().
+	 * @return A value <b>in minutes</b> for how long ago this character last had sex.
+	 */
+	public long getTimeSinceLastHadSex() {
+		return Main.game.getMinutesPassed() - getLastTimeHadSex();
+	}
+	
 	@Deprecated
 	/**
 	 * <b>You should use getLastTimeOrgasmedSeconds() instead!</b>
@@ -10080,6 +10088,23 @@ public abstract class GameCharacter implements XMLSaving {
 
 	// Virginity:
 	
+	public void completeVirginityReset() {
+		this.setAnalVirgin(true);
+		this.setAssVirgin(true);
+		this.setFaceVirgin(true);
+		this.setNippleCrotchVirgin(true);
+		this.setNippleVirgin(true);
+		this.setPenisVirgin(true);
+		this.setSecondUrethraVirgin(true);
+		this.setSpinneretVirgin(true);
+		this.setUrethraVirgin(true);
+		this.setVaginaUrethraVirgin(true);
+		this.setVaginaVirgin(true);
+		this.setHymen(true);
+		
+		virginityLossMap = new HashMap<>();
+		backupVirginityLossMap = new HashMap<>();
+	}
 	
 	public Map<SexType, String> getBackupVirginityLossMap() {
 		return backupVirginityLossMap;
@@ -22179,7 +22204,7 @@ public abstract class GameCharacter implements XMLSaving {
 	}
 	
 	public boolean isCarryingQuestItems() {
-		return getUniqueQuestWeaponCount()+getUniqueQuestClothingCount()+getUniqueQuestItemCount()>0;
+		return inventory.isAnyQuestItemPresent();
 	}
 	
 	
@@ -24420,7 +24445,7 @@ public abstract class GameCharacter implements XMLSaving {
 			this.endIncubationPregnancy(SexAreaOrifice.NIPPLE, true);
 			System.err.println("Warning: Nipple egg pregnancy was ended (with birth) as feral form '"+subspecies.getFeralName(this.getBody())+"' was applied, which does not have breasts.");
 		}
-		body.setFeral(subspecies);
+		body.setFeral(this, subspecies);
 		postTransformationCalculation();
 	}
 	
