@@ -68,10 +68,10 @@ public class PenisType {
 	public static AbstractPenisType ANGEL = new AbstractPenisType(BodyCoveringType.PENIS,
 			Race.ANGEL,
 			TesticleType.ANGEL,
-			Util.newArrayListOfValues("angel-"),
-			Util.newArrayListOfValues("angel-"),
-			Util.newArrayListOfValues("angel-"),
-			Util.newArrayListOfValues("angel-"),
+			Util.newArrayListOfValues("angel-", "angelic-"),
+			Util.newArrayListOfValues("angel-", "angelic-"),
+			Util.newArrayListOfValues("angel-", "angelic-"),
+			Util.newArrayListOfValues("angel-", "angelic-"),
 			Util.newArrayListOfValues(""),
 			"[npc.She] now [npc.has] an [style.boldAngel(angelic penis)], [npc.materialDescriptor] [npc.penisFullDescription(true)].<br/>"
 				+ "[npc.She] [npc.has] [style.boldAngel([npc.ballsCount]#IF(npc.isInternalTesticles()) internal,#ENDIF angelic balls)],"
@@ -87,7 +87,7 @@ public class PenisType {
 			Util.newArrayListOfValues("succubus-", "demon-", "demonic-"),
 			Util.newArrayListOfValues("incubus-", "demon-", "demonic-"),
 			Util.newArrayListOfValues("incubus-", "demon-", "demonic-"),
-			Util.newArrayListOfValues("demonic"),
+			Util.newArrayListOfValues(""),
 			"[npc.She] [npc.verb(squirm)] and [npc.moansVerb] as the skin covering [npc.her] cock transforms into a smooth, highly sensitive demonic counterpart."
 				+ " Slimy precum starts drooling from the tip, and [npc.she] [npc.verb(let)] out [npc.a_moan+] as thick ridges suddenly press out all along its length."
 				+ " As if that wasn't enough, rows of little bumps start to press out and form into little tentacles, which then start wriggling with a mind of their own.<br/>"
@@ -118,7 +118,7 @@ public class PenisType {
 			Util.newArrayListOfValues("cow-", "bovine-"),
 			Util.newArrayListOfValues("bull-", "bovine-"),
 			Util.newArrayListOfValues("bull-", "bovine-"),
-			Util.newArrayListOfValues("bovine"),
+			Util.newArrayListOfValues(""),
 			"Letting out an involuntary moan, [npc.name] [npc.verb(feel)] [npc.her] penis shifting into a new form, and [npc.sheIs] hit by a wave of overwhelming arousal as [npc.her] shaft grows wider and the head tapers down into a point.<br/>"
 				+ "[npc.She] now [npc.has] a [style.boldCowMorph(bovine penis)], [npc.materialDescriptor] [npc.penisFullDescription].<br/>"
 				+ "[npc.She] [npc.has] [style.boldCowMorph([npc.ballsCount]#IF(npc.isInternalTesticles()) internal,#ENDIF bovine balls)],"
@@ -133,11 +133,11 @@ public class PenisType {
 	public static AbstractPenisType DOG_MORPH = new AbstractPenisType(BodyCoveringType.PENIS,
 			Race.DOG_MORPH,
 			TesticleType.CANINE,
-			Util.newArrayListOfValues("dog-", "bitch-", "canine"),
-			Util.newArrayListOfValues("dog-", "bitch-", "canine"),
-			Util.newArrayListOfValues("dog-", "canine"),
-			Util.newArrayListOfValues("dog-", "canine"),
-			Util.newArrayListOfValues("canine"),
+			Util.newArrayListOfValues("dog-", "bitch-", "canine-"),
+			Util.newArrayListOfValues("dog-", "bitch-", "canine-"),
+			Util.newArrayListOfValues("dog-", "canine-"),
+			Util.newArrayListOfValues("dog-", "canine-"),
+			Util.newArrayListOfValues(""),
 			"Letting out an involuntary moan, [npc.name] [npc.verb(feel)] [npc.her] penis shifting into a new form, and [npc.sheIs] hit by a wave of overwhelming arousal as a thick knot suddenly presses out at the base of [npc.her] shaft."
 				+ " As [npc.she] [npc.verb(pant)] and [npc.verb(gasp)] for air, the tip of [npc.her] cock narrows down as it tapers into its new form.<br/>"
 				+ "[npc.She] now [npc.has] a [style.boldDogMorph(canine penis)], [npc.materialDescriptor] [npc.penisFullDescription(true)].<br/>"
@@ -160,11 +160,11 @@ public class PenisType {
 	public static AbstractPenisType WOLF_MORPH = new AbstractPenisType(BodyCoveringType.PENIS,
 			Race.WOLF_MORPH,
 			TesticleType.LUPINE,
-			Util.newArrayListOfValues("wolf-", "lupine"),
-			Util.newArrayListOfValues("wolf-", "lupine"),
-			Util.newArrayListOfValues("wolf-", "lupine"),
-			Util.newArrayListOfValues("wolf-", "lupine"),
-			Util.newArrayListOfValues("lupine"),
+			Util.newArrayListOfValues("wolf-", "lupine-"),
+			Util.newArrayListOfValues("wolf-", "lupine-"),
+			Util.newArrayListOfValues("wolf-", "lupine-"),
+			Util.newArrayListOfValues("wolf-", "lupine-"),
+			Util.newArrayListOfValues(""),
 			"Letting out an involuntary moan, [npc.name] [npc.verb(feel)] [npc.her] penis shifting into a new form, and [npc.sheIs] hit by a wave of overwhelming arousal as a thick knot suddenly presses out at the base of [npc.her] shaft."
 				+ " As [npc.she] [npc.verb(pant)] and [npc.verb(gasp)] for air, the tip of [npc.her] cock narrows down as it tapers into its new form.<br/>"
 				+ "[npc.She] now [npc.has] a [style.boldWolfMorph(lupine penis)], [npc.materialDescriptor] [npc.penisFullDescription(true)].<br/>"
@@ -187,11 +187,11 @@ public class PenisType {
 	public static AbstractPenisType FOX_MORPH = new AbstractPenisType(BodyCoveringType.PENIS,
 			Race.FOX_MORPH,
 			TesticleType.FOX_MORPH,
-			Util.newArrayListOfValues("fox-", "vixen-", "vulpine"),
-			Util.newArrayListOfValues("fox-", "vixen-", "vulpine"),
-			Util.newArrayListOfValues("fox-", "vulpine"),
-			Util.newArrayListOfValues("fox-", "vulpine"),
-			Util.newArrayListOfValues("vulpine"),
+			Util.newArrayListOfValues("fox-", "vixen-", "vulpine-"),
+			Util.newArrayListOfValues("fox-", "vixen-", "vulpine-"),
+			Util.newArrayListOfValues("fox-", "vulpine-"),
+			Util.newArrayListOfValues("fox-", "vulpine-"),
+			Util.newArrayListOfValues(""),
 			"Letting out an involuntary moan, [npc.name] [npc.verb(feel)] [npc.her] penis shifting into a new form, and [npc.sheIs] hit by a wave of overwhelming arousal as a thick knot suddenly presses out at the base of [npc.her] shaft."
 				+ " As [npc.she] [npc.verb(pant)] and [npc.verb(gasp)] for air, the tip of [npc.her] cock narrows down as it tapers into its new form.<br/>"
 				+ "[npc.She] now [npc.has] a [style.boldFoxMorph(vulpine penis)], [npc.materialDescriptor] [npc.penisFullDescription(true)].<br/>"
@@ -214,11 +214,11 @@ public class PenisType {
 	public static AbstractPenisType CAT_MORPH = new AbstractPenisType(BodyCoveringType.PENIS,
 			Race.CAT_MORPH,
 			TesticleType.FELINE,
-			Util.newArrayListOfValues("cat-", "feline"),
-			Util.newArrayListOfValues("cat-", "feline"),
-			Util.newArrayListOfValues("cat-", "feline"),
-			Util.newArrayListOfValues("cat-", "feline"),
-			Util.newArrayListOfValues("feline"),
+			Util.newArrayListOfValues("cat-", "feline-"),
+			Util.newArrayListOfValues("cat-", "feline-"),
+			Util.newArrayListOfValues("cat-", "feline-"),
+			Util.newArrayListOfValues("cat-", "feline-"),
+			Util.newArrayListOfValues(""),
 			"Letting out an involuntary moan, [npc.she] [npc.verb(feel)] [npc.her] penis shifting into a new form,"
 					+ " and [npc.sheIs] hit by a wave of overwhelming arousal as rows of fleshy little backwards-facing barbs press out all along [npc.her] shaft.<br/>"
 				+ "[npc.She] now [npc.has] a [style.boldCatMorph(feline penis)], [npc.materialDescriptor] [npc.penisFullDescription(true)].<br/>"
@@ -250,10 +250,10 @@ public class PenisType {
 	public static AbstractPenisType EQUINE = new AbstractPenisType(BodyCoveringType.PENIS,
 			Race.HORSE_MORPH,
 			TesticleType.EQUINE,
-			Util.newArrayListOfValues("mare-", "#IF(npc.getRace()==npc.getPenisRace())[npc.raceFeral]#ELSE[npc.cockRaceFeral]#ENDIF-", "equine-"),
-			Util.newArrayListOfValues("mare-", "#IF(npc.getRace()==npc.getPenisRace())[npc.raceFeral]#ELSE[npc.cockRaceFeral]#ENDIF-", "equine-"),
-			Util.newArrayListOfValues("stallion-", "#IF(npc.getRace()==npc.getPenisRace())[npc.raceFeral]#ELSE[npc.cockRaceFeral]#ENDIF-", "equine-"),
-			Util.newArrayListOfValues("stallion-", "#IF(npc.getRace()==npc.getPenisRace())[npc.raceFeral]#ELSE[npc.cockRaceFeral]#ENDIF-", "equine-"),
+			Util.newArrayListOfValues("mare-", "#IF(npc.getRace()==npc.getPenisRace())[npc.raceFeral]#ELSE[npc.cockRaceFeral]#ENDIF-", "equine-", "horse-"),
+			Util.newArrayListOfValues("mare-", "#IF(npc.getRace()==npc.getPenisRace())[npc.raceFeral]#ELSE[npc.cockRaceFeral]#ENDIF-", "equine-", "horse-"),
+			Util.newArrayListOfValues("stallion-", "#IF(npc.getRace()==npc.getPenisRace())[npc.raceFeral]#ELSE[npc.cockRaceFeral]#ENDIF-", "equine-", "horse-"),
+			Util.newArrayListOfValues("stallion-", "#IF(npc.getRace()==npc.getPenisRace())[npc.raceFeral]#ELSE[npc.cockRaceFeral]#ENDIF-", "equine-", "horse-"),
 			Util.newArrayListOfValues(""),
 			"Letting out an involuntary moan, [npc.name] [npc.verb(feel)] [npc.her] penis shifting into a new form, and [npc.sheIs] hit by a wave of overwhelming arousal as [npc.her] shaft grows wider and the head flattens down.<br/>"
 				+ "[npc.She] now [npc.has] an [style.boldHorseMorph(equine penis)], [npc.materialDescriptor] [npc.penisFullDescription(true)].<br/>"
@@ -269,11 +269,11 @@ public class PenisType {
 	public static AbstractPenisType REINDEER_MORPH = new AbstractPenisType(BodyCoveringType.PENIS,
 			Race.REINDEER_MORPH,
 			TesticleType.REINDEER_MORPH,
-			Util.newArrayListOfValues("reindeer-", "cervine"),
-			Util.newArrayListOfValues("reindeer-", "cervine"),
-			Util.newArrayListOfValues("reindeer-", "cervine"),
-			Util.newArrayListOfValues("reindeer-", "cervine"),
-			Util.newArrayListOfValues("cervine"),
+			Util.newArrayListOfValues("reindeer-", "cervine-"),
+			Util.newArrayListOfValues("reindeer-", "cervine-"),
+			Util.newArrayListOfValues("reindeer-", "cervine-"),
+			Util.newArrayListOfValues("reindeer-", "cervine-"),
+			Util.newArrayListOfValues(""),
 			"Letting out an involuntary moan, [npc.name] [npc.verb(feel)] [npc.her] penis shifting into a new form, and [npc.sheIs] hit by a wave of overwhelming arousal as [npc.her] shaft grows wider and the head flattens down.<br/>"
 				+ "[npc.She] now [npc.has] an [style.boldReindeerMorph(reindeer-like penis)], [npc.materialDescriptor] [npc.penisFullDescription(true)].<br/>"
 				+ "[npc.She] [npc.has] [style.boldReindeerMorph([npc.ballsCount]#IF(npc.isInternalTesticles()) internal,#ENDIF reindeer balls)],"

@@ -5099,6 +5099,7 @@ public class ScarlettsShop {
 							} else {
 								Main.game.getNpc(Scarlett.class).setPenisSize(20);
 								Main.game.getNpc(Scarlett.class).setPenisGirth(PenetrationGirth.THREE_AVERAGE);
+								Main.game.getNpc(Scarlett.class).setTesticleSize(TesticleSize.THREE_LARGE);
 								Main.game.getNpc(Scarlett.class).setPenisCumStorage(50);
 							}
 
@@ -5132,6 +5133,7 @@ public class ScarlettsShop {
 							} else {
 								Main.game.getNpc(Scarlett.class).setPenisSize(30);
 								Main.game.getNpc(Scarlett.class).setPenisGirth(PenetrationGirth.FOUR_GIRTHY);
+								Main.game.getNpc(Scarlett.class).setTesticleSize(TesticleSize.FOUR_HUGE);
 								Main.game.getNpc(Scarlett.class).setPenisCumStorage(150);
 							}
 
